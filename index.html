@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="Maciej Gladki (maciej.szymon.gladki@cern.ch)">
+
+    <title>DAQ Expert</title>
+
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <link href="css/one-page-wonder.css" rel="stylesheet">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+	
+
+</head>
+
+<body>
+
+	
+    <div id="navigation"></div>
+    
+
+    <!-- Full Width Image Header -->
+    <header class="header-image">
+        <div class="headline">
+            <div class="container">
+                <h2>DAQ Expert</h2>
+            </div>
+        </div>
+    </header>
+
+    <!-- Page Content -->
+    <div class="container">
+
+        <hr class="featurette-divider">
+
+        <!-- First Featurette -->
+        <div class="featurette" id="about">
+            <img class="featurette-image img-circle img-responsive pull-left" src="img/control-room.jpg">
+            <h2 class="featurette-heading">What is
+                <span class="text-muted">DAQ Expert</span>?
+            </h2>
+            <p class="lead">The main goal is to increase data taking efficiency.</p>
+	    <p class="lead">The main tasks are to perform automatic recovery and to automate routine actions in CMS currently done by the operator.</p>
+	    <p class="lead">First version is suggesting the actions to shifters.</p>
+
+<a href="http://daq-expert.cms:8080/nm-1.1.35/dashboard" class="btn btn-info" role="button">See what expert suggests</a> </br><small>tunnel to CMS cluster necessary</small>
+        </div>
+
+
+        <hr class="featurette-divider">
+
+	<!-- Fifth Featurette -->
+		<div class="featurette" id="gain">
+		    
+
+	
+            <div class="row">
+                <div class="col-lg-5 col-sm-6">
+                    <div class="clearfix"></div>
+                    <h2 class="featurette-heading">What to gain with
+		        <span class="text-muted">DAQ Expert</span>?
+		    </h2>
+		    <p class="lead">Current version of software can already increase data taking efficiency. Calculated based on data 4-10 August.</p>
+                </div>
+                
+                <div class="col-lg-5 col-lg-offset-2 col-sm-6">
+                   <div class="row text-center">
+                        <div class="col-md-6 col-sm-12">
+                            <div class="service-item">
+                            
+                                <p>
+                                    <strong><span class="counter" style="font-size: 46px;">10</span></strong>
+                                </p>
+                                <p>minutes per week of stable beams could be saved with current release</p>
+                            </div>
+                        </div>
+
+			<div class="col-md-6 col-sm-12">
+                            <div class="service-item">
+                            
+                                <p>
+                                    <strong><span class="counter" style="font-size: 46px;">60</span></strong>
+                                </p>
+                                <p>seconds shifter needs on avarage to make decision in failure situation</p>
+                            </div>
+                        </div>
+                        
+                   </div>
+		   <div class="row text-center">
+                        
+                   
+                        <div class="col-md-6 col-sm-12">
+                            <div class="service-item">
+                            
+                                <p>
+                                    <strong><span class="counter" style="font-size: 46px;">21</span></strong>
+                                </p>
+                                <p>minutes per week - avoidable downtime (no rate + no recovery action being executed)</p>
+                            </div>
+                        </div>
+			<div class="col-md-6 col-sm-12">
+                            <div class="service-item">
+                            
+                                <p>
+                                    <strong><span class="counter" style="font-size: 46px;">38%</span></strong>
+                                </p>
+                                <p>of avoidable downtime was covered with recovery suggestions from DAQExpert</p>
+                            </div>
+                        </div>
+                   </div>
+                </div>
+            </div>
+
+		</div>
+
+
+        <hr class="featurette-divider">
+
+        <!-- Second Featurette -->
+        <div class="featurette" id="usage">
+            <img class="featurette-image img-square img-responsive pull-left" src="img/view-nm.png">
+            <h2 class="featurette-heading">How to use
+                <span class="text-muted">DAQ Expert</span>?
+            </h2>
+            <p class="lead">DAQ Expert provides <span class="text-muted">Notification tool</span>. It deliveres analysis results in the form <span class="badge">what's the problem</span> + <span class="badge">what's the best action to take</span> designed for 2 use cases:
+	    </p>
+		<ul class="lead">
+			<li>to be used in control room - as a single page view popping notifications in real time</li>
+			<li>to be used by DAQ Experts on the daily basis - as a notifications delivered via SMS/e-mails based on personal preferences</li>
+		</ul>
+        </div>
+
+        <hr class="featurette-divider">
+
+        <!-- Third Featurette -->
+        <div class="featurette" id="idea">
+            <img class="featurette-image img-square img-responsive pull-right" src="img/view-expert.png">
+            <h2 class="featurette-heading">How
+                <span class="text-muted">DAQ Expert</span> works?
+            </h2>
+            <p class="lead"><span class="text-muted">DAQ Expert</span> is analysing the snapshots of DAQ system using expert knowledge. The results can be browsed in visualization tool.</p>
+
+<a href="http://daq-expert.cms:8080/DAQExpert-1.1.10/" class="btn btn-info" role="button">Browse expert analysis</a></br><small>tunnel to CMS cluster necessary</small>
+        </div>
+
+        <hr class="featurette-divider">
+
+        <!-- Forth Featurette -->
+        <div class="featurette" id="contribute">
+            <img class="featurette-image img-square img-responsive pull-left" src="img/view-contribute.png">
+            <h2 class="featurette-heading">How can you contribute to
+                <span class="text-muted">DAQ Expert</span>?
+            </h2>
+            <p class="lead">The core is set of <span class="text-muted">Logic Modules</span>. Each of them represents one piece of expert knowledge. Add your own knowledge by extending a class and registering it to <span class="text-muted">DAQ Expert</span></p>
+<a href="contributing.html" class="btn btn-info" role="button">Step by step guide to contribute</a>
+
+        </div>
+
+
+
+
+        <!-- Footer -->
+        <footer>
+            <div class="row">
+                <div class="col-lg-12">
+                    <p>CERN, CMS, EP Department, DAQ CMS group</p>
+                </div>
+            </div>
+        </footer>
+
+    </div>
+    <!-- /.container -->
+
+    <!-- jQuery -->
+    <script src="js/jquery.js"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="js/bootstrap.min.js"></script>
+    <script> 
+	$(function(){
+		$("#navigation").load("navigation.html"); 
+	});
+    </script>
+
+</body>
+
+</html>
