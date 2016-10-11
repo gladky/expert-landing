@@ -3,21 +3,22 @@
 
 <head>
 
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="">
-    <meta name="author" content="Maciej Gladki (maciej.szymon.gladki@cern.ch)">
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="">
+<meta name="author"
+	content="Maciej Gladki (maciej.szymon.gladki@cern.ch)">
 
-    <title>DAQ Expert</title>
+<title>DAQ Expert</title>
 
-    <link href="css/bootstrap.min.css" rel="stylesheet">
+<link href="css/bootstrap.min.css" rel="stylesheet">
 
-    <link href="css/one-page-wonder.css" rel="stylesheet">
+<link href="css/one-page-wonder.css" rel="stylesheet">
 
-    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <!--[if lt IE 9]>
+<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+<!--[if lt IE 9]>
         <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
         <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
@@ -27,184 +28,250 @@
 
 <body>
 
-    
-    <div id="navigation"></div>
 
-    <!-- Full Width Image Header -->
-    <header class="header-image">
-        <div class="headline">
-            <div class="container">
-                <h2>Contributing</h2>
-            </div>
-        </div>
-    </header>
+	<div id="navigation"></div>
 
-    <!-- Page Content -->
-    <div class="container">
+	<!-- Full Width Image Header -->
+	<header class="header-image">
+		<div class="headline">
+			<div class="container">
+				<h2>Contributing</h2>
+			</div>
+		</div>
+	</header>
 
-
-
-        <!-- Page Heading -->
-        <div class="row">
-            <div class="col-lg-12">
-                <h1 class="page-header">Contribute to DAQExpert
-                    <small>step by step guide</small>
-                </h1>
-            </div>
-        </div>
-        <!-- /.row -->
+	<!-- Page Content -->
+	<div class="container">
 
 
 
-        <div class="row">
-            <div class="col-md-5">
-                
-
-<pre style="" class="default prettyprint prettyprinted"><code>$> git clone https://github.com/cmsdaq/DAQExpert.git
-$> git status</code></pre>
-
-
-            </div>
-            <div class="col-md-7">
-                <h3>Step 1 <small>Get DAQExpert from Github</small></h3>
-                <p>Checkout project source into your favorite IDE. In this guide Eclipse is used.</p>
-		<a class="btn btn-primary" href="https://eclipse.org/downloads/">Download Eclipse<span class="glyphicon glyphicon-chevron-right"></span></a>
-                <a class="btn btn-primary" href="https://github.com/cmsdaq/DAQExpert">Go to repo <span class="glyphicon glyphicon-chevron-right"></span></a>
-            </div>
-        </div>
-        <hr>
-
-
-        <div class="row">
-            <div class="col-md-5">
-                <a href="#">
-                    <img class="img-responsive" src="img/contributing/import.jpg" alt="">
-                </a>
-            </div>
-            <div class="col-md-7">
-                <h3>Step 2 <small>Import to IDE</small></h3>
-                <p>In Eclipse import project as Maven project: File<span class="glyphicon glyphicon-menu-right" aria-hidden="true"></span>Import<span class="glyphicon glyphicon-menu-right" aria-hidden="true"></span>Existing Maven Projects</p>
-            </div>
-        </div>
-        <hr>
+		<!-- Page Heading -->
+		<div class="row">
+			<div class="col-lg-12">
+				<h1 class="page-header">
+					Contribute to DAQExpert <small>step by step guide</small>
+				</h1>
+			</div>
+		</div>
+		<!-- /.row -->
 
 
 
-        <div class="row">
-            <div class="col-md-5">
-                <a href="#">
-                    <img class="img-responsive" src="img/contributing/tomcat.jpg" alt="">
-                </a>
-            </div>
-            <div class="col-md-7">
-                <h3>Step 3 <small>Get Tomcat</small></h3>
-                <p>DaqExpert is a web application. Download the latest Tomcat servlet container (Tomcat 8 recomended).</p>
-                <a class="btn btn-primary" href="http://tomcat.apache.org/download-80.cgi">Get Apache Tomcat 8<span class="glyphicon glyphicon-chevron-right"></span></a>
-            </div>
-        </div>
-	<hr>
+		<div class="row">
+			<div class="col-md-5">
+
+
+				<pre style="" class="default prettyprint prettyprinted"><code>$> git clone https://github.com/cmsdaq/DAQExpert.git
+$> git checkout experimental</code></pre>
+
+
+			</div>
+			<div class="col-md-7">
+				<h3>
+					Step 1 <small>Get DAQExpert from Github</small>
+				</h3>
+				<p>
+					Checkout project source into your favorite IDE. Switch to
+					<code class="inlinecode">experimental</code>
+					branch. In this guide Eclipse is used.
+				</p>
+				<a class="btn btn-primary" href="https://eclipse.org/downloads/">Download
+					Eclipse<span class="glyphicon glyphicon-chevron-right"></span>
+				</a> <a class="btn btn-primary"
+					href="https://github.com/cmsdaq/DAQExpert">Go to repo <span
+					class="glyphicon glyphicon-chevron-right"></span></a>
+			</div>
+		</div>
+		<hr>
+
+
+		<div class="row">
+			<div class="col-md-5">
+				<a href="#"> <img class="img-responsive"
+					src="img/contributing/import.jpg" alt="">
+				</a>
+			</div>
+			<div class="col-md-7">
+				<h3>
+					Step 2 <small>Import to IDE</small>
+				</h3>
+				<p>
+					In Eclipse import project as Maven project: File<span
+						class="glyphicon glyphicon-menu-right" aria-hidden="true"></span>Import<span
+						class="glyphicon glyphicon-menu-right" aria-hidden="true"></span>Existing
+					Maven Projects
+				</p>
+			</div>
+		</div>
+		<hr>
+
+
+
+		<div class="row">
+			<div class="col-md-5">
+				<a href="#"> <img class="img-responsive"
+					src="img/contributing/tomcat.jpg" alt="">
+				</a>
+			</div>
+			<div class="col-md-7">
+				<h3>
+					Step 3 <small>Get Tomcat</small>
+				</h3>
+				<p>DaqExpert is a web application. Download the latest Tomcat
+					servlet container (Tomcat 8 recomended).</p>
+				<a class="btn btn-primary"
+					href="http://tomcat.apache.org/download-80.cgi">Get Apache
+					Tomcat 8<span class="glyphicon glyphicon-chevron-right"></span>
+				</a>
+			</div>
+		</div>
+		<hr>
 
 
 
 
-        <div class="row">
-            <div class="col-md-5">
-                <a href="#">
-                    <img class="img-responsive" src="img/contributing/tomcat.jpg" alt="">
-                </a>
-            </div>
-            <div class="col-md-7">
-                <h3>Step 4 <small>Set up Tomcat in Eclipse</small></h3>
-		<p>Right click inside "Server" tab<span class="glyphicon glyphicon-menu-right" aria-hidden="true"></span>New<span class="glyphicon glyphicon-menu-right" aria-hidden="true"></span>Server<span class="glyphicon glyphicon-menu-right" aria-hidden="true"></span>Tomcat<span class="glyphicon glyphicon-menu-right" aria-hidden="true"></span>Choose the directory with your Tomcat download.</p>
-            </div>
-        </div>
-	<hr>
+		<div class="row">
+			<div class="col-md-5">
+				<a href="#"> <img class="img-responsive"
+					src="img/contributing/tomcat.jpg" alt="">
+				</a>
+			</div>
+			<div class="col-md-7">
+				<h3>
+					Step 4 <small>Set up Tomcat in Eclipse</small>
+				</h3>
+				<p>
+					Right click inside "Server" tab<span
+						class="glyphicon glyphicon-menu-right" aria-hidden="true"></span>New<span
+						class="glyphicon glyphicon-menu-right" aria-hidden="true"></span>Server<span
+						class="glyphicon glyphicon-menu-right" aria-hidden="true"></span>Tomcat<span
+						class="glyphicon glyphicon-menu-right" aria-hidden="true"></span>Choose
+					the directory with your Tomcat download.
+				</p>
+			</div>
+		</div>
+		<hr>
 
 
 
-        <div class="row ">
-            <div class="col-md-5">
-<pre style="" class="default prettyprint prettyprinted"><code>$> ssh cmsusr \
-"tar -c -C /daqexpert/snapshots/dev/ ./2016/10/5/8/" \
+		<div class="row ">
+			<div class="col-md-5">
+				<pre style="" class="default prettyprint prettyprinted"><code>$> ssh cmsusr \
+"tar -c -C /daqexpert/snapshots/pro/ ./2016/10/5/8/" \
 | tar -x -C /your-snapshots-destination/</code></pre>
 
-            </div>
-            <div class="col-md-7">
-                <h3>Step 5 <small>Get test snapshots</small></h3>
-                <p>DAQ snapshots are localized in <code class="inlinecode">/daqexpert/snapshots/pro/</code> in P5 cluster.</p>
-		<p>They are organized in a time-based directory structure (e.g. <code class="inlinecode">2016/9/31/21</code> - data for 2016-09-31 21:00 UTC, local time 2016-09-31 23:00 CET)</p>
-            </div>
-        </div>
-	<hr>
+			</div>
+			<div class="col-md-7">
+				<h3>
+					Step 5 <small>Get test snapshots</small>
+				</h3>
+				<p>
+					DAQ snapshots are localized in
+					<code class="inlinecode">/daqexpert/snapshots/pro/</code>
+					in P5 cluster.
+				</p>
+				<p>
+					They are organized in a time-based directory structure (e.g.
+					<code class="inlinecode">2016/9/31/21</code>
+					- data for 2016-09-31 21:00 UTC, local time 2016-09-31 23:00 CEST)
+				</p>
+			</div>
+		</div>
+		<hr>
 
 
 
 
 
-        <div class="row">
-            <div class="col-md-5">
+		<div class="row">
+			<div class="col-md-5">
 
-<pre style="" class="default prettyprint prettyprinted"><code>$> cd /your-project-dir/src/main/resources/
+				<pre style="" class="default prettyprint prettyprinted"><code>$> cd /your-project-dir/src/main/resources/
 $> vim config.properties</code></pre>
 
 
-<pre style="" class="default prettyprint prettyprinted"><code>snapshots=/your-snapshots-destination/</code></pre>
+				<pre style="" class="default prettyprint prettyprinted"><code>snapshots=/your-snapshots-destination/</code></pre>
 
-            </div>
-            <div class="col-md-7">
-                <h3>Step 6 <small>Configure</small></h4>
-                <p>There is example configuration file <code class="inlinecode">config.properties</code>. Specify your snapshots directory with <code class="inlinecode">snapshots</code> property.</p>
-                
-            </div>
-        </div>
-	<hr>
-
-
-
-        <div class="row">
-            <div class="col-md-5">
-                <a href="#">
-                    <img class="img-responsive" src="img/view-contribute.png" alt="">
-                </a>
-            </div>
-            <div class="col-md-7">
-                <h3>Step 7 <small>Contribute</small></h4>
-                <p>Improve DAQExpert logic by representing your knowledge as <code class="inlinecode">LogicModule</code>. Just extend <code class="inlinecode">ComplexCondition</code> class and override <code class="inlinecode">satisfied</code> method.</p>
-                
-            </div>
-        </div>
-	<hr>
+			</div>
+			<div class="col-md-7">
+				<h3>
+					Step 6 <small>Configure</small>
+					</h4>
+					<p>
+						There is example configuration file
+						<code class="inlinecode">config.properties</code>
+						. Specify your snapshots directory with
+						<code class="inlinecode">snapshots</code>
+						property.
+					</p>
+			</div>
+		</div>
+		<hr>
 
 
 
+		<div class="row">
+			<div class="col-md-5">
+				<a href="#"> <img class="img-responsive"
+					src="img/contributing/view-sketch.png" alt="">
+				</a>
+			</div>
+			<div class="col-md-7">
+				<h3>
+					Step 7 <small>Contribute</small>
+					</h4>
+					<p>
+						Write your <span class="text-primary">Logic Module (<abbr title="Logic Module">LM</abbr>)</span>
+						. You can start by duplicating the sketch  
+						<code class="inlinecode">SimpleSketch</code>*
+					</p>
+					<p>Please keep in mind:
+					<ul>
+					<li><b>Don't repeat yourself</b> - reuse** results of <abbr title="Logic Modules">LMs</abbr> for better performance and maintainability</li>
+					<li><b>One to one</b> - focus on one apect/problem in single <abbr title="Logic Module">LM</abbr>, avoid multi-purpose <abbr title="Logic Modules">LMs</abbr></li>
+					</ul>
+					</p>
+					<hr>
+					<p> * located in <code class="inlinecode">rcms.utilities.daqexpert.reasoning.logic.experimental</code> package</p>
+					<p>
+					** find many useful <abbr title="Logic Modules">LMs</abbr> in <code class="inlinecode">rcms.utilities.daqexpert.reasoning.logic.basic</code> 
+					package, (e.g. <code class="inlinecode">NoRate</code>, <code class="inlinecode">RunOngoing</code>, <code class="inlinecode">Downtime</code>)
+					</p>
+					
+			</div>
+		</div>
+		<hr>
 
 
 
-        <!-- Footer -->
-        <footer>
-            <div class="row">
-                <div class="col-lg-12">
-                    <p>CERN, CMS, EP Department, DAQ CMS group</p>
-                </div>
-            </div>
-        </footer>
+
+
+
+		<!-- Footer -->
+		<footer>
+			<div class="row">
+				<div class="col-lg-12">
+					<p>CERN, CMS, EP Department, DAQ CMS group</p>
+				</div>
+			</div>
+		</footer>
 
 
 
 
-    </div>
-    <!-- /.container -->
+	</div>
+	<!-- /.container -->
 
-    <!-- jQuery -->
-    <script src="js/jquery.js"></script>
+	<!-- jQuery -->
+	<script src="js/jquery.js"></script>
 
-    <!-- Bootstrap Core JavaScript -->
-    <script src="js/bootstrap.min.js"></script>
-    <script> 
-	$(function(){
-		$("#navigation").load("navigation.html"); 
-	});
-    </script>
+	<!-- Bootstrap Core JavaScript -->
+	<script src="js/bootstrap.min.js"></script>
+	<script>
+		$(function() {
+			$("#navigation").load("navigation.html");
+		});
+	</script>
 
 </body>
 
