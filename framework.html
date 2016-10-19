@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="">
+<meta name="author"
+	content="Maciej Gladki (maciej.szymon.gladki@cern.ch)">
+<title>DAQ Expert</title>
+<link href="css/bootstrap.min.css" rel="stylesheet">
+<link href="css/one-page-wonder.css" rel="stylesheet">
+<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+<!--[if lt IE 9]>
+	        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+	        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+	    <![endif]-->
+</head>
+<body>
+	<div id="navigation"></div>
+
+	<!-- Full Width Image Header -->
+	<header class="header-image">
+		<div class="headline">
+			<div class="container">
+				<h2>Framework</h2>
+			</div>
+		</div>
+	</header>
+
+	<!-- Page Content -->
+	<div class="container">
+
+
+
+
+
+
+		<!-- Page Heading -->
+		<div class="row">
+			<div class="col-lg-12">
+				<h1 class="page-header">
+					Introduction to <span class="text-muted">DAQExpert</span> framework
+				</h1>
+			</div>
+		</div>
+		<!-- /.row -->
+
+
+		<div class="featurette">
+			<img class="featurette-image img-square img-responsive pull-right"
+				src="img/contributing/logo500.png">
+			<h2 class="featurette-heading">Why introduce the framework?</h2>
+
+			<p class="lead">We have introduced the framework so that it's
+				easy to extend DE knowledge. We used Java as a language so that:</p>
+
+			<ul class="lead">
+				<li>Experts may represent their knowledge without learning new
+					rule-based language</li>
+
+			</ul>
+
+		</div>
+
+		<div class="featurette">
+			<img class="featurette-image img-square img-responsive pull-left"
+				src="img/contributing/4lms.png">
+			<h2 class="featurette-heading">
+				What's <span class="text-muted">DAQ Expert</span> framework?
+			</h2>
+
+			<p class="lead">Elementary part of expert knowledge is Logic
+				Module (abbreviated LM) is a piece of knowledge focusing on one
+				aspect. E.g.:</p>
+
+			<ul class="">
+				<li><span class="label label-pill label-primary">LHC state LM</span> - identifies stetes of LHC</li>
+				<li><span class="label label-pill label-info">NoRate LM</span> -  identifies when there is no
+					rate in DAQ system</li>
+				<li><span class="label label-pill label-warning">Downtime LM</span> - indicates downtime in
+					CMS DAQ</li>
+				<li><span class="label label-pill label-danger">FED backpressured LM</span> a.k.a FC5 - identifies failure case </li>
+			</ul>
+
+		</div>
+		<p>Note that each Logic Module should focus on one aspect, and one
+			aspect only. Results of a Logic Modules can be used in other Logic
+			Modules so that there is no duplication of code. It is recommended to
+			reuse results from Logic Modules for better performance.</p>
+
+
+
+
+		<div id="footer"></div>
+	</div>
+	<script src="js/jquery.js"></script>
+	<script src="js/bootstrap.min.js"></script>
+	<script>
+		$(function() {
+			$("#navigation").load("navigation.html");
+			$("#footer").load("footer.html");
+		});
+	</script>
+</body>
+</html>

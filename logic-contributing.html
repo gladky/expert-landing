@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="">
+<meta name="author"
+	content="Maciej Gladki (maciej.szymon.gladki@cern.ch)">
+<title>DAQ Expert</title>
+<link href="css/bootstrap.min.css" rel="stylesheet">
+<link href="css/one-page-wonder.css" rel="stylesheet">
+<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+<!--[if lt IE 9]>
+	        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+	        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+	    <![endif]-->
+</head>
+<body>
+
+
+	<div id="navigation"></div>
+
+	<!-- Full Width Image Header -->
+	<header class="header-image">
+		<div class="headline">
+			<div class="container">
+				<h2>Contributing</h2>
+			</div>
+		</div>
+	</header>
+
+
+
+	<!-- Page Content -->
+	<div class="container">
+
+
+		<div class="alert alert-warning" role="alert">
+			<button type="button" class="close" data-dismiss="alert">×</button>
+			<strong>Beta functionality</strong> You can find this functionality
+			on <a href="http://daq-expert-dev.cms:8080/DAQExpert">dev
+				instance</a>. We will deploy it in production soon.
+		</div>
+		<!-- Page Heading -->
+		<div class="row">
+			<div class="col-lg-12">
+				<h1 class="page-header">
+					Contribute to DAQExpert <small>step by step guide</small>
+				</h1>
+			</div>
+		</div>
+
+		<p>Express what LM is and what it does.</p>
+
+		<hr>
+
+		<!-- /.row -->
+		<div class="row">
+			<div class="col-md-5">
+				<pre style="" class="default prettyprint prettyprinted"><code>$> ssh -N cmsusr</code></pre>
+			</div>
+			<div class="col-md-7">
+				<h3>
+					Step 1 <small>Set up the tunnel</small>
+				</h3>
+				<p>DAQExpert is available only in CMS cluster network.</p>
+			</div>
+		</div>
+		<hr>
+
+		<div class="row">
+			<div class="col-md-5">
+				<a href="#"> <img class="img-responsive"
+					src="img/logic-guide/experimental-run-subtitles.gif" alt="">
+				</a>
+			</div>
+			<div class="col-md-7">
+				<h3>
+					Step 2<small> Run some sketch LMs</small>
+				</h3>
+				<p>To run experimental Logic Module:
+				<ol>
+					<li>Switch to Experimental mode</li>
+					<li>Click Run Experimental</li>
+					<li>Choose LM from dropdown menu</li>
+					<li>Click Run</li>
+				</ol>
+				Results of your Experimental LM and other LMs will be updated.
+				</p>
+				<p>Note that you can compare the results by switching between
+					Experimental and Extended modes.</p>
+
+			</div>
+		</div>
+
+		<hr>
+		<div class="row">
+			<div class="col-md-5">
+				<pre style="" class="default prettyprint prettyprinted"><code>$> cd /daqexpert/experimental/pro/
+$> cp SketchLogicModule.java MyLogicModule.java</code></pre>
+				<a href="#"> <img class="img-responsive"
+					src="img/logic-guide/dropdown.png" alt="">
+				</a>
+			</div>
+			<div class="col-md-7">
+				<h3>
+					Step 3<small> Make your own experimental LM</small>
+					</h4>
+					<p>The best way to start is to copy the empty sketch LM.</p>
+
+					<p>Your file will be immediately available to run in the
+						dropdown list from last step.</p>
+			</div>
+		</div>
+
+		<hr>
+		<div class="row">
+			<div class="col-md-5">
+				<a href="#"> <img class="img-responsive"
+					src="img/sketch-in-editor.png" alt="">
+				</a>
+			</div>
+			<div class="col-md-7">
+				<h3>
+					Step 4 <small> Edit your logic module</small>
+					</h4>
+					<p>Now use your favorite editor to make this Logic Module
+						useful.</p>
+					<p>Express your expert knowledge by following the TODO comments
+						from sketch file.
+					<ol>
+						<li>Set up basic information</li>
+						<li>Implement your condition</li>
+					</ol>
+					</p>
+					<hr>
+					<p>Learn about DAQ snapshot structure</p>
+
+					<a class="btn btn-primary" href="framework.html">See class
+						diagram<span class="glyphicon glyphicon-chevron-right"></span>
+					</a> <a class="btn btn-default" href="framework.html">See class
+						code<span class="glyphicon glyphicon-chevron-right"></span>
+					</a> </br>
+					<p>
+						Or <a href="framework.html"> learn more about the framework</a>
+					</p>
+			</div>
+		</div>
+		<hr>
+		<div class="row">
+			<div class="col-md-5">
+				<a href="#"> <img class="img-responsive"
+					src="img/logic-guide/experimental-run.gif" alt="">
+				</a>
+			</div>
+			<div class="col-md-7">
+				<h3>
+					Step 5<small> Verify the results</small>
+					</h4>
+					<p>Run your LM as you did in step 2 (except choose your LM from
+						dropdown menu)</p>
+			</div>
+		</div>
+
+		<hr>
+		<div id="footer"></div>
+	</div>
+	<script src="js/jquery.js"></script>
+	<script src="js/bootstrap.min.js"></script>
+	<script>
+		$(function() {
+			$("#navigation").load("navigation.html");
+			$("#footer").load("footer.html");
+		});
+	</script>
+</body>
+</html>
