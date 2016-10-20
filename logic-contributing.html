@@ -59,7 +59,9 @@
 		<!-- /.row -->
 		<div class="row">
 			<div class="col-md-5">
-				<pre style="" class="default prettyprint prettyprinted"><code>$> ssh -N cmsusr</code></pre>
+				<pre style="" class="default prettyprint prettyprinted">
+					<code>$> ssh -N cmsusr</code>
+				</pre>
 			</div>
 			<div class="col-md-7">
 				<h3>
@@ -98,8 +100,10 @@
 		<hr>
 		<div class="row">
 			<div class="col-md-5">
-				<pre style="" class="default prettyprint prettyprinted"><code>$> cd /daqexpert/experimental/pro/
-$> cp SketchLogicModule.java MyLogicModule.java</code></pre>
+				<pre style="" class="default prettyprint prettyprinted">
+					<code>$> cd /daqexpert/experimental/pro/
+$> cp SketchLogicModule.java MyLogicModule.java</code>
+				</pre>
 				<a href="#"> <img class="img-responsive"
 					src="img/logic-guide/dropdown.png" alt="">
 				</a>
@@ -138,14 +142,17 @@ $> cp SketchLogicModule.java MyLogicModule.java</code></pre>
 					<hr>
 					<p>Learn about DAQ snapshot structure</p>
 
-					<a class="btn btn-primary" href="framework.html">See class
-						diagram<span class="glyphicon glyphicon-chevron-right"></span>
-					</a> <a class="btn btn-default" href="framework.html">See class
-						code<span class="glyphicon glyphicon-chevron-right"></span>
+					<button type="button" class="btn btn-primary"
+						data-toggle="modal" data-target="#myModal">See class diagram <span class="glyphicon glyphicon-modal-window"></span>
+					</button>
+		
+					 <a class="btn btn-default" target="_blank"
+						href="https://github.com/cmsdaq/DAQAggregator/blob/master/src/main/java/rcms/utilities/daqaggregator/data">See
+						class code<span class="glyphicon glyphicon-chevron-right"></span>
 					</a> </br>
-					<p>
+					<!-- <p>
 						Or <a href="framework.html"> learn more about the framework</a>
-					</p>
+					</p> -->
 			</div>
 		</div>
 		<hr>
@@ -163,6 +170,33 @@ $> cp SketchLogicModule.java MyLogicModule.java</code></pre>
 						dropdown menu)</p>
 			</div>
 		</div>
+
+
+		
+
+		<!-- Modal -->
+		<div class="modal fade" id="myModal" tabindex="-1" role="dialog"
+			aria-labelledby="myModalLabel">
+			<div class="modal-dialog modal-lg" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal"
+							aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+						<h4 class="modal-title" id="myModalLabel">Modal title</h4>
+					</div>
+					<div class="modal-body">
+ 					<img src="img/class-diagram.png" class="img-responsive" alt="">
+					</div>
+					<div class="modal-footer">
+						<a type="button" target="_blank" class="btn btn-default" href="download/class-diagram.pdf" >Get printable <span class="glyphicon glyphicon-print"></span></a>
+						<a type="button" target="_blank" class="btn btn-primary" href="https://github.com/cmsdaq/DAQAggregator/blob/master/src/main/java/rcms/utilities/daqaggregator/data">Go to repo<span class="glyphicon glyphicon-chevron-right"></span></a>
+					</div>
+				</div>
+			</div>
+		</div>
+
 
 		<hr>
 		<div id="footer"></div>
