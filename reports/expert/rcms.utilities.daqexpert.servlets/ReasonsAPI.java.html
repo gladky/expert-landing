@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>ReasonsAPI.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DAQExpert</a> &gt; <a href="index.source.html" class="el_package">rcms.utilities.daqexpert.servlets</a> &gt; <span class="el_source">ReasonsAPI.java</span></div><h1>ReasonsAPI.java</h1><pre class="source lang-java linenums">package rcms.utilities.daqexpert.servlets;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.xml.bind.DatatypeConverter;
+
+import org.apache.log4j.Logger;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import rcms.utilities.daqexpert.Application;
+import rcms.utilities.daqexpert.persistence.Condition;
+import rcms.utilities.daqexpert.reasoning.base.enums.ConditionGroup;
+
+<span class="nc" id="L25">public class ReasonsAPI extends HttpServlet {</span>
+	private static final long serialVersionUID = 1L;
+
+<span class="nc" id="L28">	private static final Logger logger = Logger.getLogger(ReasonsAPI.class);</span>
+
+<span class="nc" id="L30">	int maxDuration = 1000000;</span>
+<span class="nc" id="L31">	ObjectMapper objectMapper = new ObjectMapper();</span>
+
+	@Override
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+
+<span class="nc" id="L37">		String experimentalKey = request.getParameter(&quot;mode&quot;);</span>
+
+<span class="nc" id="L39">		Date fakeEnd = Application.get().getDataManager().getLastUpdate();</span>
+
+		/* requested range dates */
+<span class="nc" id="L42">		String startRange = request.getParameter(&quot;start&quot;);</span>
+<span class="nc" id="L43">		String endRange = request.getParameter(&quot;end&quot;);</span>
+<span class="nc" id="L44">		logger.debug(&quot;Getting reasons from : &quot; + startRange + &quot; to &quot; + endRange);</span>
+
+		/* parsed range dates */
+
+<span class="nc" id="L48">		Date startDate = DatatypeConverter.parseDateTime(startRange).getTime();</span>
+<span class="nc" id="L49">		Date endDate = DatatypeConverter.parseDateTime(endRange).getTime();</span>
+<span class="nc" id="L50">		logger.trace(&quot;Parsed range from : &quot; + startDate + &quot; to &quot; + endDate);</span>
+<span class="nc" id="L51">		Map&lt;String, Object&gt; result = new HashMap&lt;&gt;();</span>
+
+<span class="nc" id="L53">		List&lt;Condition&gt; entryList = new ArrayList&lt;&gt;();</span>
+
+<span class="nc" id="L55">		Map&lt;String, Long&gt; durations = new HashMap&lt;&gt;();</span>
+
+<span class="nc" id="L57">		Collection&lt;Condition&gt; allElements = null;</span>
+<span class="nc bnc" id="L58" title="All 4 branches missed.">		if (experimentalKey == null || experimentalKey.equals(&quot;standard&quot;)) {</span>
+<span class="nc" id="L59">			logger.debug(&quot;API runs in standard mode&quot;);</span>
+<span class="nc" id="L60">			allElements = Application.get().getPersistenceManager().getEntriesWithMask(startDate, endDate);</span>
+<span class="nc" id="L61">		} else {</span>
+<span class="nc" id="L62">			logger.debug(&quot;API runs in experimental mode: &quot; + experimentalKey);</span>
+<span class="nc" id="L63">			allElements = Application.get().getDataManager().experimental.get(experimentalKey);</span>
+		}
+
+<span class="nc bnc" id="L66" title="All 2 branches missed.">		if (allElements != null) {</span>
+
+<span class="nc" id="L68">			logger.debug(&quot;There are &quot; + allElements + &quot; in Database&quot;);</span>
+
+<span class="nc bnc" id="L70" title="All 2 branches missed.">			for (Condition entry : allElements) {</span>
+
+				try {
+
+					/** durations */
+					/*if ((entry.getGroup() == ConditionGroup.LHC_BEAM.getCode() &amp;&amp; entry.getTitle().equals(&quot;STABLE BEAMS&quot;))
+							|| entry.getGroup() == ConditionGroup.DOWNTIME.getCode()
+							|| entry.getGroup() == ConditionGroup.AVOIDABLE_DOWNTIME.getCode()) {
+						long current = 0;
+						if (durations.containsKey(entry.getGroup())) {
+							current = durations.get(entry.getGroup());
+						}
+						durations.put(entry.getGroup(), current + entry.getDuration());
+					}*/
+
+<span class="nc" id="L85">					entryList.add(entry);</span>
+
+<span class="nc" id="L87">				} catch (NullPointerException e) {</span>
+					// it means that some of reasons are being builed by
+					// event
+					// builder, just dont show them yet, they will be
+					// ready
+					// on
+					// next
+					// request
+				}
+
+			}
+<span class="nc" id="L98">		} else {</span>
+<span class="nc" id="L99">			logger.warn(&quot;There is no data for reasons API. It will return nothing.&quot;);</span>
+		}
+
+		/*
+		 * Remove these headers in production (only for accessing from external
+		 * scripts)
+		 */
+<span class="nc" id="L106">		response.addHeader(&quot;Access-Control-Allow-Origin&quot;, &quot;*&quot;);</span>
+<span class="nc" id="L107">		response.addHeader(&quot;Access-Control-Allow-Methods&quot;, &quot;GET&quot;);</span>
+<span class="nc" id="L108">		response.addHeader(&quot;Access-Control-Allow-Headers&quot;,</span>
+<span class="nc" id="L109">				&quot;X-PINGOTHER, Origin, X-Requested-With, Content-Type, Accept&quot;);</span>
+<span class="nc" id="L110">		response.addHeader(&quot;Access-Control-Max-Age&quot;, &quot;1728000&quot;);</span>
+
+		/* necessary headers */
+<span class="nc" id="L113">		response.setContentType(&quot;application/json&quot;);</span>
+<span class="nc" id="L114">		response.setCharacterEncoding(&quot;UTF-8&quot;);</span>
+
+<span class="nc" id="L116">		result.put(&quot;entries&quot;, entryList);</span>
+<span class="nc" id="L117">		result.put(&quot;durations&quot;, durations);</span>
+<span class="nc" id="L118">		result.put(&quot;fake-end&quot;, fakeEnd);</span>
+		/* return the response */
+<span class="nc" id="L120">		String json = objectMapper.writeValueAsString(result);</span>
+<span class="nc" id="L121">		logger.debug(&quot;Response JSON: &quot; + json);</span>
+<span class="nc" id="L122">		response.getWriter().write(json);</span>
+
+<span class="nc" id="L124">	}</span>
+
+	@Override
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+<span class="nc" id="L129">		doGet(request, response);</span>
+<span class="nc" id="L130">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

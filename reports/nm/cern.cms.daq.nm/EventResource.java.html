@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>EventResource.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Notification Manager</a> &gt; <a href="index.source.html" class="el_package">cern.cms.daq.nm</a> &gt; <span class="el_source">EventResource.java</span></div><h1>EventResource.java</h1><pre class="source lang-java linenums">package cern.cms.daq.nm;
+
+import java.util.Date;
+
+import javax.persistence.Entity;
+import javax.validation.constraints.NotNull;
+
+import org.apache.log4j.Logger;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+
+import cern.cms.daq.nm.persistence.Event;
+import cern.cms.daq.nm.persistence.EventSenderType;
+import cern.cms.daq.nm.persistence.EventStatus;
+import cern.cms.daq.nm.persistence.EventType;
+import cern.cms.daq.nm.persistence.LogicModuleView;
+import cern.cms.daq.nm.sound.Priority;
+import cern.cms.daq.nm.sound.Sound;
+
+@Entity
+<span class="fc" id="L21">public class EventResource {</span>
+
+<span class="fc" id="L23">	private static final Logger logger = Logger.getLogger(EventResource.class);</span>
+
+	@NotNull
+	private String message;
+
+	@NotNull
+	private String title;
+
+	@NotNull
+	private EventType eventType;
+
+	@NotNull
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = &quot;yyyy-MM-dd'T'HH:mm:ss&quot;, timezone = &quot;CET&quot;)
+	private Date date;
+
+	@NotNull
+	private EventSenderType eventSenderType;
+
+	@NotNull
+	private String sender;
+
+	private String textToSpeech;
+
+	private String sound;
+
+	private Long conditionId;
+
+	private Priority priority;
+
+	private LogicModuleView logicModule;
+
+	public Event asEventOccurrence() {
+
+<span class="fc" id="L56">		Event event = new Event();</span>
+
+<span class="fc" id="L58">		String messageTrimmed = this.message;</span>
+<span class="fc" id="L59">		int MAX_CHARS_FOR_DESCRIPTION = 4000;</span>
+<span class="pc bpc" id="L60" title="3 of 4 branches missed.">		if (this.message != null &amp;&amp; this.message.length() &gt; MAX_CHARS_FOR_DESCRIPTION) {</span>
+<span class="nc" id="L61">			String messageTrimText = &quot;... (&quot; + (this.message.length() - MAX_CHARS_FOR_DESCRIPTION) + &quot; trimmed)&quot;;</span>
+<span class="nc" id="L62">			logger.info(&quot;Message too long &quot; + this.message.length() + &quot; characters, shortening to &quot;</span>
+<span class="nc" id="L63">					+ MAX_CHARS_FOR_DESCRIPTION);</span>
+<span class="nc" id="L64">			messageTrimmed = this.message.substring(0, MAX_CHARS_FOR_DESCRIPTION - messageTrimText.length())</span>
+<span class="nc" id="L65">					+ messageTrimText;</span>
+		}
+
+<span class="fc" id="L68">		String titleTrimmed = this.title;</span>
+<span class="fc" id="L69">		int MAX_CHARS_FOR_TITLE = 40;</span>
+<span class="pc bpc" id="L70" title="3 of 4 branches missed.">		if (this.title != null &amp;&amp; this.title.length() &gt; MAX_CHARS_FOR_TITLE) {</span>
+<span class="nc" id="L71">			String titleTrimText = &quot;...&quot;;</span>
+<span class="nc" id="L72">			logger.info(&quot;Title too long &quot; + this.title.length() + &quot; characters, shortening to &quot; + MAX_CHARS_FOR_TITLE);</span>
+<span class="nc" id="L73">			titleTrimmed = this.title.substring(0, MAX_CHARS_FOR_TITLE - titleTrimText.length()) + titleTrimText;</span>
+		}
+
+<span class="fc" id="L76">		String senderTrimmed = this.sender;</span>
+<span class="pc bpc" id="L77" title="2 of 4 branches missed.">		if (this.sender != null &amp;&amp; this.sender.length() &gt; 200) {</span>
+<span class="nc" id="L78">			senderTrimmed = this.sender.substring(0, 200);</span>
+		}
+
+<span class="fc" id="L81">		String textToSpeechTrimmed = this.textToSpeech;</span>
+<span class="pc bpc" id="L82" title="3 of 4 branches missed.">		if (this.textToSpeech != null &amp;&amp; this.textToSpeech.length() &gt; 200) {</span>
+<span class="nc" id="L83">			textToSpeechTrimmed = this.textToSpeech.substring(0, 200);</span>
+		}
+
+<span class="fc" id="L86">		event.setMessage(messageTrimmed);</span>
+<span class="fc" id="L87">		event.setTitle(titleTrimmed);</span>
+<span class="fc" id="L88">		event.setSender(senderTrimmed);</span>
+<span class="fc" id="L89">		event.setTextToSpeech(textToSpeechTrimmed);</span>
+
+<span class="fc" id="L91">		event.setStatus(EventStatus.Received);</span>
+<span class="fc" id="L92">		event.setDate(this.date);</span>
+
+<span class="pc bpc" id="L94" title="1 of 2 branches missed.">		if (sound != null) {</span>
+<span class="nc" id="L95">			event.setSound(Sound.getByFilename(sound));</span>
+<span class="nc bnc" id="L96" title="All 2 branches missed.">			if (event.getSound() == Sound.OTHER) {</span>
+<span class="nc" id="L97">				event.setCustomSound(sound);</span>
+			}
+		}
+<span class="fc" id="L100">		event.setEventSenderType(eventSenderType);</span>
+<span class="fc" id="L101">		event.setEventType(eventType);</span>
+<span class="fc" id="L102">		event.setLogicModule(logicModule);</span>
+<span class="fc" id="L103">		event.setPriority(priority);</span>
+<span class="fc" id="L104">		return event;</span>
+	}
+
+	public Date getDate() {
+<span class="nc" id="L108">		return date;</span>
+	}
+
+	public void setDate(Date date) {
+<span class="nc" id="L112">		this.date = date;</span>
+<span class="nc" id="L113">	}</span>
+
+	public String getMessage() {
+<span class="nc" id="L116">		return message;</span>
+	}
+
+	public void setMessage(String message) {
+<span class="nc" id="L120">		this.message = message;</span>
+<span class="nc" id="L121">	}</span>
+
+	public String getTitle() {
+<span class="nc" id="L124">		return title;</span>
+	}
+
+	public void setTitle(String title) {
+<span class="nc" id="L128">		this.title = title;</span>
+<span class="nc" id="L129">	}</span>
+
+	public String getSender() {
+<span class="nc" id="L132">		return sender;</span>
+	}
+
+	public void setSender(String sender) {
+<span class="fc" id="L136">		this.sender = sender;</span>
+<span class="fc" id="L137">	}</span>
+
+	public String getTextToSpeech() {
+<span class="nc" id="L140">		return textToSpeech;</span>
+	}
+
+	public void setTextToSpeech(String textToSpeech) {
+<span class="nc" id="L144">		this.textToSpeech = textToSpeech;</span>
+<span class="nc" id="L145">	}</span>
+
+	public EventType getEventType() {
+<span class="nc" id="L148">		return eventType;</span>
+	}
+
+	public void setEventType(EventType eventType) {
+<span class="nc" id="L152">		this.eventType = eventType;</span>
+<span class="nc" id="L153">	}</span>
+
+	public EventSenderType getEventSenderType() {
+<span class="nc" id="L156">		return eventSenderType;</span>
+	}
+
+	public void setEventSenderType(EventSenderType eventSenderType) {
+<span class="nc" id="L160">		this.eventSenderType = eventSenderType;</span>
+<span class="nc" id="L161">	}</span>
+
+	public Long getConditionId() {
+<span class="nc" id="L164">		return conditionId;</span>
+	}
+
+	public void setConditionId(Long conditionId) {
+<span class="nc" id="L168">		this.conditionId = conditionId;</span>
+<span class="nc" id="L169">	}</span>
+
+	public LogicModuleView getLogicModule() {
+<span class="nc" id="L172">		return logicModule;</span>
+	}
+
+	public void setLogicModule(LogicModuleView logicModule) {
+<span class="nc" id="L176">		this.logicModule = logicModule;</span>
+<span class="nc" id="L177">	}</span>
+
+	public String getSound() {
+<span class="nc" id="L180">		return sound;</span>
+	}
+
+	public void setSound(String sound) {
+<span class="nc" id="L184">		this.sound = sound;</span>
+<span class="nc" id="L185">	}</span>
+
+	public Priority getPriority() {
+<span class="nc" id="L188">		return priority;</span>
+	}
+
+	public void setPriority(Priority priority) {
+<span class="nc" id="L192">		this.priority = priority;</span>
+<span class="nc" id="L193">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

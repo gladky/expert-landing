@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>EventSessionHandler.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Notification Manager</a> &gt; <a href="index.source.html" class="el_package">cern.cms.daq.nm.websocket</a> &gt; <span class="el_source">EventSessionHandler.java</span></div><h1>EventSessionHandler.java</h1><pre class="source lang-java linenums">package cern.cms.daq.nm.websocket;
+
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.json.JsonObject;
+import javax.json.spi.JsonProvider;
+import javax.websocket.Session;
+
+import org.apache.log4j.Logger;
+
+import cern.cms.daq.nm.persistence.Event;
+
+public class EventSessionHandler {
+
+<span class="fc" id="L20">	private static final Logger logger = Logger.getLogger(EventSessionHandler.class);</span>
+
+<span class="fc" id="L22">	private final Set&lt;Session&gt; sessions = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L23">	private final List&lt;Event&gt; events = new ArrayList&lt;&gt;();</span>
+
+<span class="fc" id="L25">	SimpleDateFormat dateFormat = new SimpleDateFormat(&quot;yyyy-MM-dd HH:mm:ss z&quot;);</span>
+
+<span class="fc" id="L27">	public EventSessionHandler() {</span>
+<span class="fc" id="L28">		final EventSessionHandler handler = this;</span>
+		/*
+		 * (new Thread() { public void run() { Random generator = new Random();
+		 * for (int i = 0; i &lt; 100; i++) {
+		 * 
+		 * if (events.size() &gt;= 10) { removeEvent(events.iterator().next()); }
+		 * 
+		 * try { int sleepTime = generator.nextInt(5000) + 100;
+		 * Thread.sleep(sleepTime); } catch (InterruptedException e) {
+		 * e.printStackTrace(); } Event event = new Event(); event.setId((long)
+		 * i); event.setTitle(&quot;EVENT &quot; + i); event.setDate(new Date());
+		 * event.setMessage(&quot;Event &quot; + i); event.setTextToSpeech(
+		 * &quot;EXPERT Event: On&quot;); handler.addEvent(event);
+		 * 
+		 * } } }).start();
+		 */
+<span class="fc" id="L44">	}</span>
+
+	public void addSession(Session session) {
+<span class="nc" id="L47">		sessions.add(session);</span>
+<span class="nc bnc" id="L48" title="All 2 branches missed.">		for (Event event : events) {</span>
+<span class="nc" id="L49">			JsonObject addMessage = createAddMessage(event);</span>
+<span class="nc" id="L50">			sendToSession(session, addMessage);</span>
+		}
+<span class="nc" id="L52">	}</span>
+
+	public void removeSession(Session session) {
+<span class="nc" id="L55">		sessions.remove(session);</span>
+<span class="nc" id="L56">	}</span>
+
+	public List&lt;Event&gt; getEvents() {
+<span class="nc" id="L59">		return new ArrayList&lt;&gt;(events);</span>
+	}
+
+	public void addEvent(Event event) {
+
+<span class="nc bnc" id="L64" title="All 2 branches missed.">		if (events.size() &gt;= 10) {</span>
+<span class="nc" id="L65">			removeEvent(events.iterator().next());</span>
+		}
+<span class="nc" id="L67">		events.add(event);</span>
+<span class="nc" id="L68">		JsonObject addMessage = createAddMessage(event);</span>
+<span class="nc" id="L69">		sendToAllConnectedSessions(addMessage);</span>
+<span class="nc" id="L70">	}</span>
+
+	public void removeEvent(Event event) {
+<span class="nc bnc" id="L73" title="All 2 branches missed.">		if (event != null) {</span>
+<span class="nc" id="L74">			events.remove(event);</span>
+<span class="nc" id="L75">			JsonProvider provider = JsonProvider.provider();</span>
+<span class="nc" id="L76">			JsonObject removeMessage = provider.createObjectBuilder().add(&quot;action&quot;, &quot;remove&quot;).add(&quot;id&quot;, event.getId())</span>
+<span class="nc" id="L77">					.build();</span>
+<span class="nc" id="L78">			sendToAllConnectedSessions(removeMessage);</span>
+		}
+<span class="nc" id="L80">	}</span>
+
+	private JsonObject createAddMessage(Event event) {
+<span class="nc" id="L83">		JsonProvider provider = JsonProvider.provider();</span>
+<span class="nc bnc" id="L84" title="All 2 branches missed.">		logger.debug(&quot;is provider null? &quot; + provider == null);</span>
+<span class="nc" id="L85">		logger.debug(&quot;Creating message for event: &quot; + event);</span>
+
+<span class="nc bnc" id="L87" title="All 2 branches missed.">		String tts = event.getTextToSpeech() != null ? event.getTextToSpeech() : &quot;&quot;;</span>
+<span class="nc bnc" id="L88" title="All 2 branches missed.">		String message = event.getMessage() != null ? event.getMessage() : &quot;&quot;;</span>
+<span class="nc bnc" id="L89" title="All 2 branches missed.">		String title = event.getTitle() != null ? event.getTitle() : &quot;&quot;;</span>
+
+<span class="nc bnc" id="L91" title="All 2 branches missed.">		String soundPlayed = event.getSound() != null ? event.getSound().getDisplayName() : &quot;&quot;;</span>
+
+<span class="nc" id="L93">		JsonObject addMessage = provider.createObjectBuilder().add(&quot;action&quot;, &quot;add&quot;).add(&quot;id&quot;, event.getId())</span>
+<span class="nc" id="L94">				.add(&quot;name&quot;, title).add(&quot;type&quot;, dateFormat.format(event.getDate())).add(&quot;tts&quot;, tts)</span>
+<span class="nc" id="L95">				.add(&quot;sound&quot;, soundPlayed).add(&quot;description&quot;, message).build();</span>
+
+<span class="nc" id="L97">		logger.debug(&quot;Created message for event: &quot; + addMessage);</span>
+<span class="nc" id="L98">		return addMessage;</span>
+	}
+
+	private void sendToAllConnectedSessions(JsonObject message) {
+<span class="nc bnc" id="L102" title="All 2 branches missed.">		for (Session session : sessions) {</span>
+<span class="nc" id="L103">			sendToSession(session, message);</span>
+		}
+<span class="nc" id="L105">	}</span>
+
+	private void sendToSession(Session session, JsonObject message) {
+		try {
+<span class="nc" id="L109">			session.getBasicRemote().sendText(message.toString());</span>
+<span class="nc" id="L110">		} catch (IOException ex) {</span>
+<span class="nc" id="L111">			ex.printStackTrace();</span>
+<span class="nc" id="L112">			sessions.remove(session);</span>
+<span class="nc" id="L113">			logger.error(ex);</span>
+		}
+<span class="nc" id="L115">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

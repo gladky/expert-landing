@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>SoundSelector.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Notification Manager</a> &gt; <a href="index.source.html" class="el_package">cern.cms.daq.nm.sound</a> &gt; <span class="el_source">SoundSelector.java</span></div><h1>SoundSelector.java</h1><pre class="source lang-java linenums">package cern.cms.daq.nm.sound;
+
+import java.util.HashMap;
+import java.util.Set;
+
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
+import org.apache.log4j.Logger;
+
+import cern.cms.daq.nm.NotificationException;
+import cern.cms.daq.nm.persistence.Event;
+import cern.cms.daq.nm.persistence.EventType;
+import cern.cms.daq.nm.persistence.LogicModuleView;
+
+public class SoundSelector {
+
+<span class="fc" id="L17">	private final static Logger logger = Logger.getLogger(SoundSelector.class);</span>
+
+	private HashMap&lt;LogicModuleView, Pair&lt;Sound, Sound&gt;&gt; configuration;
+
+<span class="fc" id="L21">	public SoundSelector() {</span>
+<span class="fc" id="L22">		this.configuration = new HashMap&lt;&gt;();</span>
+<span class="fc bfc" id="L23" title="All 2 branches covered.">		for (LogicModuleView logicModule : LogicModuleView.values()) {</span>
+<span class="fc" id="L24">			Sound startSound = Sound.DEFAULT;</span>
+<span class="fc" id="L25">			Sound empty = Sound.END;</span>
+<span class="fc" id="L26">			configuration.put(logicModule, Pair.of(startSound, empty));</span>
+		}
+<span class="fc" id="L28">	}</span>
+
+	public void configure(Set&lt;Triple&lt;LogicModuleView, EventType, Sound&gt;&gt; soundConfiguration) {
+
+<span class="nc" id="L32">		int sucessfullyConfigured = 0;</span>
+
+<span class="nc bnc" id="L34" title="All 2 branches missed.">		for (Triple&lt;LogicModuleView, EventType, Sound&gt; souncConfEntry : soundConfiguration) {</span>
+
+			try {
+<span class="nc" id="L37">				updateConfiguration(souncConfEntry);</span>
+<span class="nc" id="L38">				sucessfullyConfigured++;</span>
+<span class="nc" id="L39">			} catch (NotificationException e) {</span>
+<span class="nc" id="L40">				logger.warn(&quot;Could not update the configuration for the entry: &quot; + souncConfEntry + &quot;, problem: &quot;</span>
+<span class="nc" id="L41">						+ e.getMessage());</span>
+			}
+		}
+<span class="nc bnc" id="L44" title="All 2 branches missed.">		if (sucessfullyConfigured &gt; 0) {</span>
+<span class="nc" id="L45">			logger.info(sucessfullyConfigured + &quot; sound SELECT configuration entries successfuly processed&quot;);</span>
+		}
+
+<span class="nc" id="L48">	}</span>
+
+	private void updateConfiguration(Triple&lt;LogicModuleView, EventType, Sound&gt; entry) {
+<span class="nc bnc" id="L51" title="All 2 branches missed.">		if (configuration.containsKey(entry.getLeft())) {</span>
+<span class="nc" id="L52">			Pair&lt;Sound, Sound&gt; defaultConfiguration = configuration.get(entry.getLeft());</span>
+<span class="nc" id="L53">			Sound soundOnStart = defaultConfiguration.getLeft();</span>
+<span class="nc" id="L54">			Sound soundOnEnd = defaultConfiguration.getRight();</span>
+
+<span class="nc bnc" id="L56" title="All 5 branches missed.">			switch (entry.getMiddle()) {</span>
+			case Single:
+<span class="nc" id="L58">				soundOnStart = entry.getRight();</span>
+<span class="nc" id="L59">				break;</span>
+			case ConditionStart:
+<span class="nc" id="L61">				soundOnStart = entry.getRight();</span>
+<span class="nc" id="L62">				break;</span>
+			case ConditionUpdate:
+				// TODO: change the configuration for this case
+<span class="nc" id="L65">				break;</span>
+			case ConditionEnd:
+<span class="nc" id="L67">				soundOnEnd = entry.getRight();</span>
+				break;
+
+			}
+<span class="nc" id="L71">			configuration.put(entry.getLeft(), Pair.of(soundOnStart, soundOnEnd));</span>
+
+<span class="nc" id="L73">		} else {</span>
+<span class="nc" id="L74">			throw new NotificationException(</span>
+<span class="nc" id="L75">					&quot;Default configuration does not contain custom entry for LM: &quot; + entry.getLeft());</span>
+		}
+<span class="nc" id="L77">	}</span>
+
+	public Sound selectSound(Event event) {
+
+<span class="nc bnc" id="L81" title="All 2 branches missed.">		if (event.getSound() != null) {</span>
+<span class="nc" id="L82">			throw new NotificationException(&quot;Event &quot; + event.getId() + &quot; has already assigned the sound&quot;);</span>
+		}
+
+<span class="nc bnc" id="L85" title="All 2 branches missed.">		if (event.getEventSenderType() == null) {</span>
+<span class="nc" id="L86">			throw new NotificationException(</span>
+<span class="nc" id="L87">					&quot;Event &quot; + event.getId() + &quot;  from unknown sender, cannot trigger the sound&quot;);</span>
+		}
+
+<span class="nc bnc" id="L90" title="All 3 branches missed.">		switch (event.getEventSenderType()) {</span>
+		case External:
+<span class="nc" id="L92">			return selectExternalSound(event);</span>
+		case Expert:
+<span class="nc" id="L94">			return selectExpertSound(event);</span>
+		}
+
+<span class="nc" id="L97">		return null;</span>
+
+	}
+
+	public Sound selectExternalSound(Event event) {
+
+<span class="nc" id="L103">		return Sound.EXTERNAL_DEFAULT;</span>
+	}
+
+	public Sound selectExpertSound(Event event) {
+
+<span class="nc bnc" id="L108" title="All 2 branches missed.">		if (event.getLogicModule() == null) {</span>
+<span class="nc" id="L109">			throw new NotificationException(</span>
+<span class="nc" id="L110">					&quot;Event &quot; + event.getId() + &quot; from expert has no LM, cannot assign the sound&quot;);</span>
+<span class="nc bnc" id="L111" title="All 2 branches missed.">		} else if (!configuration.containsKey(event.getLogicModule())) {</span>
+<span class="nc" id="L112">			throw new NotificationException(&quot;There is no configuration for LM &quot; + event.getLogicModule() + &quot; of event &quot;</span>
+<span class="nc" id="L113">					+ event.getId() + &quot; from expert, cannot assign the sound&quot;);</span>
+		}
+
+<span class="nc bnc" id="L116" title="All 2 branches missed.">		if (event.getEventType() == null) {</span>
+<span class="nc" id="L117">			throw new NotificationException(&quot;Cannot select sound for event without a type&quot;);</span>
+		}
+
+<span class="nc" id="L120">		Pair&lt;Sound, Sound&gt; sounds = configuration.get(event.getLogicModule());</span>
+<span class="nc bnc" id="L121" title="All 4 branches missed.">		switch (event.getEventType()) {</span>
+		case ConditionStart:
+<span class="nc" id="L123">			return sounds.getLeft();</span>
+		case ConditionEnd:
+<span class="nc" id="L125">			return sounds.getRight();</span>
+		case Single:
+<span class="nc" id="L127">			return sounds.getLeft();</span>
+		default:
+<span class="nc" id="L129">			return null;</span>
+		}
+
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

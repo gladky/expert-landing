@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>PriorityFuture.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DAQExpert</a> &gt; <a href="index.source.html" class="el_package">rcms.utilities.daqexpert.processing</a> &gt; <span class="el_source">PriorityFuture.java</span></div><h1>PriorityFuture.java</h1><pre class="source lang-java linenums">package rcms.utilities.daqexpert.processing;
+
+/**
+ * Priority future of the job
+ * 
+ */
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.RunnableFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
+public class PriorityFuture&lt;T&gt; implements RunnableFuture&lt;T&gt; {
+
+	private RunnableFuture&lt;T&gt; runnableFuture;
+	private int priority;
+
+<span class="fc" id="L17">	public PriorityFuture(RunnableFuture&lt;T&gt; other, int priority) {</span>
+<span class="fc" id="L18">		this.runnableFuture = other;</span>
+<span class="fc" id="L19">		this.priority = priority;</span>
+<span class="fc" id="L20">	}</span>
+
+	public int getPriority() {
+<span class="nc" id="L23">		return priority;</span>
+	}
+
+	public boolean cancel(boolean mayInterruptIfRunning) {
+<span class="nc" id="L27">		return runnableFuture.cancel(mayInterruptIfRunning);</span>
+	}
+
+	public boolean isCancelled() {
+<span class="nc" id="L31">		return runnableFuture.isCancelled();</span>
+	}
+
+	public boolean isDone() {
+<span class="nc" id="L35">		return runnableFuture.isDone();</span>
+	}
+
+	public T get() throws InterruptedException, ExecutionException {
+<span class="nc" id="L39">		return runnableFuture.get();</span>
+	}
+
+	public T get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+<span class="fc" id="L43">		return runnableFuture.get();</span>
+	}
+
+	public void run() {
+<span class="fc" id="L47">		runnableFuture.run();</span>
+<span class="fc" id="L48">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

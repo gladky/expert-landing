@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>ExperimentalProcessor.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DAQExpert</a> &gt; <a href="index.source.html" class="el_package">rcms.utilities.daqexpert.reasoning.processing</a> &gt; <span class="el_source">ExperimentalProcessor.java</span></div><h1>ExperimentalProcessor.java</h1><pre class="source lang-java linenums">package rcms.utilities.daqexpert.reasoning.processing;
+
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.log4j.Logger;
+
+import groovy.lang.MissingPropertyException;
+import groovy.util.GroovyScriptEngine;
+import groovy.util.ResourceException;
+import groovy.util.ScriptException;
+import rcms.utilities.daqaggregator.DAQException;
+import rcms.utilities.daqaggregator.DAQExceptionCode;
+import rcms.utilities.daqaggregator.data.DAQ;
+import rcms.utilities.daqaggregator.persistence.FileSystemConnector;
+import rcms.utilities.daqexpert.ExpertException;
+import rcms.utilities.daqexpert.ExpertExceptionCode;
+import rcms.utilities.daqexpert.reasoning.base.LogicModule;
+
+/**
+ * Loads and uses experimental Logic Modules
+ * 
+ * @author Maciej Gladki (maciej.szymon.gladki@cern.ch)
+ *
+ */
+public class ExperimentalProcessor {
+
+	private List&lt;Pair&lt;Class&lt;LogicModule&gt;, LogicModule&gt;&gt; scriptInstances;
+
+	private final GroovyScriptEngine groovyScriptEngine;
+
+	private final FileSystemConnector connector;
+	private final String experimentalDirectory;
+
+	private String requestedScript;
+
+<span class="fc" id="L42">	private static final Logger logger = Logger.getLogger(ExperimentalProcessor.class);</span>
+
+<span class="fc" id="L44">	public ExperimentalProcessor(String experimentalDirectory) throws IOException, ResourceException, ScriptException {</span>
+<span class="fc" id="L45">		this.experimentalDirectory = experimentalDirectory;</span>
+<span class="fc" id="L46">		groovyScriptEngine = new GroovyScriptEngine(experimentalDirectory);</span>
+
+<span class="fc" id="L48">		connector = new FileSystemConnector();</span>
+<span class="fc" id="L49">	}</span>
+
+	/**
+	 * Loads experimental Logic Modules from experimental directory
+	 */
+	public void loadExperimentalLogicModules() {
+<span class="nc" id="L55">		logger.info(&quot;Loading experimental Logic Modules from directory &quot; + experimentalDirectory);</span>
+
+		try {
+<span class="nc" id="L58">			scriptInstances = loadScriptInstances();</span>
+<span class="nc" id="L59">			logger.info(&quot;Successfully loaded &quot; + scriptInstances.size() + &quot; script instances&quot;);</span>
+
+<span class="nc" id="L61">		} catch (InstantiationException e) {</span>
+			// TODO: change this code
+<span class="nc" id="L63">			throw new ExpertException(ExpertExceptionCode.ExperimentalReasoningProblem, e.getMessage());</span>
+<span class="nc" id="L64">		} catch (IllegalAccessException e) {</span>
+<span class="nc" id="L65">			throw new ExpertException(ExpertExceptionCode.ExperimentalReasoningProblem, e.getMessage());</span>
+		}
+<span class="nc" id="L67">	}</span>
+
+	/**
+	 * Run experimental Logic Modules
+	 * 
+	 * @param daq
+	 * @param checkerResultMap
+	 * @return returns results of all logic modules as list of pairs
+	 *         [LM;satisfied]
+	 */
+	public List&lt;Pair&lt;LogicModule, Boolean&gt;&gt; runLogicModules(DAQ daq, Map&lt;String, Boolean&gt; checkerResultMap) {
+
+<span class="nc" id="L79">		List&lt;Pair&lt;LogicModule, Boolean&gt;&gt; result = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L80" title="All 2 branches missed.">		if (scriptInstances == null) {</span>
+<span class="nc" id="L81">			throw new RuntimeException(&quot;No experimental logic modules have been loaded&quot;);</span>
+		}
+
+<span class="nc bnc" id="L84" title="All 2 branches missed.">		for (Pair&lt;Class&lt;LogicModule&gt;, LogicModule&gt; scriptInstance : scriptInstances) {</span>
+<span class="nc" id="L85">			Pair&lt;LogicModule, Boolean&gt; a = runExperimental(daq, checkerResultMap, scriptInstance.getLeft(),</span>
+<span class="nc" id="L86">					scriptInstance.getRight());</span>
+<span class="nc" id="L87">			result.add(a);</span>
+		}
+<span class="nc" id="L89">		return result;</span>
+
+	}
+
+	/**
+	 * Loads
+	 * 
+	 * @return
+	 * @throws InstantiationException
+	 * @throws IllegalAccessException
+	 */
+	protected List&lt;Pair&lt;Class&lt;LogicModule&gt;, LogicModule&gt;&gt; loadScriptInstances()
+			throws InstantiationException, IllegalAccessException {
+
+<span class="nc" id="L103">		List&lt;Pair&lt;Class&lt;LogicModule&gt;, LogicModule&gt;&gt; result = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L104">		List&lt;Class&lt;LogicModule&gt;&gt; scriptClasses = getScripts();</span>
+
+<span class="nc bnc" id="L106" title="All 2 branches missed.">		for (Class&lt;LogicModule&gt; scriptClass : scriptClasses) {</span>
+			try {
+<span class="nc" id="L108">				LogicModule scriptInstance = scriptClass.newInstance();</span>
+<span class="nc" id="L109">				result.add(Pair.of(scriptClass, scriptInstance));</span>
+<span class="nc" id="L110">			} catch (MissingPropertyException e) {</span>
+<span class="nc" id="L111">				throw new ExpertException(ExpertExceptionCode.ExperimentalReasoningProblem, e.getMessage());</span>
+			}
+		}
+
+<span class="nc" id="L115">		return result;</span>
+	}
+
+	/**
+	 * Gets a list of scripts available in experimental dir
+	 * 
+	 * @return
+	 */
+	protected List&lt;Class&lt;LogicModule&gt;&gt; getScripts() {
+
+		try {
+<span class="nc" id="L126">			List&lt;File&gt; a = getScriptFiles();</span>
+<span class="nc" id="L127">			logger.info(&quot;Discovered &quot; + a.size() + &quot; scripts in &quot; + experimentalDirectory);</span>
+
+<span class="nc" id="L129">			List&lt;Class&lt;LogicModule&gt;&gt; scripts = new ArrayList&lt;&gt;();</span>
+
+<span class="nc bnc" id="L131" title="All 2 branches missed.">			for (File b : a) {</span>
+<span class="nc bnc" id="L132" title="All 4 branches missed.">				if (requestedScript == null || b.getName().equals(requestedScript)) {</span>
+					try {
+<span class="nc" id="L134">						Class&lt;LogicModule&gt; scriptClass = loadFromFile(b);</span>
+<span class="nc" id="L135">						scripts.add(scriptClass);</span>
+<span class="nc" id="L136">					} catch (ResourceException e) {</span>
+<span class="nc" id="L137">						throw new ExpertException(ExpertExceptionCode.ExperimentalReasoningProblem, e.getMessage());</span>
+<span class="nc" id="L138">					} catch (ScriptException e) {</span>
+<span class="nc" id="L139">						throw new ExpertException(ExpertExceptionCode.ExperimentalReasoningProblem, e.getMessage());</span>
+					}
+				}
+			}
+<span class="nc" id="L143">			return scripts;</span>
+
+<span class="nc" id="L145">		} catch (IOException e) {</span>
+<span class="nc" id="L146">			e.printStackTrace();</span>
+<span class="nc" id="L147">			return null;</span>
+		}
+	}
+
+	public List&lt;File&gt; getScriptFiles() throws IOException {
+<span class="nc" id="L152">		List&lt;File&gt; result = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L153" title="All 2 branches missed.">		for (File file : connector.getFiles(experimentalDirectory)) {</span>
+<span class="nc bnc" id="L154" title="All 4 branches missed.">			if (file.getName().endsWith(&quot;.java&quot;) || file.getName().endsWith(&quot;.groovy&quot;)) {</span>
+<span class="nc" id="L155">				result.add(file);</span>
+			}
+		}
+<span class="nc" id="L158">		logger.info(&quot;Scripts filtered by extension and requested name: &quot; + result);</span>
+<span class="nc" id="L159">		return result;</span>
+	}
+
+	@SuppressWarnings(&quot;unchecked&quot;)
+	private Class&lt;LogicModule&gt; loadFromFile(File file) throws ResourceException, ScriptException {
+<span class="nc" id="L164">		logger.info(&quot;Loading script: &quot; + file.getAbsolutePath());</span>
+<span class="nc" id="L165">		return groovyScriptEngine.loadScriptByName(file.getName());</span>
+	}
+
+	protected Pair&lt;LogicModule, Boolean&gt; runExperimental(DAQ daq, Map&lt;String, Boolean&gt; checkerResultMap,
+			Class&lt;LogicModule&gt; scriptClass, LogicModule scriptInstance) {
+		try {
+<span class="nc" id="L171">			Object gresult = scriptClass.getDeclaredMethod(&quot;satisfied&quot;, DAQ.class, Map.class).invoke(scriptInstance,</span>
+<span class="nc" id="L172">					daq, checkerResultMap);</span>
+
+<span class="nc bnc" id="L174" title="All 2 branches missed.">			if (gresult instanceof Boolean) {</span>
+<span class="nc" id="L175">				return Pair.of(scriptInstance, (boolean) gresult);</span>
+			} else {
+<span class="nc" id="L177">				logger.info(&quot;Groovy returned non-boolean value: &quot; + gresult + &quot;, cannot add to results&quot;);</span>
+			}
+<span class="nc" id="L179">		} catch (IllegalAccessException e) {</span>
+<span class="nc" id="L180">			logger.error(&quot;caught exception while running experimental script:&quot;, e);</span>
+<span class="nc" id="L181">			throw new ExpertException(ExpertExceptionCode.ExperimentalReasoningProblem, e.getMessage());</span>
+<span class="nc" id="L182">		} catch (IllegalArgumentException e) {</span>
+<span class="nc" id="L183">			logger.error(&quot;caught exception while running experimental script:&quot;, e);</span>
+<span class="nc" id="L184">			throw new ExpertException(ExpertExceptionCode.ExperimentalReasoningProblem, e.getMessage());</span>
+<span class="nc" id="L185">		} catch (InvocationTargetException e) {</span>
+<span class="nc" id="L186">			logger.error(&quot;caught exception while running experimental script:&quot;, e);</span>
+<span class="nc" id="L187">			throw new ExpertException(ExpertExceptionCode.ExperimentalReasoningProblem, e.getMessage());</span>
+<span class="nc" id="L188">		} catch (NoSuchMethodException e) {</span>
+<span class="nc" id="L189">			logger.error(&quot;caught exception while running experimental script:&quot;, e);</span>
+<span class="nc" id="L190">			throw new ExpertException(ExpertExceptionCode.ExperimentalReasoningProblem, e.getMessage());</span>
+<span class="nc" id="L191">		} catch (SecurityException e) {</span>
+<span class="nc" id="L192">			logger.error(&quot;caught exception while running experimental script:&quot;, e);</span>
+<span class="nc" id="L193">			throw new ExpertException(ExpertExceptionCode.ExperimentalReasoningProblem, e.getMessage());</span>
+		}
+<span class="nc" id="L195">		return null;</span>
+	}
+
+	public String getExperimentalDirectory() {
+<span class="nc" id="L199">		return experimentalDirectory;</span>
+	}
+
+	public void setRequestedScript(String scriptName) {
+<span class="nc" id="L203">		requestedScript = scriptName;</span>
+<span class="nc" id="L204">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

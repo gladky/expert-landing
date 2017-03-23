@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>SoundTrigger.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Notification Manager</a> &gt; <a href="index.source.html" class="el_package">cern.cms.daq.nm.sound</a> &gt; <span class="el_source">SoundTrigger.java</span></div><h1>SoundTrigger.java</h1><pre class="source lang-java linenums">package cern.cms.daq.nm.sound;
+
+import java.util.HashMap;
+import java.util.Set;
+
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
+import org.apache.log4j.Logger;
+
+import cern.cms.daq.nm.NotificationException;
+import cern.cms.daq.nm.persistence.Event;
+import cern.cms.daq.nm.persistence.EventType;
+import cern.cms.daq.nm.persistence.LogicModuleView;
+
+public class SoundTrigger {
+
+<span class="fc" id="L17">	private final static Logger logger = Logger.getLogger(SoundTrigger.class);</span>
+	private HashMap&lt;LogicModuleView, Pair&lt;Priority, Priority&gt;&gt; configuration;
+
+<span class="fc" id="L20">	public SoundTrigger() {</span>
+<span class="fc" id="L21">		this.configuration = new HashMap&lt;&gt;();</span>
+<span class="fc bfc" id="L22" title="All 2 branches covered.">		for (LogicModuleView logicModule : LogicModuleView.values()) {</span>
+<span class="fc" id="L23">			configuration.put(logicModule, Pair.of(Priority.IMPORTANT, Priority.CRITICAL));</span>
+		}
+<span class="fc" id="L25">	}</span>
+
+	public void configure(Set&lt;Triple&lt;LogicModuleView, EventType, Priority&gt;&gt; soundConfiguration) {
+
+<span class="nc" id="L29">		int sucessfullyConfigured = 0;</span>
+
+<span class="nc bnc" id="L31" title="All 2 branches missed.">		for (Triple&lt;LogicModuleView, EventType, Priority&gt; souncConfEntry : soundConfiguration) {</span>
+
+			try {
+<span class="nc" id="L34">				updateConfiguration(souncConfEntry);</span>
+<span class="nc" id="L35">				sucessfullyConfigured++;</span>
+<span class="nc" id="L36">			} catch (NotificationException e) {</span>
+<span class="nc" id="L37">				logger.warn(&quot;Could not update the configuration for the entry: &quot; + souncConfEntry + &quot;, problem: &quot;</span>
+<span class="nc" id="L38">						+ e.getMessage());</span>
+			}
+		}
+<span class="nc bnc" id="L41" title="All 2 branches missed.">		if (sucessfullyConfigured &gt; 0) {</span>
+<span class="nc" id="L42">			logger.info(sucessfullyConfigured + &quot; sound TRIGGER configuration entries successfuly processed&quot;);</span>
+		}
+
+<span class="nc" id="L45">	}</span>
+
+	private void updateConfiguration(Triple&lt;LogicModuleView, EventType, Priority&gt; entry) {
+<span class="nc bnc" id="L48" title="All 2 branches missed.">		if (configuration.containsKey(entry.getLeft())) {</span>
+<span class="nc" id="L49">			Pair&lt;Priority, Priority&gt; defaultConfiguration = configuration.get(entry.getLeft());</span>
+<span class="nc" id="L50">			Priority triggerForStart = defaultConfiguration.getLeft();</span>
+<span class="nc" id="L51">			Priority triggerForEnd = defaultConfiguration.getRight();</span>
+
+<span class="nc bnc" id="L53" title="All 5 branches missed.">			switch (entry.getMiddle()) {</span>
+			case Single:
+<span class="nc" id="L55">				triggerForStart = entry.getRight();</span>
+<span class="nc" id="L56">				break;</span>
+			case ConditionStart:
+<span class="nc" id="L58">				triggerForStart = entry.getRight();</span>
+<span class="nc" id="L59">				break;</span>
+			case ConditionUpdate:
+				// TODO: change the configuration for this case
+<span class="nc" id="L62">				break;</span>
+			case ConditionEnd:
+<span class="nc" id="L64">				triggerForEnd = entry.getRight();</span>
+				break;
+
+			}
+<span class="nc" id="L68">			configuration.put(entry.getLeft(), Pair.of(triggerForStart, triggerForEnd));</span>
+
+<span class="nc" id="L70">		} else {</span>
+<span class="nc" id="L71">			throw new NotificationException(</span>
+<span class="nc" id="L72">					&quot;Default configuration does not contain custom entry for LM: &quot; + entry.getLeft());</span>
+		}
+<span class="nc" id="L74">	}</span>
+
+	public boolean triggerSound(Event event) {
+
+<span class="fc bfc" id="L78" title="All 2 branches covered.">		if (event.getEventSenderType() == null) {</span>
+<span class="fc" id="L79">			throw new NotificationException(</span>
+<span class="fc" id="L80">					&quot;Event &quot; + event.getId() + &quot;  from unknown sender, cannot trigger the sound&quot;);</span>
+		}
+
+<span class="pc bpc" id="L83" title="1 of 3 branches missed.">		switch (event.getEventSenderType()) {</span>
+		case External:
+<span class="fc" id="L85">			return triggerExternalSound(event);</span>
+		case Expert:
+<span class="fc" id="L87">			return triggerExpertSound(event);</span>
+		}
+
+<span class="nc" id="L90">		return false;</span>
+
+	}
+
+	private boolean triggerExpertSound(Event event) {
+
+<span class="pc bpc" id="L96" title="1 of 2 branches missed.">		if (event.getPriority() == null) {</span>
+<span class="nc" id="L97">			throw new NotificationException(</span>
+<span class="nc" id="L98">					&quot;Event &quot; + event.getId() + &quot; from expert has no priority, cannot trigger the sound&quot;);</span>
+		}
+
+<span class="pc bpc" id="L101" title="1 of 2 branches missed.">		if (event.getLogicModule() == null) {</span>
+<span class="nc" id="L102">			throw new NotificationException(</span>
+<span class="nc" id="L103">					&quot;Event &quot; + event.getId() + &quot; from expert has no LM, cannot trigger the sound&quot;);</span>
+<span class="pc bpc" id="L104" title="1 of 2 branches missed.">		} else if (!configuration.containsKey(event.getLogicModule())) {</span>
+<span class="nc" id="L105">			throw new NotificationException(&quot;There is no configuration for LM &quot; + event.getLogicModule() + &quot; of event &quot;</span>
+<span class="nc" id="L106">					+ event.getId() + &quot; from expert, cannot trigger the sound&quot;);</span>
+		}
+
+<span class="fc bfc" id="L109" title="All 2 branches covered.">		if (event.getEventType() == null) {</span>
+<span class="fc" id="L110">			throw new NotificationException(&quot;missing event type&quot;);</span>
+		}
+
+<span class="pc bpc" id="L113" title="2 of 5 branches missed.">		switch (event.getEventType()) {</span>
+		case ConditionStart:
+<span class="fc bfc" id="L115" title="All 2 branches covered.">			if (event.getPriority().ordinal() &gt;= configuration.get(event.getLogicModule()).getLeft().ordinal()) {</span>
+<span class="fc" id="L116">				return true;</span>
+			} else
+<span class="fc" id="L118">				return false;</span>
+		case ConditionUpdate:
+			// TODO: change configuration to triple
+<span class="nc" id="L121">			return false;</span>
+		case ConditionEnd:
+<span class="fc bfc" id="L123" title="All 2 branches covered.">			if (event.getPriority().ordinal() &gt;= configuration.get(event.getLogicModule()).getRight().ordinal()) {</span>
+<span class="fc" id="L124">				return true;</span>
+			} else
+<span class="fc" id="L126">				return false;</span>
+		case Single:
+<span class="fc bfc" id="L128" title="All 2 branches covered.">			if (event.getPriority().ordinal() &gt;= configuration.get(event.getLogicModule()).getLeft().ordinal()) {</span>
+<span class="fc" id="L129">				return true;</span>
+			} else
+<span class="fc" id="L131">				return false;</span>
+		default:
+<span class="nc" id="L133">			return false;</span>
+		}
+
+	}
+
+	private boolean triggerExternalSound(Event event) {
+
+<span class="fc" id="L140">		return true;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

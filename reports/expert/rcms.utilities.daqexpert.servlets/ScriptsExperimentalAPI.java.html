@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>ScriptsExperimentalAPI.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DAQExpert</a> &gt; <a href="index.source.html" class="el_package">rcms.utilities.daqexpert.servlets</a> &gt; <span class="el_source">ScriptsExperimentalAPI.java</span></div><h1>ScriptsExperimentalAPI.java</h1><pre class="source lang-java linenums">package rcms.utilities.daqexpert.servlets;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.log4j.Logger;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import groovy.util.ResourceException;
+import groovy.util.ScriptException;
+import rcms.utilities.daqexpert.Application;
+import rcms.utilities.daqexpert.Setting;
+import rcms.utilities.daqexpert.reasoning.processing.ExperimentalProcessor;
+
+/**
+ * Api to request available experimental logic modules
+ * 
+ * @author Maciej Gladki (maciej.szymon.gladki@cern.ch)
+ *
+ */
+public class ScriptsExperimentalAPI extends HttpServlet {
+	private static final long serialVersionUID = 1L;
+
+<span class="nc" id="L34">	private static final Logger logger = Logger.getLogger(ScriptsExperimentalAPI.class);</span>
+
+	private ExperimentalProcessor experimentalProcessor;
+
+<span class="nc" id="L38">	public ScriptsExperimentalAPI() {</span>
+		try {
+<span class="nc" id="L40">			experimentalProcessor = new ExperimentalProcessor(</span>
+<span class="nc" id="L41">					Application.get().getProp(Setting.EXPERIMENTAL_DIR));</span>
+<span class="nc" id="L42">		} catch (IOException | ResourceException | ScriptException e) {</span>
+<span class="nc" id="L43">			experimentalProcessor = null;</span>
+<span class="nc" id="L44">			e.printStackTrace();</span>
+		}
+<span class="nc" id="L46">	}</span>
+
+	@Override
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+
+<span class="nc" id="L52">		List&lt;File&gt; scripts = experimentalProcessor.getScriptFiles();</span>
+
+<span class="nc" id="L54">		logger.info(&quot;Available LMs: &quot; + scripts.size());</span>
+
+<span class="nc" id="L56">		Map&lt;String, Object&gt; result = new HashMap&lt;&gt;();</span>
+
+<span class="nc" id="L58">		List&lt;String&gt; names = new ArrayList&lt;&gt;();</span>
+
+<span class="nc bnc" id="L60" title="All 2 branches missed.">		for (File file : scripts) {</span>
+<span class="nc" id="L61">			names.add(file.getName());</span>
+		}
+
+<span class="nc" id="L64">		result.put(&quot;names&quot;, names);</span>
+<span class="nc" id="L65">		result.put(&quot;directory&quot;, experimentalProcessor.getExperimentalDirectory());</span>
+
+<span class="nc" id="L67">		logger.info(&quot;Available LMs: &quot; + names);</span>
+<span class="nc" id="L68">		ObjectMapper objectMapper = new ObjectMapper();</span>
+<span class="nc" id="L69">		String json = objectMapper.writeValueAsString(result);</span>
+<span class="nc" id="L70">		response.setContentType(&quot;application/json&quot;);</span>
+<span class="nc" id="L71">		response.setCharacterEncoding(&quot;UTF-8&quot;);</span>
+<span class="nc" id="L72">		response.getWriter().write(json);</span>
+<span class="nc" id="L73">	}</span>
+
+	@Override
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+<span class="nc" id="L78">		doGet(request, response);</span>
+<span class="nc" id="L79">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

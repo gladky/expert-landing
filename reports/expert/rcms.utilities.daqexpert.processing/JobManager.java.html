@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>JobManager.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DAQExpert</a> &gt; <a href="index.source.html" class="el_package">rcms.utilities.daqexpert.processing</a> &gt; <span class="el_source">JobManager.java</span></div><h1>JobManager.java</h1><pre class="source lang-java linenums"><span class="fc" id="L1">package rcms.utilities.daqexpert.processing;</span>
+
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.TimeZone;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.RunnableFuture;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.lang3.time.DurationFormatUtils;
+import org.apache.http.client.HttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.log4j.Logger;
+
+import rcms.utilities.daqaggregator.persistence.FileSystemConnector;
+import rcms.utilities.daqaggregator.persistence.PersistenceExplorer;
+import rcms.utilities.daqexpert.Application;
+import rcms.utilities.daqexpert.DataManager;
+import rcms.utilities.daqexpert.Setting;
+import rcms.utilities.daqexpert.events.EventCollector;
+import rcms.utilities.daqexpert.events.EventPrinter;
+import rcms.utilities.daqexpert.events.EventRegister;
+import rcms.utilities.daqexpert.events.EventSender;
+import rcms.utilities.daqexpert.persistence.Condition;
+import rcms.utilities.daqexpert.persistence.PersistenceManager;
+import rcms.utilities.daqexpert.reasoning.base.enums.ConditionGroup;
+import rcms.utilities.daqexpert.reasoning.base.enums.ConditionPriority;
+import rcms.utilities.daqexpert.reasoning.processing.ConditionProducer;
+import rcms.utilities.daqexpert.reasoning.processing.SnapshotProcessor;
+import rcms.utilities.daqexpert.websocket.ConditionDashboard;
+
+/**
+ * Manages the jobs of retrieving and processing the data (snapshots)
+ * 
+ * @author Maciej Gladki (maciej.szymon.gladki@cern.ch)
+ *
+ */
+public class JobManager {
+
+<span class="fc" id="L47">	private static final Logger logger = Logger.getLogger(JobManager.class);</span>
+	/**
+	 * Number of main threads - should be 1 so that there is not concurrent
+	 * access to analysis stream
+	 */
+	private static final int NUMBER_OF_MAIN_THREADS = 1;
+
+	/** Initial queue size */
+<span class="fc" id="L55">	private static final int INITIAL_QUEUE_SIZE = 3;</span>
+
+	private final PersistenceManager persistenceManager;
+
+	private final ThreadPoolExecutor mainExecutor;
+
+	private final OnDemandReaderJob onDemandReader;
+
+	protected final DataPrepareJob futureDataPrepareJob;
+
+	private final JobScheduler readerRaskController;
+
+	private final ConditionProducer eventProducer;
+
+	private Condition versionCondition;
+	
+	protected final EventSender eventSender;
+
+<span class="fc" id="L73">	public JobManager(String sourceDirectory, DataManager dataManager, EventSender eventSender) {</span>
+		
+<span class="fc" id="L75">		this.eventSender = eventSender;</span>
+
+<span class="fc" id="L77">		int realTimeReaderPeriod = 2000;</span>
+<span class="fc" id="L78">		int batchSnapshotRead = 2000;</span>
+
+<span class="fc" id="L80">		boolean demo = false;</span>
+<span class="pc bpc" id="L81" title="1 of 2 branches missed.">		if (Application.get().getProp().containsKey(&quot;demo&quot;)) {</span>
+			try {
+<span class="fc" id="L83">				Object a = Application.get().getProp().get(&quot;demo&quot;);</span>
+<span class="fc" id="L84">				demo = Boolean.parseBoolean((String) a);</span>
+<span class="pc" id="L85">			} catch (NumberFormatException e) {</span>
+<span class="nc" id="L86">				logger.warn(&quot;Demo configuration could not be parsed&quot;);</span>
+			}
+		}
+
+<span class="pc bpc" id="L90" title="1 of 2 branches missed.">		if (demo) {</span>
+<span class="nc" id="L91">			realTimeReaderPeriod = 200;</span>
+<span class="nc" id="L92">			batchSnapshotRead = 1;</span>
+		}
+
+<span class="fc" id="L95">		this.persistenceManager = Application.get().getPersistenceManager();</span>
+
+<span class="fc" id="L97">		RunConfigurator runConfigurator = new RunConfigurator(persistenceManager);</span>
+
+<span class="fc" id="L99">		Date startDate = runConfigurator.getStartDate();</span>
+<span class="fc" id="L100">		Date endDate = runConfigurator.getEndDate();</span>
+
+<span class="pc bpc" id="L102" title="1 of 2 branches missed.">		logger.info(&quot;Data will be processed from: &quot; + startDate + (endDate != null ? &quot;, to: &quot; + endDate : &quot;&quot;));</span>
+<span class="fc" id="L103">		Application.get().getDataManager().setLastUpdate(startDate);</span>
+<span class="fc" id="L104">		persistVersion(startDate, endDate);</span>
+
+<span class="fc" id="L106">		mainExecutor = new ThreadPoolExecutor(NUMBER_OF_MAIN_THREADS, NUMBER_OF_MAIN_THREADS, 0L, TimeUnit.MILLISECONDS,</span>
+<span class="fc" id="L107">				new PriorityBlockingQueue&lt;Runnable&gt;(INITIAL_QUEUE_SIZE, new PriorityFutureComparator())) {</span>
+
+			protected &lt;T&gt; RunnableFuture&lt;T&gt; newTaskFor(Callable&lt;T&gt; callable) {
+<span class="fc" id="L110">				RunnableFuture&lt;T&gt; newTaskFor = super.newTaskFor(callable);</span>
+<span class="fc" id="L111">				return new PriorityFuture&lt;T&gt;(newTaskFor, ((ProcessJob) callable).getPriority());</span>
+			}
+		};
+
+<span class="fc" id="L115">		PersistenceExplorer persistenceExplorer = new PersistenceExplorer(new FileSystemConnector());</span>
+<span class="fc" id="L116">		onDemandReader = new OnDemandReaderJob(persistenceExplorer, sourceDirectory);</span>
+<span class="fc" id="L117">		ForwardReaderJob frj = new ForwardReaderJob(persistenceExplorer, startDate.getTime(),</span>
+<span class="pc bpc" id="L118" title="1 of 2 branches missed.">				endDate != null ? endDate.getTime() : null, sourceDirectory, batchSnapshotRead);</span>
+
+<span class="fc" id="L120">		eventProducer = new ConditionProducer();</span>
+
+<span class="fc" id="L122">		EventRegister eventRegister = new EventCollector();</span>
+<span class="fc" id="L123">		eventProducer.setEventRegister(eventRegister);</span>
+<span class="fc" id="L124">		SnapshotProcessor snapshotProcessor = new SnapshotProcessor(eventProducer);</span>
+
+<span class="fc" id="L126">		long offset = 0;</span>
+		try {
+<span class="fc" id="L128">			offset = Long.parseLong(Application.get().getProp(Setting.NM_OFFSET));</span>
+<span class="pc" id="L129">		} catch (NumberFormatException e) {</span>
+<span class="nc" id="L130">			logger.error(&quot;Problem parsing offset&quot;);</span>
+		}
+<span class="fc" id="L132">		Calendar utcCalendar = Calendar.getInstance(TimeZone.getTimeZone(&quot;UTC&quot;));</span>
+<span class="fc" id="L133">		long startTime = utcCalendar.getTimeInMillis() - offset;</span>
+<span class="fc" id="L134">		utcCalendar.setTimeInMillis(startTime);</span>
+<span class="fc" id="L135">		Date nmStartDate = utcCalendar.getTime();</span>
+<span class="fc" id="L136">		String offsetString = DurationFormatUtils.formatDuration(offset, &quot;d 'days', HH:mm:ss&quot;, true);</span>
+<span class="fc" id="L137">		logger.info(</span>
+<span class="fc" id="L138">				&quot;Notifications will generated from: &quot; + nmStartDate + &quot; (now minus offset of &quot; + offsetString + &quot;)&quot;);</span>
+
+
+<span class="fc" id="L141">		Long startTimestampToGenerateNotifications = System.currentTimeMillis() - offset;</span>
+
+<span class="fc" id="L143">		ConditionDashboard conditionDashboard = Application.get().getDashboard();</span>
+
+<span class="fc" id="L145">		futureDataPrepareJob = new DataPrepareJob(frj, mainExecutor, dataManager, snapshotProcessor, persistenceManager,</span>
+<span class="fc" id="L146">				eventRegister, eventSender, conditionDashboard, demo);</span>
+
+<span class="fc" id="L148">		readerRaskController = new JobScheduler(futureDataPrepareJob, realTimeReaderPeriod);</span>
+
+<span class="fc" id="L150">		getRecentSuggestions();</span>
+<span class="fc" id="L151">	}</span>
+
+	private void persistVersion(Date startDate, Date endDate) {
+
+<span class="fc" id="L155">		versionCondition = new Condition();</span>
+<span class="fc" id="L156">		versionCondition.setStart(startDate);</span>
+<span class="fc" id="L157">		versionCondition.setEnd(endDate);</span>
+<span class="pc bpc" id="L158" title="1 of 2 branches missed.">		if (endDate != null) {</span>
+<span class="fc" id="L159">			versionCondition.calculateDuration();</span>
+		}
+		// TODO: class name vs priority - decide on one convention
+<span class="fc" id="L162">		versionCondition.setClassName(ConditionPriority.DEFAULTT);</span>
+
+<span class="fc" id="L164">		versionCondition.setGroup(ConditionGroup.EXPERT_VERSION);</span>
+<span class="fc" id="L165">		String version = this.getClass().getPackage().getImplementationVersion();</span>
+<span class="pc bpc" id="L166" title="1 of 2 branches missed.">		if (version == null) {</span>
+<span class="fc" id="L167">			logger.info(&quot;Problem detecting version&quot;);</span>
+<span class="fc" id="L168">			version = &quot;unknown&quot;;</span>
+		}
+<span class="fc" id="L170">		versionCondition.setTitle(version);</span>
+<span class="fc" id="L171">		this.persistenceManager.persist(versionCondition);</span>
+<span class="fc" id="L172">	}</span>
+
+	private void getRecentSuggestions() {
+<span class="fc" id="L175">		List&lt;Condition&gt; briefHistory = persistenceManager.getLastActionConditions();</span>
+
+<span class="pc bpc" id="L177" title="1 of 2 branches missed.">		if (briefHistory != null) {</span>
+<span class="fc" id="L178">			logger.info(&quot;Getting some conditions from last expert run: &quot; + briefHistory.size());</span>
+
+<span class="fc" id="L180">			Collections.reverse(briefHistory);</span>
+<span class="pc bpc" id="L181" title="1 of 2 branches missed.">			for (Condition condition : briefHistory) {</span>
+<span class="nc" id="L182">				Set&lt;Condition&gt; fakeGroup = new HashSet&lt;&gt;();</span>
+<span class="nc" id="L183">				fakeGroup.add(condition);</span>
+<span class="nc" id="L184">				Application.get().getDashboard().update(fakeGroup);</span>
+			}
+		}
+<span class="fc" id="L187">	}</span>
+
+	public void startJobs() {
+<span class="fc" id="L190">		readerRaskController.fireRealTimeReaderTask();</span>
+<span class="fc" id="L191">	}</span>
+
+	public Future fireOnDemandJob(long startTime, long endTime, Set&lt;Condition&gt; destination, String scriptName) {
+
+<span class="nc" id="L195">		ConditionDashboard conditionDashboard = Application.get().getDashboard();</span>
+<span class="nc" id="L196">		ConditionProducer conditionProducer = new ConditionProducer();</span>
+<span class="nc" id="L197">		EventRegister eventRegister = new EventPrinter();</span>
+<span class="nc" id="L198">		conditionProducer.setEventRegister(eventRegister);</span>
+<span class="nc" id="L199">		SnapshotProcessor snapshotProcessor2 = new SnapshotProcessor(conditionProducer);</span>
+<span class="nc" id="L200">		DataPrepareJob onDemandDataJob = new DataPrepareJob(onDemandReader, mainExecutor, null, snapshotProcessor2,</span>
+<span class="nc" id="L201">				persistenceManager, eventRegister, null, conditionDashboard, false);</span>
+<span class="nc" id="L202">		onDemandReader.setTimeSpan(startTime, endTime);</span>
+<span class="nc" id="L203">		onDemandDataJob.getSnapshotProcessor().getCheckManager().getExperimentalProcessor()</span>
+<span class="nc" id="L204">				.setRequestedScript(scriptName);</span>
+<span class="nc" id="L205">		onDemandDataJob.getSnapshotProcessor().clearProducer();</span>
+<span class="nc" id="L206">		return readerRaskController.scheduleOnDemandReaderTask(onDemandDataJob);</span>
+	}
+
+	public void stop() {
+
+<span class="nc" id="L211">		readerRaskController.stopExecutors();</span>
+<span class="nc" id="L212">		mainExecutor.shutdown();</span>
+
+		try {
+<span class="nc" id="L215">			mainExecutor.awaitTermination(1000, TimeUnit.MILLISECONDS);</span>
+
+<span class="nc" id="L217">			logger.info(&quot;All jobs gracefully terminated&quot;);</span>
+<span class="nc" id="L218">		} catch (InterruptedException e) {</span>
+
+<span class="nc" id="L220">			logger.error(&quot;Could not gracefully terminate jobs&quot;);</span>
+<span class="nc" id="L221">			logger.error(e);</span>
+		}
+
+<span class="nc" id="L224">		logger.info(&quot;Temporarly finishing events&quot;);</span>
+<span class="nc" id="L225">		Set&lt;Condition&gt; finished = eventProducer.finish();</span>
+<span class="nc" id="L226">		persistenceManager.persist(finished);</span>
+<span class="nc" id="L227">		logger.info(&quot;Finished &quot; + finished.size() + &quot; conditions.&quot;);</span>
+
+<span class="nc" id="L229">		RunConfigurator runConfigurator = new RunConfigurator(persistenceManager);</span>
+<span class="nc" id="L230">		Date endDate = runConfigurator.getEndDate();</span>
+<span class="nc bnc" id="L231" title="All 2 branches missed.">		if (endDate == null)</span>
+<span class="nc" id="L232">			endDate = new Date();</span>
+<span class="nc" id="L233">		versionCondition.setEnd(endDate);</span>
+<span class="nc" id="L234">		versionCondition.calculateDuration();</span>
+<span class="nc" id="L235">		persistenceManager.persist(versionCondition);</span>
+
+<span class="nc" id="L237">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>Setting.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Notification Manager</a> &gt; <a href="index.source.html" class="el_package">cern.cms.daq.nm</a> &gt; <span class="el_source">Setting.java</span></div><h1>Setting.java</h1><pre class="source lang-java linenums"><span class="nc" id="L1">package cern.cms.daq.nm;</span>
+
+<span class="nc" id="L3">public enum Setting {</span>
+
+<span class="nc" id="L5">	EXPERT_BROWSER(&quot;expert.url&quot;),</span>
+<span class="nc" id="L6">	LANDING(&quot;landing&quot;),</span>
+<span class="nc" id="L7">	SOUND_URL(&quot;sound.url&quot;),</span>
+<span class="nc" id="L8">	SOUND_PORT(&quot;sound.port&quot;),</span>
+<span class="nc" id="L9">	SOUND_ENABLED(&quot;sound.enabled&quot;),</span>
+<span class="nc" id="L10">	EXTERNAL_NOTIFICATION_PORT(&quot;external.notification.port&quot;),</span>
+	
+<span class="nc" id="L12">	DATABASE_USER(&quot;hibernate.connection.username&quot;),</span>
+<span class="nc" id="L13">	DATABASE_PASSWORD(&quot;hibernate.connection.password&quot;),</span>
+<span class="nc" id="L14">	DATABASE_URL(&quot;hibernate.connection.url&quot;),</span>
+<span class="nc" id="L15">	DATABASE_DRIVER(&quot;hibernate.connection.driver_class&quot;),</span>
+<span class="nc" id="L16">	DATABASE_MODE(&quot;hibernate.hbm2ddl.auto&quot;),</span>
+	
+
+<span class="nc" id="L19">	WEBSOCKET_NM(&quot;websocket.nm.url&quot;),</span>
+<span class="nc" id="L20">	WEBSOCKET_EXPERT(&quot;websocket.expert.url&quot;),</span>
+	;
+
+	private final String code;
+
+<span class="nc" id="L25">	private Setting(String code) {</span>
+<span class="nc" id="L26">		this.code = code;</span>
+<span class="nc" id="L27">	}</span>
+
+	public String getCode() {
+<span class="nc" id="L30">		return code;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

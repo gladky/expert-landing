@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>ServletListener.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DAQExpert</a> &gt; <a href="index.source.html" class="el_package">rcms.utilities.daqexpert.servlets</a> &gt; <span class="el_source">ServletListener.java</span></div><h1>ServletListener.java</h1><pre class="source lang-java linenums">package rcms.utilities.daqexpert.servlets;
+
+import java.sql.Driver;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.Set;
+
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+
+import org.apache.http.client.HttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.log4j.Logger;
+
+import rcms.utilities.daqexpert.Application;
+import rcms.utilities.daqexpert.DataManager;
+import rcms.utilities.daqexpert.ExpertException;
+import rcms.utilities.daqexpert.ExpertExceptionCode;
+import rcms.utilities.daqexpert.ExpertPersistorManager;
+import rcms.utilities.daqexpert.Setting;
+import rcms.utilities.daqexpert.events.EventSender;
+import rcms.utilities.daqexpert.persistence.Condition;
+import rcms.utilities.daqexpert.processing.JobManager;
+import rcms.utilities.daqexpert.segmentation.DataResolutionManager;
+
+public class ServletListener implements ServletContextListener {
+
+	public ServletListener() {
+
+<span class="nc" id="L32">		super();</span>
+<span class="nc" id="L33">		String propertyFilePath = null;</span>
+		try {
+<span class="nc" id="L35">			propertyFilePath = System.getenv(&quot;EXPERT_CONF&quot;);</span>
+<span class="nc bnc" id="L36" title="All 2 branches missed.">			if (propertyFilePath == null) {</span>
+<span class="nc" id="L37">				throw new ExpertException(ExpertExceptionCode.MissingConfigurationFile,</span>
+<span class="nc" id="L38">						&quot;No configuration file supplied with environment variable EXPERT_CONF&quot;);</span>
+			}
+
+<span class="nc" id="L41">			Application.initialize(propertyFilePath);</span>
+
+<span class="nc" id="L43">			logger.info(&quot;Database mode: &quot; + Application.get().getProp(Setting.DATABASE_MODE));</span>
+<span class="nc" id="L44">			logger.info(&quot;Database url : &quot; + Application.get().getProp(Setting.DATABASE_URL));</span>
+
+<span class="nc" id="L46">			String snapshotsDir = Application.get().getProp(Setting.SNAPSHOTS_DIR);</span>
+
+<span class="nc bnc" id="L48" title="All 2 branches missed.">			if (snapshotsDir != null)</span>
+<span class="nc" id="L49">				logger.info(&quot;Loading snapshots from directory: &quot; + snapshotsDir);</span>
+			else {
+<span class="nc" id="L51">				logger.warn(</span>
+<span class="nc" id="L52">						&quot;Could not load snapshot directory from neither SNAPSHOTS env var nor config.properties file&quot;);</span>
+<span class="nc" id="L53">				return;</span>
+			}
+
+<span class="nc" id="L56">			persistorManager = new ExpertPersistorManager(snapshotsDir);</span>
+<span class="nc" id="L57">		} catch (ExpertException e) {</span>
+<span class="nc" id="L58">			logger.fatal(&quot;Failed to start expert: &quot; + e.getCode().getName());</span>
+<span class="nc" id="L59">			logger.error(e);</span>
+<span class="nc" id="L60">			throw e;</span>
+		}
+
+<span class="nc" id="L63">	}</span>
+
+<span class="nc" id="L65">	private static final Logger logger = Logger.getLogger(ServletListener.class);</span>
+
+	ExpertPersistorManager persistorManager;
+	DataResolutionManager dataSegmentator;
+	JobManager jobManager;
+
+	public void contextInitialized(ServletContextEvent e) {
+<span class="nc" id="L72">		String sourceDirectory = Application.get().getProp(Setting.SNAPSHOTS_DIR);</span>
+
+<span class="nc" id="L74">		DataManager dataManager = Application.get().getDataManager();</span>
+
+<span class="nc" id="L76">		HttpClient client = HttpClientBuilder.create().build();</span>
+<span class="nc" id="L77">		EventSender eventSender = new EventSender(client, Application.get().getProp(Setting.NM_API_CREATE));</span>
+
+<span class="nc" id="L79">		jobManager = new JobManager(sourceDirectory, dataManager, eventSender);</span>
+<span class="nc" id="L80">		jobManager.startJobs();</span>
+
+<span class="nc" id="L82">		Application.get().setJobManager(jobManager);</span>
+<span class="nc" id="L83">	}</span>
+
+	public void contextDestroyed(ServletContextEvent e) {
+<span class="nc" id="L86">		logger.info(&quot;Expert will go down now, starting shutdown sequence&quot;);</span>
+
+<span class="nc" id="L88">		jobManager.stop();</span>
+
+<span class="nc" id="L90">		Enumeration&lt;Driver&gt; drivers = DriverManager.getDrivers();</span>
+<span class="nc bnc" id="L91" title="All 2 branches missed.">		while (drivers.hasMoreElements()) {</span>
+<span class="nc" id="L92">			Driver driver = drivers.nextElement();</span>
+			try {
+<span class="nc" id="L94">				DriverManager.deregisterDriver(driver);</span>
+<span class="nc" id="L95">				logger.info(String.format(&quot;deregistering jdbc driver: %s&quot;, driver));</span>
+<span class="nc" id="L96">			} catch (SQLException ex) {</span>
+<span class="nc" id="L97">				logger.error(String.format(&quot;Error deregistering driver %s&quot;, driver), ex);</span>
+			}
+
+		}
+<span class="nc" id="L101">		logger.info(&quot;Shutdown sequence completed, expert is down&quot;);</span>
+<span class="nc" id="L102">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

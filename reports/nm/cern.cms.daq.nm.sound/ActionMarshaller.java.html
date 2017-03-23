@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>ActionMarshaller.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Notification Manager</a> &gt; <a href="index.source.html" class="el_package">cern.cms.daq.nm.sound</a> &gt; <span class="el_source">ActionMarshaller.java</span></div><h1>ActionMarshaller.java</h1><pre class="source lang-java linenums">package cern.cms.daq.nm.sound;
+
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+
+import org.apache.log4j.Logger;
+
+/**
+ * Parses external system notifications
+ * 
+ * @author Maciej Gladki (maciej.szymon.gladki@cern.ch)
+ *
+ */
+<span class="fc" id="L20">public class ActionMarshaller {</span>
+
+<span class="fc" id="L22">	private static final Logger logger = Logger.getLogger(ActionMarshaller.class);</span>
+
+	/**
+	 * Parses input from external system. The method accepts both cases with
+	 * &lt;commandSequence&gt; wrapper and without it.
+	 * 
+	 * @param input
+	 *            raw message from external system
+	 * @return list of Action objects parsed from input message
+	 */
+	public List&lt;Alarm&gt; parseInput(String input) {
+<span class="fc" id="L33">		logger.info(&quot;Message to parse: &quot; + input);</span>
+		List&lt;Alarm&gt; alarms;
+		try {
+<span class="fc" id="L36">			alarms = parse(input);</span>
+<span class="fc" id="L37">			return alarms;</span>
+<span class="fc" id="L38">		} catch (JAXBException e) {</span>
+<span class="fc" id="L39">			logger.warn(&quot;Parsing with command sequence wrapper unsucessful. Will add fake wrapper.&quot;);</span>
+<span class="fc" id="L40">			logger.warn(e);</span>
+<span class="fc" id="L41">			String fakeWrapper = &quot;&lt;CommandSequence&gt;&quot; + input + &quot;&lt;/CommandSequence&gt;&quot;;</span>
+
+			try {
+<span class="fc" id="L44">				alarms = parse(fakeWrapper);</span>
+<span class="fc" id="L45">				return alarms;</span>
+<span class="nc" id="L46">			} catch (JAXBException e1) {</span>
+
+<span class="nc" id="L48">				logger.error(e1);</span>
+<span class="nc" id="L49">				return null;</span>
+			}
+		}
+
+	}
+
+	/**
+	 * Parses the input
+	 * 
+	 * @param input
+	 *            raw message from external system
+	 * @return list of Action objects parsed from input message
+	 * @throws JAXBException
+	 *             exception in case parsing problem occures
+	 */
+	private List&lt;Alarm&gt; parse(String input) throws JAXBException {
+
+		JAXBContext jaxbContext;
+<span class="fc" id="L67">		jaxbContext = JAXBContext.newInstance(CommandSequence.class);</span>
+<span class="fc" id="L68">		Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();</span>
+<span class="fc" id="L69">		InputStream stream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));</span>
+<span class="fc" id="L70">		CommandSequence commandSequence = (CommandSequence) jaxbUnmarshaller.unmarshal(stream);</span>
+<span class="fc" id="L71">		List&lt;Alarm&gt; alarm = commandSequence.getAlarm();</span>
+<span class="fc" id="L72">		logger.info(&quot;Alarm sucessfully parsed: &quot; + alarm);</span>
+<span class="fc" id="L73">		return alarm;</span>
+
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

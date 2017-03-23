@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>EvmEnabled.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DAQExpert</a> &gt; <a href="index.source.html" class="el_package">rcms.utilities.daqexpert.reasoning.logic.experimental</a> &gt; <span class="el_source">EvmEnabled.java</span></div><h1>EvmEnabled.java</h1><pre class="source lang-java linenums">package rcms.utilities.daqexpert.reasoning.logic.experimental;
+
+import java.util.List;
+import java.util.Map;
+
+import rcms.utilities.daqaggregator.data.DAQ;
+import rcms.utilities.daqaggregator.data.FEDBuilder;
+import rcms.utilities.daqaggregator.data.RU;
+import rcms.utilities.daqexpert.reasoning.base.SimpleLogicModule;
+import rcms.utilities.daqexpert.reasoning.base.enums.ConditionGroup;
+import rcms.utilities.daqexpert.reasoning.base.enums.ConditionPriority;
+
+public class EvmEnabled extends SimpleLogicModule {
+
+<span class="nc" id="L15">	public EvmEnabled() {</span>
+<span class="nc" id="L16">		this.name = &quot;Enabled EVM&quot;;</span>
+<span class="nc" id="L17">		this.priority = ConditionPriority.DEFAULTT;</span>
+<span class="nc" id="L18">		this.description = &quot;EVM is enabled&quot;;</span>
+<span class="nc" id="L19">	}</span>
+
+	@Override
+	public boolean satisfied(DAQ daq, Map&lt;String, Boolean&gt; results) {
+<span class="nc" id="L23">		List&lt;FEDBuilder&gt; a = daq.getFedBuilders();</span>
+<span class="nc bnc" id="L24" title="All 2 branches missed.">		for (FEDBuilder b : a) {</span>
+<span class="nc" id="L25">			RU ru = b.getRu();</span>
+<span class="nc" id="L26">			if (ru.isEVM()) {</span>
+				//TODO: how to check if EVM is enabled? not masked?
+			}
+		}
+<span class="nc" id="L30">		boolean result = false;</span>
+
+<span class="nc" id="L32">		return result;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

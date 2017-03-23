@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>Constants.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Notification Manager</a> &gt; <a href="index.source.html" class="el_package">cern.cms.daq.nm</a> &gt; <span class="el_source">Constants.java</span></div><h1>Constants.java</h1><pre class="source lang-java linenums">package cern.cms.daq.nm;
+
+import java.util.Arrays;
+import java.util.List;
+
+<span class="nc" id="L6">public class Constants {</span>
+
+	// configuration from
+	// http://www.forumsys.com/tutorials/integration-how-to/ldap/online-ldap-test-server/
+	public static final String testLDAP = &quot;ldap://ldap.forumsys.com:389&quot;;
+	public static final String testDC = &quot;dc=example,dc=com&quot;;
+
+	// configuration from
+	// https://espace.cern.ch/mmmservices-help/AccessingYourMailbox/Pages/default.aspx
+	public final static String cernLDAP = &quot;ldap://ldap.cern.ch:636&quot;;
+	public final static String cernDC = &quot;ou=users,o=cern,c=ch&quot;;
+
+<span class="nc" id="L18">	public static String password = &quot;password&quot;;</span>
+
+<span class="nc" id="L20">	public static List&lt;Condition&gt; importanceConditionsList = Arrays.asList(</span>
+			/*Condition.Importance_Adjust, */
+<span class="nc" id="L22">			Condition.Importance_All /*, Condition.Importance_BeamDump, Condition.Importance_Cycling,</span>
+			Condition.Importance_FlatTop, Condition.Importance_InjectionPhysicsBeam,
+			Condition.Importance_InjectionProbeBeam, Condition.Importance_PrepareRamp, Condition.Importance_Ramp,
+			Condition.Importance_RampDown, Condition.Importance_Setup, Condition.Importance_ShortToStableBeams,
+			Condition.Importance_Squeeeze, Condition.Importance_StableBeams*/);
+
+<span class="nc" id="L28">	public static List&lt;Condition&gt; shiftConditionsList = Arrays.asList(Condition.Shift_MyShift, Condition.Shift_Always);</span>
+
+<span class="nc" id="L30">	public static List&lt;Condition&gt; timeConditionsList = Arrays.asList(Condition.Time_Daytime, Condition.Time_Nighttime);</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

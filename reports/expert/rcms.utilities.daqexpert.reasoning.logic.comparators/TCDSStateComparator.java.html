@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>TCDSStateComparator.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DAQExpert</a> &gt; <a href="index.source.html" class="el_package">rcms.utilities.daqexpert.reasoning.logic.comparators</a> &gt; <span class="el_source">TCDSStateComparator.java</span></div><h1>TCDSStateComparator.java</h1><pre class="source lang-java linenums">package rcms.utilities.daqexpert.reasoning.logic.comparators;
+
+import rcms.utilities.daqaggregator.data.DAQ;
+import rcms.utilities.daqaggregator.data.SubSystem;
+import rcms.utilities.daqexpert.reasoning.base.ComparatorLogicModule;
+import rcms.utilities.daqexpert.reasoning.base.enums.ConditionPriority;
+
+public class TCDSStateComparator extends ComparatorLogicModule {
+
+<span class="fc" id="L10">	public TCDSStateComparator() {</span>
+<span class="fc" id="L11">		this.name = &quot;n/a&quot;;</span>
+<span class="fc" id="L12">		this.priority = ConditionPriority.DEFAULTT;</span>
+<span class="fc" id="L13">		this.description = &quot;New TCDS state identified&quot;;</span>
+<span class="fc" id="L14">	}</span>
+
+	public boolean compare(DAQ previous, DAQ current) {
+<span class="fc" id="L17">		String tcdsStatus = getTCDSState(current);</span>
+<span class="fc" id="L18">		String prevTcdsStatus = getTCDSState(previous);</span>
+
+<span class="fc bfc" id="L20" title="All 2 branches covered.">		if (!tcdsStatus.equals(prevTcdsStatus)) {</span>
+<span class="fc" id="L21">			this.name = tcdsStatus;</span>
+<span class="fc" id="L22">			return true;</span>
+		}
+<span class="fc" id="L24">		return false;</span>
+	}
+
+	private String getTCDSState(DAQ daq) {
+<span class="fc bfc" id="L28" title="All 2 branches covered.">		if (daq.getSubSystems() != null) {</span>
+<span class="pc bpc" id="L29" title="1 of 2 branches missed.">			for (SubSystem curr : daq.getSubSystems()) {</span>
+				/* check tcds subsystem state */
+<span class="fc bfc" id="L31" title="All 2 branches covered.">				if (curr.getName().equalsIgnoreCase(&quot;TCDS&quot;)) {</span>
+<span class="fc" id="L32">					return curr.getStatus();</span>
+				}
+			}
+		}
+<span class="fc" id="L36">		return &quot;undefined&quot;;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

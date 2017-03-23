@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>UserShift.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Notification Manager</a> &gt; <a href="index.source.html" class="el_package">cern.cms.daq.nm.task</a> &gt; <span class="el_source">UserShift.java</span></div><h1>UserShift.java</h1><pre class="source lang-java linenums">package cern.cms.daq.nm.task;
+
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+
+import org.apache.log4j.Logger;
+import org.hibernate.Criteria;
+import org.hibernate.Session;
+import org.hibernate.criterion.Restrictions;
+
+import cern.cms.daq.nm.persistence.DummyUser;
+import cern.cms.daq.nm.persistence.ShiftOccurrence;
+
+public class UserShift {
+
+<span class="fc" id="L20">	private static Logger logger = Logger.getLogger(UserShift.class);</span>
+
+	private final EntityManagerFactory shiftEMF;
+
+<span class="fc" id="L24">	public UserShift(EntityManagerFactory shiftEMF) {</span>
+<span class="fc" id="L25">		this.shiftEMF = shiftEMF;</span>
+<span class="fc" id="L26">	}</span>
+
+	/**
+	 * Temporary function to go back in time by 1 year and get use of test shift
+	 * data
+	 * 
+	 * @return
+	 */
+	protected Date getNow() {
+<span class="nc" id="L35">		Calendar cal = Calendar.getInstance();</span>
+<span class="nc" id="L36">		cal.setTime(new Date());</span>
+<span class="nc" id="L37">		cal.add(Calendar.YEAR, -1);</span>
+<span class="nc" id="L38">		Date d = cal.getTime();</span>
+<span class="nc" id="L39">		logger.debug(&quot;Pretending now is one year before&quot; + d);</span>
+<span class="nc" id="L40">		return d;</span>
+	}
+
+	/**
+	 * Temporary function to use existing shifters data
+	 * TODO: remove this
+	 * @return
+	 */
+	private Long getFakeUserId(DummyUser user) {
+<span class="nc" id="L49">		Long userId = user.getId();</span>
+
+<span class="nc bnc" id="L51" title="All 2 branches missed.">		if (userId == 1) {</span>
+<span class="nc" id="L52">			logger.debug(&quot;User &quot; + user.getUsername() + &quot; will be hsakulin for shift test&quot;);</span>
+<span class="nc" id="L53">			userId = 448336L;</span>
+		}
+<span class="nc" id="L55">		return userId;</span>
+	}
+
+	public boolean isShiftOn(DummyUser user) {
+
+<span class="nc" id="L60">		EntityManager em = shiftEMF.createEntityManager();</span>
+<span class="nc" id="L61">		Session session = em.unwrap(Session.class);</span>
+
+<span class="nc" id="L63">		Date d = getNow();</span>
+<span class="nc" id="L64">		int timeAfter = getCorrectionAfter();</span>
+<span class="nc" id="L65">		int timeBefore = getCorrectionBefore();</span>
+
+<span class="nc" id="L67">		Calendar cal = Calendar.getInstance();</span>
+<span class="nc" id="L68">		cal.setTime(d);</span>
+<span class="nc" id="L69">		cal.add(Calendar.HOUR, -timeAfter);</span>
+<span class="nc" id="L70">		Date customHourBack = cal.getTime();</span>
+<span class="nc" id="L71">		cal.setTime(d);</span>
+<span class="nc" id="L72">		cal.add(Calendar.HOUR, timeBefore);</span>
+<span class="nc" id="L73">		Date customHourForward = cal.getTime();</span>
+
+<span class="nc" id="L75">		Criteria cr = session.createCriteria(ShiftOccurrence.class);</span>
+<span class="nc" id="L76">		cr.add(Restrictions.eq(&quot;userId&quot;, getFakeUserId(user)));</span>
+<span class="nc" id="L77">		cr.add(Restrictions.le(&quot;start&quot;, customHourForward));</span>
+<span class="nc" id="L78">		cr.add(Restrictions.ge(&quot;end&quot;, customHourBack));</span>
+		@SuppressWarnings(&quot;unchecked&quot;)
+<span class="nc" id="L80">		List&lt;ShiftOccurrence&gt; a = cr.list();</span>
+<span class="nc" id="L81">		em.close();</span>
+<span class="nc" id="L82">		return getResult(a, user);</span>
+
+	}
+
+	/**
+	 * Correction of shift end time. Example &lt;b&gt;+2&lt;/b&gt; will still notify for 2h
+	 * after shift ends, &lt;b&gt;-2&lt;/b&gt; will stop notify 2h before shift ends
+	 * 
+	 * @return
+	 */
+	protected int getCorrectionAfter() {
+		// TODO: get correction from user db
+<span class="nc" id="L94">		return 0;</span>
+	}
+
+	/**
+	 * Correction of shift start time. Example: &lt;b&gt;+2&lt;/b&gt; will start notify 2h
+	 * before shift starts, &lt;b&gt;-2&lt;/b&gt; will start notify 2h after shift starts
+	 * 
+	 * @return
+	 */
+	protected int getCorrectionBefore() {
+		// TODO: get correction from user db
+<span class="nc" id="L105">		return 0;</span>
+	}
+
+	private boolean getResult(List&lt;ShiftOccurrence&gt; a, DummyUser user) {
+<span class="nc bnc" id="L109" title="All 2 branches missed.">		if (a.size() == 0) {</span>
+<span class="nc" id="L110">			logger.warn(&quot;No shift information found for user &quot; + user.getUsername());</span>
+<span class="nc" id="L111">			return false;</span>
+		} else {
+<span class="nc" id="L113">			logger.debug(&quot;Found shift entry for user &quot; + user.getUsername());</span>
+<span class="nc bnc" id="L114" title="All 2 branches missed.">			for (ShiftOccurrence so : a) {</span>
+<span class="nc" id="L115">				logger.debug(so);</span>
+			}
+<span class="nc" id="L117">			return true;</span>
+		}
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

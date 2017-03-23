@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>DominantSelector.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DAQExpert</a> &gt; <a href="index.source.html" class="el_package">rcms.utilities.daqexpert.websocket</a> &gt; <span class="el_source">DominantSelector.java</span></div><h1>DominantSelector.java</h1><pre class="source lang-java linenums">package rcms.utilities.daqexpert.websocket;
+
+import java.util.HashSet;
+import java.util.Set;
+
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.log4j.Logger;
+
+import rcms.utilities.daqexpert.persistence.Condition;
+
+<span class="nc" id="L11">public class DominantSelector {</span>
+
+<span class="nc" id="L13">	private final static Logger logger = Logger.getLogger(DominantSelector.class);</span>
+
+	/**
+	 * 
+	 * Used only for selecting events with Sender Type Expert TODO: check if
+	 * there is priority TODO: check if there is logic module
+	 */
+	public Pair&lt;Condition, Set&lt;Condition&gt;&gt; selectDominantEvent(Set&lt;Condition&gt; events) {
+
+<span class="nc" id="L22">		Set&lt;Condition&gt; secondaryEvents = new HashSet&lt;&gt;();</span>
+<span class="nc" id="L23">		Condition dominant = null;</span>
+
+<span class="nc bnc" id="L25" title="All 2 branches missed.">		for (Condition event : events) {</span>
+
+<span class="nc bnc" id="L27" title="All 2 branches missed.">			if (dominant == null) {</span>
+<span class="nc" id="L28">				dominant = event;</span>
+			} else {
+
+<span class="nc bnc" id="L31" title="All 2 branches missed.">				if (dominant.getPriority().ordinal() &lt; event.getPriority().ordinal()) {</span>
+<span class="nc" id="L32">					dominant = event;</span>
+
+<span class="nc bnc" id="L34" title="All 2 branches missed.">				} else if (dominant.getPriority().ordinal() == event.getPriority().ordinal()) {</span>
+
+<span class="nc bnc" id="L36" title="All 2 branches missed.">					if (dominant.getLogicModule().getUsefulness() &lt; event.getLogicModule().getUsefulness()) {</span>
+<span class="nc" id="L37">						dominant = event;</span>
+<span class="nc bnc" id="L38" title="All 2 branches missed.">					} else if (dominant.getLogicModule().getUsefulness() == event.getLogicModule().getUsefulness()) {</span>
+						// this means that the usefulness of LM was not
+						// configured according to recommendation
+<span class="nc" id="L41">						logger.warn(&quot;Misconfiguration of LM usefulness, there are two LM with same usefulness level: &quot;</span>
+<span class="nc" id="L42">								+ dominant.getLogicModule() + &quot;,&quot; + event.getLogicModule()</span>
+								+ &quot;, adjust usfulness according to recomendations.&quot;);
+
+					} else {
+						// nothing to do: current event not more useful than
+						// current dominant
+					}
+
+				} else {
+					// nothing to do: current event not more important than
+					// current dominant
+				}
+
+			}
+<span class="nc" id="L56">		}</span>
+
+<span class="nc bnc" id="L58" title="All 2 branches missed.">		for (Condition event : events) {</span>
+<span class="nc bnc" id="L59" title="All 2 branches missed.">			if (event != dominant) {</span>
+<span class="nc" id="L60">				secondaryEvents.add(event);</span>
+			}
+<span class="nc" id="L62">		}</span>
+
+<span class="nc" id="L64">		return Pair.of(dominant, secondaryEvents);</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

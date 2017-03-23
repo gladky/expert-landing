@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>ConditionPriority.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DAQExpert</a> &gt; <a href="index.source.html" class="el_package">rcms.utilities.daqexpert.reasoning.base.enums</a> &gt; <span class="el_source">ConditionPriority.java</span></div><h1>ConditionPriority.java</h1><pre class="source lang-java linenums"><span class="pc" id="L1">package rcms.utilities.daqexpert.reasoning.base.enums;</span>
+
+import com.fasterxml.jackson.annotation.JsonValue;
+
+/**
+ * Priority of the condition
+ * 
+ * @author Maciej Gladki (maciej.szymon.gladki@cern.ch)
+ *
+ */
+<span class="fc" id="L11">public enum ConditionPriority {</span>
+
+<span class="fc" id="L13">	FILTERED(&quot;filtered&quot;),</span>
+<span class="fc" id="L14">	FILTERED_IMPORTANT(&quot;filtered-important&quot;),</span>
+<span class="fc" id="L15">	EXPERIMENTAL(&quot;experimental&quot;),</span>
+<span class="fc" id="L16">	DEFAULTT(&quot;default&quot;),</span>
+<span class="fc" id="L17">	IMPORTANT(&quot;important&quot;),</span>
+<span class="fc" id="L18">	WARNING(&quot;warning&quot;),</span>
+<span class="fc" id="L19">	CRITICAL(&quot;critical&quot;),</span>
+	;
+
+<span class="fc" id="L22">	private ConditionPriority(String code) {</span>
+<span class="fc" id="L23">		this.code = code;</span>
+<span class="fc" id="L24">	}</span>
+
+	@JsonValue
+	public String getCode() {
+<span class="fc" id="L28">		return code;</span>
+	}
+
+	private final String code;
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

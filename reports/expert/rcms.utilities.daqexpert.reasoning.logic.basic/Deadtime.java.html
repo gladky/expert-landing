@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>Deadtime.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DAQExpert</a> &gt; <a href="index.source.html" class="el_package">rcms.utilities.daqexpert.reasoning.logic.basic</a> &gt; <span class="el_source">Deadtime.java</span></div><h1>Deadtime.java</h1><pre class="source lang-java linenums">package rcms.utilities.daqexpert.reasoning.logic.basic;
+
+import java.util.Map;
+import java.util.Properties;
+
+import rcms.utilities.daqaggregator.data.DAQ;
+import rcms.utilities.daqexpert.ExpertException;
+import rcms.utilities.daqexpert.ExpertExceptionCode;
+import rcms.utilities.daqexpert.Setting;
+import rcms.utilities.daqexpert.reasoning.base.SimpleLogicModule;
+import rcms.utilities.daqexpert.reasoning.base.enums.ConditionPriority;
+
+/**
+ * This logic module identifies deadtime
+ */
+public class Deadtime extends SimpleLogicModule implements Parameterizable {
+
+	private float threshold;
+
+<span class="fc" id="L20">	public Deadtime() {</span>
+<span class="fc" id="L21">		this.name = &quot;Deadtime&quot;;</span>
+<span class="fc" id="L22">		this.priority = ConditionPriority.DEFAULTT;</span>
+<span class="fc" id="L23">		this.threshold = 0;</span>
+<span class="fc" id="L24">	}</span>
+
+	/**
+	 * Dead time when greater than 5%
+	 */
+	@Override
+	public boolean satisfied(DAQ daq, Map&lt;String, Boolean&gt; results) {
+
+<span class="fc" id="L32">		double deadtime = 0;</span>
+		try {
+<span class="pc bpc" id="L34" title="1 of 2 branches missed.">			if (results.get(BeamActive.class.getSimpleName())) {</span>
+<span class="fc" id="L35">				deadtime = daq.getTcdsGlobalInfo().getDeadTimes().get(&quot;beamactive_total&quot;);</span>
+<span class="fc" id="L36">			} else {</span>
+<span class="nc" id="L37">				deadtime = daq.getTcdsGlobalInfo().getDeadTimes().get(&quot;total&quot;);</span>
+			}
+<span class="nc" id="L39">		} catch (NullPointerException e) {</span>
+		}
+
+<span class="fc bfc" id="L42" title="All 2 branches covered.">		if (deadtime &gt; threshold)</span>
+<span class="fc" id="L43">			return true;</span>
+		else
+<span class="fc" id="L45">			return false;</span>
+	}
+
+	@Override
+	public void parametrize(Properties properties) {
+		try {
+<span class="fc" id="L51">			this.threshold = Integer</span>
+<span class="fc" id="L52">					.parseInt(properties.getProperty(Setting.EXPERT_LOGIC_DEADTIME_THESHOLD_TOTAL.getKey()));</span>
+
+<span class="fc" id="L54">			this.description = &quot;Deadtime is greater than &quot; + threshold + &quot;%&quot;;</span>
+<span class="pc" id="L55">		} catch (NumberFormatException e) {</span>
+<span class="nc" id="L56">			throw new ExpertException(ExpertExceptionCode.LogicModuleUpdateException, &quot;Could not update LM &quot;</span>
+<span class="nc" id="L57">					+ this.getClass().getSimpleName() + &quot;, number parsing problem: &quot; + e.getMessage());</span>
+<span class="nc" id="L58">		} catch (NullPointerException e) {</span>
+<span class="nc" id="L59">			throw new ExpertException(ExpertExceptionCode.LogicModuleUpdateException,</span>
+<span class="nc" id="L60">					&quot;Could not update LM &quot; + this.getClass().getSimpleName() + &quot;, other problem: &quot; + e.getMessage());</span>
+		}
+
+<span class="fc" id="L63">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

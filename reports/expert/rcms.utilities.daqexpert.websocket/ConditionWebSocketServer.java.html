@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>ConditionWebSocketServer.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DAQExpert</a> &gt; <a href="index.source.html" class="el_package">rcms.utilities.daqexpert.websocket</a> &gt; <span class="el_source">ConditionWebSocketServer.java</span></div><h1>ConditionWebSocketServer.java</h1><pre class="source lang-java linenums">package rcms.utilities.daqexpert.websocket;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.websocket.OnClose;
+import javax.websocket.OnError;
+import javax.websocket.OnMessage;
+import javax.websocket.OnOpen;
+import javax.websocket.Session;
+import javax.websocket.server.ServerEndpoint;
+
+import org.apache.log4j.Logger;
+
+import rcms.utilities.daqexpert.Application;
+
+@ApplicationScoped
+@ServerEndpoint(&quot;/actions&quot;)
+<span class="nc" id="L17">public class ConditionWebSocketServer {</span>
+
+<span class="nc" id="L19">	private static final Logger logger = Logger.getLogger(ConditionWebSocketServer.class);</span>
+
+<span class="nc" id="L21">	public static ConditionSessionHandler sessionHandler = new ConditionSessionHandler(</span>
+<span class="nc" id="L22">			Application.get().getDashboard());</span>
+
+	@OnOpen
+	public void open(Session session) {
+<span class="nc" id="L26">		logger.info(&quot;Connected &quot; + session.getId());</span>
+<span class="nc" id="L27">		sessionHandler.addSession(session);</span>
+<span class="nc" id="L28">	}</span>
+
+	@OnClose
+	public void close(Session session) {
+<span class="nc" id="L32">		logger.info(&quot;Closed &quot; + session.getId());</span>
+<span class="nc" id="L33">		sessionHandler.removeSession(session);</span>
+<span class="nc" id="L34">	}</span>
+
+	@OnError
+	public void onError(Throwable error) {
+<span class="nc" id="L38">		logger.error(error);</span>
+		// error.printStackTrace();
+<span class="nc" id="L40">	}</span>
+
+	@OnMessage
+	public void handleMessage(String message, Session session) {
+
+<span class="nc" id="L45">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

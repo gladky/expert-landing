@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>ExpectedRate.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DAQExpert</a> &gt; <a href="index.source.html" class="el_package">rcms.utilities.daqexpert.reasoning.logic.basic</a> &gt; <span class="el_source">ExpectedRate.java</span></div><h1>ExpectedRate.java</h1><pre class="source lang-java linenums">package rcms.utilities.daqexpert.reasoning.logic.basic;
+
+import java.util.Map;
+
+import rcms.utilities.daqaggregator.data.DAQ;
+import rcms.utilities.daqexpert.reasoning.base.SimpleLogicModule;
+import rcms.utilities.daqexpert.reasoning.base.enums.ConditionGroup;
+import rcms.utilities.daqexpert.reasoning.base.enums.ConditionPriority;
+
+public class ExpectedRate extends SimpleLogicModule {
+
+<span class="fc" id="L12">	public ExpectedRate() {</span>
+<span class="fc" id="L13">		this.name = &quot;Expected rate&quot;;</span>
+<span class="fc" id="L14">		this.priority = ConditionPriority.DEFAULTT;</span>
+<span class="fc" id="L15">		this.description = &quot;Expecting rate&quot;;</span>
+<span class="fc" id="L16">	}</span>
+
+	@Override
+	public boolean satisfied(DAQ daq, Map&lt;String, Boolean&gt; results) {
+
+<span class="fc" id="L21">		boolean runOngoing = results.get(RunOngoing.class.getSimpleName());</span>
+
+<span class="pc bpc" id="L23" title="1 of 2 branches missed.">		boolean fixingSoftError = daq.getLevelZeroState().equalsIgnoreCase(&quot;FixingSoftError&quot;) ? true : false;</span>
+<span class="pc bpc" id="L24" title="1 of 2 branches missed.">		boolean dcsPauseResume = daq.getLevelZeroState().equalsIgnoreCase(&quot;PerformingDCSPauseResume&quot;) ? true : false;</span>
+<span class="pc bpc" id="L25" title="1 of 2 branches missed.">		boolean pausing = daq.getLevelZeroState().equalsIgnoreCase(&quot;Pausing&quot;) ? true : false;</span>
+<span class="pc bpc" id="L26" title="1 of 2 branches missed.">		boolean paused = daq.getLevelZeroState().equalsIgnoreCase(&quot;Paused&quot;) ? true : false;</span>
+<span class="pc bpc" id="L27" title="1 of 2 branches missed.">		boolean resuming = daq.getLevelZeroState().equalsIgnoreCase(&quot;Resuming&quot;) ? true : false;</span>
+<span class="fc bfc" id="L28" title="All 2 branches covered.">		boolean ttcHardResettingFromRunning = daq.getLevelZeroState().equalsIgnoreCase(&quot;TTCHardResettingFromRunning&quot;)</span>
+<span class="fc" id="L29">				? true : false;</span>
+<span class="fc bfc" id="L30" title="All 2 branches covered.">		boolean ttcResyncingFromRunning = daq.getLevelZeroState().equalsIgnoreCase(&quot;TTCResyncingFromRunning&quot;)</span>
+<span class="fc" id="L31">				? true : false;</span>
+		
+
+<span class="pc bpc" id="L34" title="5 of 12 branches missed.">		if (runOngoing &amp;&amp; !fixingSoftError &amp;&amp; !dcsPauseResume &amp;&amp; !pausing &amp;&amp; !paused &amp;&amp; !resuming</span>
+<span class="fc bfc" id="L35" title="All 4 branches covered.">				&amp;&amp; !ttcHardResettingFromRunning &amp;&amp; !ttcResyncingFromRunning)</span>
+<span class="fc" id="L36">			return true;</span>
+<span class="fc" id="L37">		return false;</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

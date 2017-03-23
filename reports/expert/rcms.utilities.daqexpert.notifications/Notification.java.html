@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>Notification.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DAQExpert</a> &gt; <a href="index.source.html" class="el_package">rcms.utilities.daqexpert.notifications</a> &gt; <span class="el_source">Notification.java</span></div><h1>Notification.java</h1><pre class="source lang-java linenums">package rcms.utilities.daqexpert.notifications;
+
+import java.util.Date;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+
+<span class="nc" id="L8">public class Notification {</span>
+
+	private int type_id;
+
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = &quot;yyyy-MM-dd'T'HH:mm:ss&quot;, timezone = &quot;CET&quot;)
+	private Date date;
+	private String message;
+	private List&lt;String&gt; action;
+	private Long id;
+
+	private boolean display;
+	private boolean play;
+	private int soundId;
+	private boolean closeable;
+	
+	public int getType_id() {
+<span class="nc" id="L24">		return type_id;</span>
+	}
+
+	public void setType_id(int type_id) {
+<span class="nc" id="L28">		this.type_id = type_id;</span>
+<span class="nc" id="L29">	}</span>
+
+	public Date getDate() {
+<span class="nc" id="L32">		return date;</span>
+	}
+
+	public void setDate(Date date) {
+<span class="nc" id="L36">		this.date = date;</span>
+<span class="nc" id="L37">	}</span>
+
+	public String getMessage() {
+<span class="nc" id="L40">		return message;</span>
+	}
+
+	public void setMessage(String message) {
+<span class="nc" id="L44">		this.message = message;</span>
+<span class="nc" id="L45">	}</span>
+
+	public Long getId() {
+<span class="nc" id="L48">		return id;</span>
+	}
+
+	public void setId(Long id) {
+<span class="nc" id="L52">		this.id = id;</span>
+<span class="nc" id="L53">	}</span>
+
+	public List&lt;String&gt; getAction() {
+<span class="nc" id="L56">		return action;</span>
+	}
+
+	public void setAction(List&lt;String&gt; action) {
+<span class="nc" id="L60">		this.action = action;</span>
+<span class="nc" id="L61">	}</span>
+
+	@Override
+	public String toString() {
+<span class="nc" id="L65">		return &quot;Notification [type_id=&quot; + type_id + &quot;, date=&quot; + date + &quot;, message=&quot; + message + &quot;, action=&quot; + action</span>
+<span class="nc" id="L66">				+ &quot;, id=&quot; + id + &quot;]&quot;;</span>
+	}
+
+	public boolean isDisplay() {
+<span class="nc" id="L70">		return display;</span>
+	}
+
+	public void setDisplay(boolean display) {
+<span class="nc" id="L74">		this.display = display;</span>
+<span class="nc" id="L75">	}</span>
+
+	public boolean isPlay() {
+<span class="nc" id="L78">		return play;</span>
+	}
+
+	public void setPlay(boolean play) {
+<span class="nc" id="L82">		this.play = play;</span>
+<span class="nc" id="L83">	}</span>
+
+	public int getSoundId() {
+<span class="nc" id="L86">		return soundId;</span>
+	}
+
+	public void setSoundId(int soundId) {
+<span class="nc" id="L90">		this.soundId = soundId;</span>
+<span class="nc" id="L91">	}</span>
+
+	public boolean isCloseable() {
+<span class="nc" id="L94">		return closeable;</span>
+	}
+
+	public void setCloseable(boolean closeable) {
+<span class="nc" id="L98">		this.closeable = closeable;</span>
+<span class="nc" id="L99">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

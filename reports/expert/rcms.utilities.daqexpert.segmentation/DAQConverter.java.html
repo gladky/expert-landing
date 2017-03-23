@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>DAQConverter.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DAQExpert</a> &gt; <a href="index.source.html" class="el_package">rcms.utilities.daqexpert.segmentation</a> &gt; <span class="el_source">DAQConverter.java</span></div><h1>DAQConverter.java</h1><pre class="source lang-java linenums">package rcms.utilities.daqexpert.segmentation;
+
+import java.util.Date;
+
+import javax.print.attribute.ResolutionSyntax;
+
+import rcms.utilities.daqexpert.persistence.Point;
+import rcms.utilities.daqexpert.processing.DataStream;
+import rcms.utilities.daqexpert.reasoning.logic.basic.RateOutOfRange;
+import rcms.utilities.daqexpert.servlets.DummyDAQ;
+
+<span class="nc" id="L12">public class DAQConverter {</span>
+
+	public static Point convertToRatePoint(DummyDAQ daq) {
+<span class="fc" id="L15">		Point point = new Point();</span>
+<span class="fc" id="L16">		point.setResolution(DataResolution.Full.ordinal());</span>
+<span class="fc" id="L17">		point.setGroup(DataStream.RATE.ordinal());</span>
+<span class="fc" id="L18">		point.setX(new Date(daq.getLastUpdate()));</span>
+<span class="fc" id="L19">		point.setY(daq.getRate());</span>
+<span class="fc" id="L20">		return point;</span>
+	}
+
+	public static Point convertToEventPoint(DummyDAQ daq) {
+<span class="fc" id="L24">		Point point = new Point();</span>
+<span class="fc" id="L25">		point.setResolution(DataResolution.Full.ordinal());</span>
+<span class="fc" id="L26">		point.setGroup(DataStream.EVENTS.ordinal());</span>
+<span class="fc" id="L27">		point.setX(new Date(daq.getLastUpdate()));</span>
+<span class="fc" id="L28">		point.setY(daq.getEvents());</span>
+<span class="fc" id="L29">		return point;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

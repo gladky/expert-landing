@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>LogicModuleManager.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DAQExpert</a> &gt; <a href="index.source.html" class="el_package">rcms.utilities.daqexpert.reasoning.processing</a> &gt; <span class="el_source">LogicModuleManager.java</span></div><h1>LogicModuleManager.java</h1><pre class="source lang-java linenums">package rcms.utilities.daqexpert.reasoning.processing;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.log4j.Logger;
+
+import groovy.util.ResourceException;
+import groovy.util.ScriptException;
+import rcms.utilities.daqaggregator.data.DAQ;
+import rcms.utilities.daqexpert.Application;
+import rcms.utilities.daqexpert.Setting;
+import rcms.utilities.daqexpert.persistence.Condition;
+import rcms.utilities.daqexpert.persistence.LogicModuleRegistry;
+import rcms.utilities.daqexpert.reasoning.base.ActionLogicModule;
+import rcms.utilities.daqexpert.reasoning.base.ComparatorLogicModule;
+import rcms.utilities.daqexpert.reasoning.base.LogicModule;
+import rcms.utilities.daqexpert.reasoning.base.SimpleLogicModule;
+import rcms.utilities.daqexpert.reasoning.logic.basic.Parameterizable;
+
+/**
+ * Manager of checking process
+ * 
+ * @author Maciej Gladki (maciej.szymon.gladki@cern.ch)
+ */
+public class LogicModuleManager {
+
+<span class="fc" id="L33">	private final static Logger logger = Logger.getLogger(LogicModuleManager.class);</span>
+<span class="fc" id="L34">	private final List&lt;SimpleLogicModule&gt; checkers = new ArrayList&lt;&gt;();</span>
+
+<span class="fc" id="L36">	private final List&lt;ComparatorLogicModule&gt; comparators = new ArrayList&lt;&gt;();</span>
+
+	private final ConditionProducer conditionProducer;
+
+	private ExperimentalProcessor experimentalProcessor;
+
+	/**
+	 * Constructor, order of checker matters. Checkers may use results of
+	 * checkers added before.
+	 * 
+	 * @param daq
+	 *            daq object to analyze
+	 */
+<span class="fc" id="L49">	public LogicModuleManager(ConditionProducer conditionProducer) {</span>
+
+<span class="fc" id="L51">		this.conditionProducer = conditionProducer;</span>
+
+<span class="fc bfc" id="L53" title="All 2 branches covered.">		for (LogicModuleRegistry lm : LogicModuleRegistry.values()) {</span>
+<span class="fc" id="L54">			lm.getLogicModule().setLogicModuleRegistry(lm);</span>
+<span class="fc bfc" id="L55" title="All 2 branches covered.">			if (lm.getLogicModule() instanceof SimpleLogicModule) {</span>
+<span class="fc" id="L56">				SimpleLogicModule simpleLogicModule = (SimpleLogicModule) lm.getLogicModule();</span>
+<span class="fc" id="L57">				checkers.add(simpleLogicModule);</span>
+<span class="pc bpc" id="L58" title="1 of 2 branches missed.">			} else if (lm.getLogicModule() instanceof ComparatorLogicModule) {</span>
+<span class="fc" id="L59">				ComparatorLogicModule comparatorLogicModule = (ComparatorLogicModule) lm.getLogicModule();</span>
+<span class="fc" id="L60">				comparators.add(comparatorLogicModule);</span>
+			}
+
+<span class="fc bfc" id="L63" title="All 2 branches covered.">			if (lm.getLogicModule() instanceof Parameterizable) {</span>
+<span class="fc" id="L64">				Parameterizable updatable = (Parameterizable) lm.getLogicModule();</span>
+
+<span class="fc" id="L66">				updatable.parametrize(Application.get().getProp());</span>
+<span class="fc" id="L67">				logger.info(&quot;LM &quot; + updatable.getClass().getSimpleName() + &quot; successfully parametrized&quot;);</span>
+			}
+		}
+
+		try {
+<span class="fc" id="L72">			experimentalProcessor = new ExperimentalProcessor(Application.get().getProp(Setting.EXPERIMENTAL_DIR));</span>
+			// experimentalProcessor.loadExperimentalLogicModules();
+<span class="pc" id="L74">		} catch (IOException | ResourceException | ScriptException e) {</span>
+<span class="nc" id="L75">			experimentalProcessor = null;</span>
+<span class="nc" id="L76">			e.printStackTrace();</span>
+		}
+
+<span class="fc" id="L79">	}</span>
+
+	/**
+	 * Run all logic modules for current snapshot
+	 * 
+	 * @param daq
+	 *            current snapshot
+	 * @return results of logic modules analysis
+	 */
+	public List&lt;Condition&gt; runLogicModules(DAQ daq, boolean includeExperimental) {
+
+<span class="fc" id="L90">		List&lt;Condition&gt; results = new ArrayList&lt;&gt;();</span>
+
+<span class="fc" id="L92">		logger.debug(&quot;Running analysis modules for run &quot; + daq.getSessionId());</span>
+
+<span class="fc" id="L94">		results.addAll(runCheckers(daq, includeExperimental));</span>
+<span class="fc" id="L95">		results.addAll(runComparators(daq));</span>
+
+<span class="fc" id="L97">		return results;</span>
+	}
+
+	/**
+	 * Run checkers for current snapshot
+	 * 
+	 * @param daq
+	 *            current snapshot
+	 * @param includeExperimental
+	 * @return results of checkers analysis including
+	 */
+	private List&lt;Condition&gt; runCheckers(DAQ daq, boolean includeExperimental) {
+<span class="fc" id="L109">		List&lt;Condition&gt; results = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L110">		HashMap&lt;String, Boolean&gt; checkerResultMap = new HashMap&lt;&gt;();</span>
+
+<span class="fc bfc" id="L112" title="All 2 branches covered.">		for (SimpleLogicModule checker : checkers) {</span>
+<span class="fc" id="L113">			boolean result = checker.satisfied(daq, checkerResultMap);</span>
+<span class="fc" id="L114">			postprocess(checkerResultMap, checker, result, daq, results);</span>
+		}
+
+<span class="pc bpc" id="L117" title="1 of 2 branches missed.">		if (includeExperimental) {</span>
+			try {
+<span class="nc" id="L119">				List&lt;Pair&lt;LogicModule, Boolean&gt;&gt; a = experimentalProcessor.runLogicModules(daq, checkerResultMap);</span>
+
+<span class="nc" id="L121">				logger.debug(&quot;Experimental logic modules returned: &quot; + a);</span>
+<span class="nc bnc" id="L122" title="All 2 branches missed.">				for (Pair&lt;LogicModule, Boolean&gt; b : a) {</span>
+<span class="nc" id="L123">					postprocess(checkerResultMap, b.getLeft(), b.getRight(), daq, results);</span>
+				}
+<span class="nc" id="L125">			} catch (RuntimeException e) {</span>
+<span class="nc" id="L126">				e.printStackTrace();</span>
+			}
+
+		}
+<span class="fc" id="L130">		results.addAll(conditionProducer.getFinishedThisRound());</span>
+<span class="fc" id="L131">		conditionProducer.clearFinishedThisRound();</span>
+
+<span class="fc" id="L133">		return results;</span>
+	}
+
+	/**
+	 * 
+	 * @param checkerResultMap
+	 * @param checker
+	 * @param result
+	 * @param daq
+	 * @param results
+	 */
+	private void postprocess(Map&lt;String, Boolean&gt; checkerResultMap, LogicModule checker, boolean result, DAQ daq,
+			List&lt;Condition&gt; results) {
+<span class="fc" id="L146">		Date curr = null;</span>
+<span class="fc" id="L147">		checkerResultMap.put(checker.getClass().getSimpleName(), result);</span>
+<span class="fc" id="L148">		curr = new Date(daq.getLastUpdate());</span>
+
+<span class="pc bpc" id="L150" title="1 of 2 branches missed.">		if (checker instanceof SimpleLogicModule) {</span>
+<span class="fc" id="L151">			SimpleLogicModule simpleChecker = (SimpleLogicModule) checker;</span>
+<span class="fc" id="L152">			Pair&lt;Boolean, Condition&gt; produceResult = conditionProducer.produce(simpleChecker, result, curr);</span>
+
+			/*
+			 * The event finishes (result = false), Context to be cleared for
+			 * next events. Note that this is performed after
+			 * EventProducer.produce so that context can be used to close the
+			 * event
+			 */
+<span class="fc bfc" id="L160" title="All 4 branches covered.">			if (!result &amp;&amp; checker instanceof ActionLogicModule) {</span>
+<span class="fc" id="L161">				((ActionLogicModule) checker).getContext().clearContext();</span>
+			}
+
+<span class="fc bfc" id="L164" title="All 2 branches covered.">			if (produceResult.getLeft()) {</span>
+<span class="fc" id="L165">				results.add(produceResult.getRight());</span>
+			}
+<span class="fc" id="L167">		} else {</span>
+<span class="nc" id="L168">			logger.warn(&quot;Problem postrprocessing LM results, not an instance of simple logic module&quot;);</span>
+		}
+<span class="fc" id="L170">	}</span>
+
+	/**
+	 * Run comparators for current snapshot
+	 * 
+	 * @param daq
+	 *            current snapshot
+	 * @return results of checkers analysis
+	 */
+	private List&lt;Condition&gt; runComparators(DAQ daq) {
+<span class="fc" id="L180">		List&lt;Condition&gt; results = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L181" title="All 2 branches covered.">		for (ComparatorLogicModule comparator : comparators) {</span>
+<span class="fc" id="L182">			logger.trace(&quot;Running comparator &quot; + comparator.getClass().getSimpleName());</span>
+
+<span class="fc" id="L184">			boolean result = comparator.compare(daq);</span>
+<span class="fc" id="L185">			Date current = new Date(comparator.getLast().getLastUpdate());</span>
+
+<span class="fc" id="L187">			Pair&lt;Boolean, Condition&gt; produced = conditionProducer.produce(comparator, result, current);</span>
+<span class="fc bfc" id="L188" title="All 2 branches covered.">			if (produced.getLeft()) {</span>
+<span class="fc" id="L189">				logger.trace(produced.getRight());</span>
+<span class="fc" id="L190">				results.add(produced.getRight());</span>
+			}
+
+		}
+<span class="fc" id="L194">		return results;</span>
+	}
+
+	public ExperimentalProcessor getExperimentalProcessor() {
+<span class="nc" id="L198">		return experimentalProcessor;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

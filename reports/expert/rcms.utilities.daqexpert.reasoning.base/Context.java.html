@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>Context.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DAQExpert</a> &gt; <a href="index.source.html" class="el_package">rcms.utilities.daqexpert.reasoning.base</a> &gt; <span class="el_source">Context.java</span></div><h1>Context.java</h1><pre class="source lang-java linenums">package rcms.utilities.daqexpert.reasoning.base;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.log4j.Logger;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import rcms.utilities.daqexpert.reasoning.base.action.Action;
+import rcms.utilities.daqexpert.reasoning.base.action.ConditionalAction;
+import rcms.utilities.daqexpert.reasoning.base.action.SimpleAction;
+
+@SuppressWarnings(&quot;serial&quot;)
+public class Context implements Serializable {
+
+<span class="fc" id="L23">	private static final Logger logger = Logger.getLogger(Context.class);</span>
+
+	private Map&lt;String, Set&lt;Object&gt;&gt; context;
+
+	private Set&lt;String&gt; actionKey;
+	
+
+<span class="fc" id="L30">	public Context() {</span>
+<span class="fc" id="L31">		this.context = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L32">		this.actionKey = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L33">	}</span>
+
+	public void register(String key, Object object) {
+<span class="fc bfc" id="L36" title="All 2 branches covered.">		if (!context.containsKey(key)) {</span>
+<span class="fc" id="L37">			context.put(key, new HashSet&lt;Object&gt;());</span>
+		}
+
+<span class="fc bfc" id="L40" title="All 2 branches covered.">		if (!context.get(key).contains(object)) {</span>
+<span class="fc" id="L41">			context.get(key).add(object);</span>
+		}
+		
+		
+<span class="fc" id="L45">	}</span>
+
+	/**
+	 * Called when Condition ends
+	 */
+	public void clearContext() {
+<span class="fc" id="L51">		this.context = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L52">		this.actionKey = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L53">	}</span>
+
+	public Map&lt;String, Set&lt;Object&gt;&gt; getContext() {
+<span class="fc" id="L56">		return this.context;</span>
+	}
+
+	@Override
+	public String toString() {
+<span class="fc" id="L61">		return &quot;ContextCollector [context=&quot; + context + &quot;]&quot;;</span>
+	}
+
+	public List&lt;String&gt; getActionWithContext(Action actionn) {
+
+<span class="fc" id="L66">		List&lt;String&gt; actionSteps = null;</span>
+
+<span class="pc bpc" id="L68" title="1 of 2 branches missed.">		if (actionn instanceof ConditionalAction) {</span>
+<span class="fc" id="L69">			ConditionalAction action = (ConditionalAction) actionn;</span>
+<span class="fc" id="L70">			actionSteps = action.getContextSteps(getActionKey());</span>
+<span class="pc bnc" id="L71" title="All 2 branches missed.">		} else if (actionn instanceof SimpleAction) {</span>
+<span class="nc" id="L72">			actionSteps = actionn.getSteps();</span>
+		}
+<span class="fc" id="L74">		logger.debug(&quot;Putting context into action: &quot; + actionSteps);</span>
+<span class="fc" id="L75">		logger.debug(&quot;Context to be used: &quot; + context);</span>
+
+<span class="pc bpc" id="L77" title="1 of 2 branches missed.">		if (actionSteps != null) {</span>
+<span class="fc" id="L78">			List&lt;String&gt; actionStepsWithContext = new ArrayList&lt;&gt;();</span>
+
+<span class="fc bfc" id="L80" title="All 2 branches covered.">			for (String step : actionSteps) {</span>
+<span class="fc" id="L81">				actionStepsWithContext.add(putContext(step));</span>
+			}
+
+<span class="fc" id="L84">			return actionStepsWithContext;</span>
+		}
+<span class="nc" id="L86">		return null;</span>
+	}
+
+	/**
+	 * Put collected context into given text. All variables {{VARIABLE_NAME}}
+	 * will be replaced with value if exists in context or ? sign
+	 * 
+	 * @param input
+	 *            text where context will be inserted
+	 * @return copy of the text with context inserted
+	 */
+	private String putContext(String input) {
+<span class="fc" id="L98">		ObjectMapper mapper = new ObjectMapper();</span>
+<span class="fc" id="L99">		String output = new String(input);</span>
+
+<span class="fc bfc" id="L101" title="All 2 branches covered.">		for (java.util.Map.Entry&lt;String, Set&lt;Object&gt;&gt; entry : this.getContext().entrySet()) {</span>
+			
+<span class="fc" id="L103">			String variableKeyNoRgx = &quot;{{&quot; + entry.getKey() + &quot;}}&quot;;</span>
+<span class="fc" id="L104">			String variableKeyRegex = &quot;\\{\\{&quot; + entry.getKey() + &quot;\\}\\}&quot;;</span>
+
+<span class="fc bfc" id="L106" title="All 2 branches covered.">			if (output.contains(variableKeyNoRgx)) {</span>
+
+				String replacement;
+				try {
+<span class="fc bfc" id="L110" title="All 2 branches covered.">					if (entry.getValue().size() == 1)</span>
+<span class="fc" id="L111">						replacement = entry.getValue().iterator().next().toString();</span>
+					else {
+<span class="pc bpc" id="L113" title="1 of 2 branches missed.">						if (entry.getValue().size() &gt; 3) {</span>
+<span class="nc" id="L114">							replacement = &quot;[&quot; + entry.getValue().iterator().next().toString() + &quot; and &quot;</span>
+<span class="nc" id="L115">									+ (entry.getValue().size() - 1) + &quot; more]&quot;;</span>
+<span class="nc" id="L116">						} else {</span>
+<span class="fc" id="L117">							replacement = mapper.writeValueAsString(entry.getValue());</span>
+						}
+					}
+<span class="fc" id="L120">					output = output.replaceAll(variableKeyRegex, replacement);</span>
+<span class="pc" id="L121">				} catch (JsonProcessingException e) {</span>
+<span class="nc" id="L122">					e.printStackTrace();</span>
+				}
+
+<span class="nc" id="L125">			} else{</span>
+<span class="fc" id="L126">				logger.debug(&quot;No key &quot; + variableKeyNoRgx + &quot; in &quot; + output);</span>
+			}
+		}
+		
+<span class="fc" id="L130">		return output;</span>
+	}
+
+	public String getContentWithContext(String message) {
+
+<span class="fc" id="L135">		logger.debug(&quot;Putting context into message: &quot; + message);</span>
+<span class="fc" id="L136">		logger.debug(&quot;Context to be used: &quot; + context);</span>
+
+<span class="fc" id="L138">		String newMessage = putContext(message);</span>
+
+<span class="fc" id="L140">		logger.debug(&quot;Message with context: &quot; + newMessage);</span>
+
+<span class="fc" id="L142">		return newMessage;</span>
+	}
+
+	public String getActionKey() {
+<span class="pc bpc" id="L146" title="1 of 2 branches missed.">		if (actionKey.size() == 1)</span>
+<span class="fc" id="L147">			return actionKey.iterator().next();</span>
+		else
+<span class="nc" id="L149">			return null;</span>
+	}
+
+	public void setActionKey(String actionKey) {
+<span class="fc" id="L153">		this.actionKey.add(actionKey);</span>
+<span class="fc" id="L154">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

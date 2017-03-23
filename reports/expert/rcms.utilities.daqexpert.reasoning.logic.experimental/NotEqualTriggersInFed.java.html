@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>NotEqualTriggersInFed.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DAQExpert</a> &gt; <a href="index.source.html" class="el_package">rcms.utilities.daqexpert.reasoning.logic.experimental</a> &gt; <span class="el_source">NotEqualTriggersInFed.java</span></div><h1>NotEqualTriggersInFed.java</h1><pre class="source lang-java linenums">package rcms.utilities.daqexpert.reasoning.logic.experimental;
+
+import java.util.Map;
+
+import rcms.utilities.daqaggregator.data.DAQ;
+import rcms.utilities.daqaggregator.data.FED;
+import rcms.utilities.daqaggregator.data.FMM;
+import rcms.utilities.daqaggregator.data.FMMApplication;
+import rcms.utilities.daqexpert.reasoning.base.SimpleLogicModule;
+import rcms.utilities.daqexpert.reasoning.base.enums.ConditionGroup;
+import rcms.utilities.daqexpert.reasoning.base.enums.ConditionPriority;
+
+public class NotEqualTriggersInFed extends SimpleLogicModule {
+
+<span class="nc" id="L15">	public NotEqualTriggersInFed() {</span>
+<span class="nc" id="L16">		this.name = &quot;Not equal triggers in fed&quot;;</span>
+<span class="nc" id="L17">		this.priority = ConditionPriority.DEFAULTT;</span>
+<span class="nc" id="L18">	}</span>
+
+	@Override
+	public boolean satisfied(DAQ daq, Map&lt;String, Boolean&gt; results) {
+<span class="nc" id="L22">		boolean result = false;</span>
+
+<span class="nc" id="L24">		Long fedTriggers = null;</span>
+<span class="nc bnc" id="L25" title="All 2 branches missed.">		for (FMMApplication fmmApplication : daq.getFmmApplications()) {</span>
+<span class="nc bnc" id="L26" title="All 2 branches missed.">			for (FMM fmm : fmmApplication.getFmms()) {</span>
+<span class="nc bnc" id="L27" title="All 2 branches missed.">				for (FED fed : fmm.getFeds()) {</span>
+
+<span class="nc bnc" id="L29" title="All 2 branches missed.">					if (fedTriggers == null)</span>
+<span class="nc" id="L30">						fedTriggers = fed.getNumTriggers();</span>
+<span class="nc bnc" id="L31" title="All 2 branches missed.">					if (fed.getNumTriggers() != fedTriggers) {</span>
+<span class="nc" id="L32">						result = true;</span>
+					}
+				}
+			}
+		}
+
+<span class="nc" id="L38">		return result;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

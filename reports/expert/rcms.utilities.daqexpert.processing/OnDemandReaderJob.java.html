@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>OnDemandReaderJob.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DAQExpert</a> &gt; <a href="index.source.html" class="el_package">rcms.utilities.daqexpert.processing</a> &gt; <span class="el_source">OnDemandReaderJob.java</span></div><h1>OnDemandReaderJob.java</h1><pre class="source lang-java linenums">package rcms.utilities.daqexpert.processing;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.log4j.Logger;
+
+import rcms.utilities.daqaggregator.persistence.PersistenceExplorer;
+
+/**
+ * Job for retrieving data on demand (snapshots)
+ * 
+ * @author Maciej Gladki (maciej.szymon.gladki@cern.ch)
+ *
+ */
+public class OnDemandReaderJob implements ReaderJob {
+	/**
+	 * Indicator of last snapshot processed timestamp
+	 */
+	private long readFrom;
+
+	private final PersistenceExplorer explorer;
+
+	private long readTo;
+
+	private final String sourceDirectory;
+
+<span class="fc" id="L32">	private volatile boolean finished = false;</span>
+
+<span class="fc" id="L34">	private static final Logger logger = Logger.getLogger(OnDemandReaderJob.class);</span>
+
+	public OnDemandReaderJob(PersistenceExplorer explorer, String sourceDirectory) {
+<span class="fc" id="L37">		super();</span>
+<span class="fc" id="L38">		this.explorer = explorer;</span>
+<span class="fc" id="L39">		this.sourceDirectory = sourceDirectory;</span>
+<span class="fc" id="L40">	}</span>
+
+	public void setTimeSpan(long readFrom, long readTo) {
+<span class="fc" id="L43">		this.readFrom = readFrom;</span>
+<span class="fc" id="L44">		this.readTo = readTo;</span>
+<span class="fc" id="L45">	}</span>
+
+	@Override
+	public Pair&lt;Long, List&lt;File&gt;&gt; read() {
+
+<span class="fc" id="L50">		finished = false;</span>
+
+<span class="fc" id="L52">		logger.info(&quot;Requested snapshots in timespan &quot; + new Date(readFrom) + &quot;-&quot; + new Date(readTo)</span>
+<span class="fc" id="L53">				+ &quot; elements on demand&quot;);</span>
+		try {
+
+			Pair&lt;Long, List&lt;File&gt;&gt; entry;
+
+			do {
+<span class="fc" id="L59">				Pair&lt;Date, Date&gt; currentStep = step();</span>
+<span class="fc" id="L60">				logger.debug(&quot;Getting chunk &quot; + currentStep.getLeft() + &quot; - &quot; + currentStep.getRight());</span>
+<span class="fc" id="L61">				entry = explorer.explore(currentStep.getLeft().getTime(), currentStep.getRight().getTime(),</span>
+<span class="fc" id="L62">						sourceDirectory);</span>
+<span class="pc bpc" id="L63" title="1 of 2 branches missed.">				if (entry.getRight().size() &gt; 0)</span>
+<span class="fc" id="L64">					logger.info(&quot;In this chunk &quot; + entry.getRight().size() + &quot; elements&quot;);</span>
+<span class="fc" id="L65">				readFrom = currentStep.getRight().getTime();</span>
+<span class="pc bpc" id="L66" title="3 of 4 branches missed.">			} while (entry.getRight().size() == 0 &amp;&amp; !finished);</span>
+
+			// remember last explored snapshot timestamp
+<span class="fc" id="L69">			readFrom = entry.getKey();</span>
+
+<span class="fc" id="L71">			logger.info(&quot;Found &quot; + entry.getRight().size() + &quot; elements on demand&quot;);</span>
+
+<span class="fc" id="L73">			return entry;</span>
+
+<span class="nc" id="L75">		} catch (IOException e) {</span>
+<span class="nc" id="L76">			e.printStackTrace();</span>
+<span class="nc" id="L77">			return null;</span>
+		}
+
+	}
+
+	private Pair&lt;Date, Date&gt; step() {
+<span class="fc" id="L83">		Date chunkStart = new Date(readFrom);</span>
+<span class="fc" id="L84">		Date chunkEnd = new Date(getForwardHourChunk(readFrom));</span>
+
+<span class="pc bpc" id="L86" title="1 of 2 branches missed.">		if (getForwardHourChunk(readFrom) &gt; readTo) {</span>
+<span class="fc" id="L87">			chunkEnd = new Date(readTo);</span>
+<span class="fc" id="L88">			finished = true;</span>
+		}
+
+<span class="fc" id="L91">		return Pair.of(chunkStart, chunkEnd);</span>
+	}
+
+	private long getForwardHourChunk(long time) {
+<span class="fc" id="L95">		Date date = new Date(time);</span>
+<span class="fc" id="L96">		Calendar calendar = Calendar.getInstance();</span>
+<span class="fc" id="L97">		calendar.setTime(date);</span>
+<span class="fc" id="L98">		calendar.add(Calendar.HOUR, 1);</span>
+<span class="fc" id="L99">		calendar.set(Calendar.MINUTE, 59);</span>
+<span class="fc" id="L100">		calendar.set(Calendar.SECOND, 59);</span>
+<span class="fc" id="L101">		calendar.set(Calendar.MILLISECOND, 999);</span>
+<span class="fc" id="L102">		return calendar.getTime().getTime();</span>
+	}
+
+	@Override
+	public boolean finished() {
+<span class="nc" id="L107">		return false;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

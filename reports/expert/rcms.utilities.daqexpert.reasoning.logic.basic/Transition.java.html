@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>Transition.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DAQExpert</a> &gt; <a href="index.source.html" class="el_package">rcms.utilities.daqexpert.reasoning.logic.basic</a> &gt; <span class="el_source">Transition.java</span></div><h1>Transition.java</h1><pre class="source lang-java linenums">package rcms.utilities.daqexpert.reasoning.logic.basic;
+
+import java.util.Map;
+
+import rcms.utilities.daqaggregator.data.DAQ;
+import rcms.utilities.daqexpert.reasoning.base.SimpleLogicModule;
+import rcms.utilities.daqexpert.reasoning.base.enums.ConditionGroup;
+import rcms.utilities.daqexpert.reasoning.base.enums.ConditionPriority;
+
+/**
+ * This logic module identifies no rate condition in DAQ
+ */
+public class Transition extends SimpleLogicModule {
+
+<span class="fc" id="L15">	public Transition() {</span>
+<span class="fc" id="L16">		this.name = &quot;Transition&quot;;</span>
+<span class="fc" id="L17">		this.priority = ConditionPriority.DEFAULTT;</span>
+<span class="fc" id="L18">		this.description = &quot;Transition for new run&quot;;</span>
+<span class="fc" id="L19">	}</span>
+
+	/**
+	 * Transition time in ms
+	 */
+<span class="fc" id="L24">	private final int transitionTime = 10000;</span>
+	private int duration;
+	private long started;
+
+	/**
+	 * No rate when sum of FedBuilders rate equals 0 Hz
+	 */
+	@Override
+	public boolean satisfied(DAQ daq, Map&lt;String, Boolean&gt; results) {
+
+<span class="fc" id="L34">		boolean expectedRate = results.get(ExpectedRate.class.getSimpleName());</span>
+
+		// first check
+<span class="fc bfc" id="L37" title="All 2 branches covered.">		if (started == 0) {</span>
+<span class="fc" id="L38">			started = daq.getLastUpdate();</span>
+<span class="fc" id="L39">		} else {</span>
+<span class="fc" id="L40">			duration = (int) (daq.getLastUpdate() - started);</span>
+		}
+
+<span class="fc bfc" id="L43" title="All 2 branches covered.">		if (expectedRate) {</span>
+<span class="fc bfc" id="L44" title="All 2 branches covered.">			if (duration &lt; transitionTime)</span>
+				// transition time
+<span class="fc" id="L46">				return true;</span>
+			else {
+				// transition time passed but run is still ongoing
+<span class="fc" id="L49">				return false;</span>
+			}
+		} else {
+			// run is not ongoing, reset the checker
+<span class="fc" id="L53">			started = 0;</span>
+<span class="fc" id="L54">			duration = 0;</span>
+<span class="fc" id="L55">			return false;</span>
+		}
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

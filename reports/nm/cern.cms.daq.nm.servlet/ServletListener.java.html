@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>ServletListener.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Notification Manager</a> &gt; <a href="index.source.html" class="el_package">cern.cms.daq.nm.servlet</a> &gt; <span class="el_source">ServletListener.java</span></div><h1>ServletListener.java</h1><pre class="source lang-java linenums"><span class="nc" id="L1">package cern.cms.daq.nm.servlet;</span>
+
+import java.sql.Driver;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.Enumeration;
+
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+
+import org.apache.log4j.Logger;
+
+import cern.cms.daq.nm.Application;
+import cern.cms.daq.nm.Setting;
+import cern.cms.daq.nm.sound.ExternalSoundReceiver;
+import cern.cms.daq.nm.task.TaskManager;
+
+<span class="nc" id="L20">public class ServletListener implements ServletContextListener {</span>
+
+<span class="nc" id="L22">	private static final Logger logger = Logger.getLogger(ServletListener.class);</span>
+
+	public void contextInitialized(ServletContextEvent e) {
+
+<span class="nc" id="L26">		String propertyFilePath = System.getenv(&quot;NM_CONF&quot;);</span>
+<span class="nc bnc" id="L27" title="All 2 branches missed.">		if (propertyFilePath == null) {</span>
+<span class="nc" id="L28">			logger.fatal(</span>
+<span class="nc" id="L29">					&quot;No configuration file supplied. Set the path to configuration file in environment variable NM_CONF&quot;);</span>
+<span class="nc" id="L30">			throw new RuntimeException(&quot;NM_CONF variable is empty&quot;);</span>
+		}
+
+		try {
+<span class="nc" id="L34">			Application.initialize(propertyFilePath);</span>
+
+<span class="nc" id="L36">			logger.info(&quot;Database mode: &quot; + Application.get().getProp().getProperty(Setting.DATABASE_MODE.getCode()));</span>
+<span class="nc" id="L37">			logger.info(&quot;Database url : &quot; + Application.get().getProp().getProperty(Setting.DATABASE_URL.getCode()));</span>
+
+<span class="nc" id="L39">			final int externalNotificationPort = Integer</span>
+<span class="nc" id="L40">					.parseInt(Application.get().getProp().getProperty(Setting.EXTERNAL_NOTIFICATION_PORT.getCode()));</span>
+			// EntityManagerFactory emf2 =
+			// Persistence.createEntityManagerFactory(&quot;shifts&quot;);
+<span class="nc" id="L43">			EntityManagerFactory emf = Persistence.createEntityManagerFactory(&quot;notifications&quot;,</span>
+<span class="nc" id="L44">					Application.get().getProp());</span>
+
+<span class="nc" id="L46">			e.getServletContext().setAttribute(&quot;emf&quot;, emf);</span>
+			// e.getServletContext().setAttribute(&quot;emf-shifters&quot;, emf2);
+<span class="nc" id="L48">			TaskManager.initialize(emf, null);</span>
+<span class="nc" id="L49">			TaskManager.get().schedule();</span>
+<span class="nc" id="L50">			(new Thread() {</span>
+				public void run() {
+					try {
+<span class="nc" id="L53">						ExternalSoundReceiver.startSoundReceiver(externalNotificationPort);</span>
+<span class="nc" id="L54">					} catch (Exception e) {</span>
+<span class="nc" id="L55">						e.printStackTrace();</span>
+					}
+<span class="nc" id="L57">				}</span>
+<span class="nc" id="L58">			}).start();</span>
+<span class="nc" id="L59">		} catch (RuntimeException ex) {</span>
+<span class="nc" id="L60">			logger.fatal(&quot;Could not start NotificationManager due to: &quot;, ex);</span>
+<span class="nc" id="L61">			ex.printStackTrace();</span>
+
+		}
+<span class="nc" id="L64">	}</span>
+
+	public void contextDestroyed(ServletContextEvent e) {
+
+<span class="nc" id="L68">		logger.info(&quot;NM will go down now, starting shutdown sequence&quot;);</span>
+<span class="nc" id="L69">		TaskManager.get().stopTasks();</span>
+		
+<span class="nc" id="L71">		EntityManagerFactory emf = (EntityManagerFactory) e.getServletContext().getAttribute(&quot;emf&quot;);</span>
+		// EntityManagerFactory emf2 = (EntityManagerFactory)
+		// e.getServletContext().getAttribute(&quot;emf-shifters&quot;);
+<span class="nc" id="L74">		emf.close();</span>
+		// emf2.close();
+		
+<span class="nc" id="L77">		ExternalSoundReceiver.close();</span>
+		
+<span class="nc" id="L79">		Enumeration&lt;Driver&gt; drivers = DriverManager.getDrivers();</span>
+<span class="nc bnc" id="L80" title="All 2 branches missed.">		while (drivers.hasMoreElements()) {</span>
+<span class="nc" id="L81">			Driver driver = drivers.nextElement();</span>
+			try {
+<span class="nc" id="L83">				DriverManager.deregisterDriver(driver);</span>
+<span class="nc" id="L84">				logger.info(String.format(&quot;deregistering jdbc driver: %s&quot;, driver));</span>
+<span class="nc" id="L85">			} catch (SQLException ex) {</span>
+<span class="nc" id="L86">				logger.error(String.format(&quot;Error deregistering driver %s&quot;, driver), ex);</span>
+			}
+
+		}
+<span class="nc" id="L90">		logger.info(&quot;Shutdown sequence completed, NM is down&quot;);</span>
+<span class="nc" id="L91">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>StreamProcessor.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DAQExpert</a> &gt; <a href="index.source.html" class="el_package">rcms.utilities.daqexpert.segmentation</a> &gt; <span class="el_source">StreamProcessor.java</span></div><h1>StreamProcessor.java</h1><pre class="source lang-java linenums">package rcms.utilities.daqexpert.segmentation;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+import rcms.utilities.daqexpert.persistence.Point;
+import rcms.utilities.daqexpert.processing.DataStream;
+
+public class StreamProcessor {
+
+	/**
+	 * Processing threshold
+	 */
+	private final int threshold;
+
+	private int count;
+
+	private long lastTimestamp;
+
+	private final LinearSegmentator linearSegmentator;
+
+	private final HashMap&lt;DataStream, List&lt;Point&gt;&gt; input;
+	private final HashMap&lt;DataStream, List&lt;Point&gt;&gt; output;
+
+<span class="fc" id="L26">	public StreamProcessor(LinearSegmentator linearSegmentator, SegmentationSettings settings) {</span>
+<span class="fc" id="L27">		this.lastTimestamp = 0L;</span>
+<span class="fc" id="L28">		this.count = 0;</span>
+<span class="fc" id="L29">		this.linearSegmentator = linearSegmentator;</span>
+<span class="fc" id="L30">		this.threshold = settings.getThreshold();</span>
+
+<span class="fc" id="L32">		this.input = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L33">		this.output = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L34">		this.input.put(DataStream.RATE, new ArrayList&lt;Point&gt;());</span>
+<span class="fc" id="L35">		this.input.put(DataStream.EVENTS, new ArrayList&lt;Point&gt;());</span>
+<span class="fc" id="L36">		this.output.put(DataStream.RATE, new ArrayList&lt;Point&gt;());</span>
+<span class="fc" id="L37">		this.output.put(DataStream.EVENTS, new ArrayList&lt;Point&gt;());</span>
+<span class="fc" id="L38">	}</span>
+
+	public int getCount() {
+<span class="nc" id="L41">		return count;</span>
+	}
+
+	public void setCount(int count) {
+<span class="nc" id="L45">		this.count = count;</span>
+<span class="nc" id="L46">	}</span>
+
+	public long getLastTimestamp() {
+<span class="nc" id="L49">		return lastTimestamp;</span>
+	}
+
+	public void setLastTimestamp(long lastTimestamp) {
+<span class="nc" id="L53">		this.lastTimestamp = lastTimestamp;</span>
+<span class="nc" id="L54">	}</span>
+
+	public LinearSegmentator getLinearSegmentator() {
+<span class="nc" id="L57">		return linearSegmentator;</span>
+	}
+
+	public int getThreshold() {
+<span class="fc" id="L61">		return threshold;</span>
+	}
+
+	public HashMap&lt;DataStream, List&lt;Point&gt;&gt; getInput() {
+<span class="fc" id="L65">		return input;</span>
+	}
+
+	public HashMap&lt;DataStream, List&lt;Point&gt;&gt; getOutput() {
+<span class="fc" id="L69">		return output;</span>
+	}
+
+	public void segmentateInput() {
+<span class="fc" id="L73">		List&lt;Point&gt; a = linearSegmentator.segmentate(input.get(DataStream.RATE));</span>
+<span class="fc" id="L74">		List&lt;Point&gt; b = linearSegmentator.segmentate(input.get(DataStream.EVENTS));</span>
+<span class="fc" id="L75">		input.get(DataStream.RATE).clear();</span>
+<span class="fc" id="L76">		input.get(DataStream.EVENTS).clear();</span>
+<span class="fc" id="L77">		output.get(DataStream.RATE).addAll(a);</span>
+<span class="fc" id="L78">		output.get(DataStream.EVENTS).addAll(b);</span>
+
+<span class="fc" id="L80">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>
