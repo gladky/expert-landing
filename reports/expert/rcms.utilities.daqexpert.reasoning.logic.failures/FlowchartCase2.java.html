@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>FlowchartCase2.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DAQExpert</a> &gt; <a href="index.source.html" class="el_package">rcms.utilities.daqexpert.reasoning.logic.failures</a> &gt; <span class="el_source">FlowchartCase2.java</span></div><h1>FlowchartCase2.java</h1><pre class="source lang-java linenums">package rcms.utilities.daqexpert.reasoning.logic.failures;
+
+import java.util.Map;
+
+import org.apache.log4j.Logger;
+
+import rcms.utilities.daqaggregator.data.DAQ;
+import rcms.utilities.daqaggregator.data.FED;
+import rcms.utilities.daqaggregator.data.FEDBuilder;
+import rcms.utilities.daqaggregator.data.RU;
+import rcms.utilities.daqaggregator.data.TTCPartition;
+import rcms.utilities.daqexpert.reasoning.base.action.SimpleAction;
+import rcms.utilities.daqexpert.reasoning.base.enums.ConditionPriority;
+import rcms.utilities.daqexpert.reasoning.logic.basic.NoRateWhenExpected;
+import rcms.utilities.daqexpert.reasoning.logic.basic.StableBeams;
+
+/**
+ * Logic module identifying 1st flowchart case.
+ * 
+ * @see flowchart at https://twiki.cern.ch/twiki/pub/CMS/ShiftNews/DAQStuck3.pdf
+ * @author Maciej Gladki (maciej.szymon.gladki@cern.ch)
+ *
+ */
+public class FlowchartCase2 extends KnownFailure {
+
+<span class="fc" id="L26">	public FlowchartCase2() {</span>
+<span class="fc" id="L27">		this.name = &quot;FC2&quot;;</span>
+<span class="fc" id="L28">		this.description = &quot;DAQ and level 0 in error state&lt;/br&gt;&quot;</span>
+				+ &quot;A RU {{RU}} is in Failded state. A FED {{FED}} has sent corrupted data to the DAQ. &quot;
+				+ &quot;Problem FED belongs to subsystem {{SUBSYSTEM}}&quot;;
+<span class="fc" id="L31">		this.action = new SimpleAction(</span>
+<span class="fc" id="L32">				&quot;Try to recover: Stop the run. Red &amp; green recycle both the DAQ and the subsystem {{SUBSYSTEM}}. Start new Run. (Try up to 2 times)&quot;,</span>
+<span class="fc" id="L33">				&quot;Problem fixed: Make an e-log entry. Call the DOC of {{SUBSYSTEM}} (subsystem that sent corrupted data) to inform about the problem&quot;,</span>
+<span class="fc" id="L34">				&quot;Problem not fixed: Call the DOC of {{SUBSYSTEM}} (subsystem that sent corrupted data)&quot;);</span>
+<span class="fc" id="L35">	}</span>
+
+<span class="fc" id="L37">	private static Logger logger = Logger.getLogger(FlowchartCase2.class);</span>
+<span class="fc" id="L38">	private final String ERROR_STATE = &quot;ERROR&quot;;</span>
+
+	@Override
+	public boolean satisfied(DAQ daq, Map&lt;String, Boolean&gt; results) {
+
+<span class="fc bfc" id="L43" title="All 2 branches covered.">		if (!results.get(NoRateWhenExpected.class.getSimpleName()))</span>
+<span class="fc" id="L44">			return false;</span>
+<span class="fc" id="L45">		boolean stableBeams = results.get(StableBeams.class.getSimpleName());</span>
+<span class="fc bfc" id="L46" title="All 2 branches covered.">		this.priority = stableBeams ? ConditionPriority.CRITICAL : ConditionPriority.WARNING;</span>
+
+<span class="fc" id="L48">		String l0state = daq.getLevelZeroState();</span>
+<span class="fc" id="L49">		String daqstate = daq.getDaqState();</span>
+<span class="fc" id="L50">		boolean result = false;</span>
+<span class="fc" id="L51">		int i = 0;</span>
+
+<span class="fc bfc" id="L53" title="All 2 branches covered.">		if (!&quot;RUNBLOCKED&quot;.equalsIgnoreCase(daqstate)) {</span>
+
+<span class="pc bpc" id="L55" title="1 of 4 branches missed.">			if (ERROR_STATE.equalsIgnoreCase(l0state) &amp;&amp; ERROR_STATE.equalsIgnoreCase(daqstate)) {</span>
+
+<span class="fc bfc" id="L57" title="All 2 branches covered.">				for (FEDBuilder fb : daq.getFedBuilders()) {</span>
+<span class="fc" id="L58">					RU ru = fb.getRu();</span>
+<span class="fc bfc" id="L59" title="All 2 branches covered.">					if (ru.getStateName().equalsIgnoreCase(&quot;Failed&quot;)) {</span>
+
+<span class="fc" id="L61">						i++;</span>
+<span class="fc" id="L62">						context.register(&quot;RU&quot;, ru.getHostname());</span>
+<span class="fc" id="L63">						result = true;</span>
+					}
+				}
+
+<span class="fc bfc" id="L67" title="All 2 branches covered.">				for (FED fed : daq.getFeds()) {</span>
+
+<span class="fc bfc" id="L69" title="All 4 branches covered.">					if (!fed.isFmmMasked() &amp;&amp; !fed.isFrlMasked()) {</span>
+<span class="fc bfc" id="L70" title="All 2 branches covered.">						if (fed.getRuFedDataCorruption() &gt; 0) {</span>
+
+<span class="fc" id="L72">							TTCPartition ttcp = fed.getTtcp();</span>
+<span class="fc" id="L73">							String ttcpName = &quot;-&quot;;</span>
+<span class="fc" id="L74">							String subsystemName = &quot;-&quot;;</span>
+
+<span class="pc bpc" id="L76" title="1 of 2 branches missed.">							if (ttcp != null) {</span>
+<span class="fc" id="L77">								ttcpName = ttcp.getName();</span>
+<span class="pc bpc" id="L78" title="1 of 2 branches missed.">								if (ttcp.getSubsystem() != null)</span>
+<span class="fc" id="L79">									subsystemName = ttcp.getSubsystem().getName();</span>
+							}
+<span class="fc" id="L81">							context.register(&quot;FED&quot;, fed.getSrcIdExpected());</span>
+<span class="fc" id="L82">							context.register(&quot;TTCP&quot;, ttcpName);</span>
+<span class="fc" id="L83">							context.register(&quot;SUBSYSTEM&quot;, subsystemName);</span>
+<span class="fc" id="L84">							i++;</span>
+						}
+					}
+				}
+
+<span class="fc" id="L89">				logger.debug(&quot;FC2 &quot; + i);</span>
+			}
+		}
+<span class="fc" id="L92">		return result;</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

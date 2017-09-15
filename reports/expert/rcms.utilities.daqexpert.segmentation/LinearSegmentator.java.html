@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>LinearSegmentator.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DAQExpert</a> &gt; <a href="index.source.html" class="el_package">rcms.utilities.daqexpert.segmentation</a> &gt; <span class="el_source">LinearSegmentator.java</span></div><h1>LinearSegmentator.java</h1><pre class="source lang-java linenums">package rcms.utilities.daqexpert.segmentation;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.log4j.Logger;
+
+import rcms.utilities.daqexpert.persistence.Point;
+
+/**
+ * Linear segmentator
+ * 
+ * @author Maciej Gladki (maciej.szymon.gladki@cern.ch)
+ *
+ */
+public class LinearSegmentator {
+
+<span class="fc" id="L18">	private static final Logger logger = Logger.getLogger(LinearSegmentator.class);</span>
+	private final double TI;
+	private final double cre_th;
+	private final SegmentationSettings settings;
+
+	private List&lt;Point&gt; stream;
+
+<span class="fc" id="L25">	public LinearSegmentator(SegmentationSettings settings) {</span>
+<span class="fc" id="L26">		this.settings = settings;</span>
+<span class="fc" id="L27">		this.TI = settings.getTI();</span>
+<span class="fc" id="L28">		this.cre_th = settings.getCreTh();</span>
+<span class="fc" id="L29">	}</span>
+
+	private double calcRad(int i) {
+<span class="fc" id="L32">		i = i - 1;</span>
+		long t1;
+		long t2;
+<span class="fc" id="L35">		t1 = stream.get(i + 1).getX().getTime();</span>
+<span class="fc" id="L36">		t2 = stream.get(i).getX().getTime();</span>
+<span class="fc" id="L37">		double dt = Math.abs(t1 - t2);</span>
+
+<span class="fc" id="L39">		double result = Math.atan((stream.get(i + 1).getY() - stream.get(i).getY()) / dt);</span>
+<span class="fc" id="L40">		return result;</span>
+	}
+
+	private void prepareStream() {
+<span class="pc bpc" id="L44" title="1 of 2 branches missed.">		if (stream.size() == 0) {</span>
+<span class="nc" id="L45">			throw new RuntimeException(&quot;EMPTY_STREAM_SEGMENTATED&quot;);</span>
+		}
+<span class="fc" id="L47">		List&lt;Point&gt; s = new ArrayList&lt;Point&gt;();</span>
+<span class="fc" id="L48">		List&lt;Long&gt; history = new ArrayList&lt;Long&gt;();</span>
+<span class="fc bfc" id="L49" title="All 2 branches covered.">		for (int i = 0; i &lt; stream.size(); i++) {</span>
+<span class="pc bpc" id="L50" title="1 of 2 branches missed.">			if (!history.contains(stream.get(i).getX().getTime())) {</span>
+<span class="fc" id="L51">				s.add(stream.get(i));</span>
+<span class="fc" id="L52">				history.add(new Long(stream.get(i).getX().getTime()));</span>
+			} else {
+				// System.out.println(&quot;Found two values at time &quot;
+				// + stream.get(i).x);
+			}
+
+		}
+<span class="fc" id="L59">		this.stream = s;</span>
+<span class="fc" id="L60">	}</span>
+
+	public List&lt;Point&gt; segmentate(List&lt;Point&gt; stream) {
+<span class="fc" id="L63">		logger.debug(&quot;Segmenting &quot; + stream);</span>
+<span class="fc" id="L64">		this.stream = stream;</span>
+<span class="fc" id="L65">		prepareStream();</span>
+<span class="pc bpc" id="L66" title="1 of 2 branches missed.">		if (stream == null)</span>
+<span class="nc" id="L67">			return null;</span>
+<span class="fc bfc" id="L68" title="All 2 branches covered.">		if (stream.size() &lt; 3) {</span>
+<span class="fc" id="L69">			return stream;</span>
+		}
+<span class="fc" id="L71">		List&lt;Point&gt; s = new ArrayList&lt;Point&gt;();</span>
+
+		int last_tp_idx;
+<span class="fc" id="L74">		double[] rad_err = new double[stream.size() + 1];</span>
+<span class="fc" id="L75">		double[] rad = new double[stream.size() + 1];</span>
+<span class="fc" id="L76">		double[] cre = new double[stream.size() + 1];</span>
+
+<span class="fc" id="L78">		last_tp_idx = 0;</span>
+<span class="fc" id="L79">		rad_err[stream.size()] = 0;</span>
+<span class="fc" id="L80">		rad[stream.size()] = 0;</span>
+
+<span class="fc" id="L82">		rad_err[1] = calcRad(1);</span>
+<span class="fc" id="L83">		rad[1] = rad_err[1];</span>
+
+<span class="fc" id="L85">		s.add(stream.get(0));</span>
+
+<span class="fc bfc" id="L87" title="All 2 branches covered.">		for (int i = 2; i &lt; stream.size() - 1; i++) {</span>
+<span class="fc" id="L88">			rad[i] = calcRad(i);</span>
+<span class="fc" id="L89">			rad_err[i] = Math.abs(rad[i] - rad[i - 1]);</span>
+
+<span class="fc" id="L91">			double sum = 0d;</span>
+<span class="fc bfc" id="L92" title="All 2 branches covered.">			for (int j = last_tp_idx + 1; j &lt;= i; j++) {</span>
+<span class="fc" id="L93">				sum += Math.abs(rad[j] * TI);</span>
+			}
+
+<span class="fc" id="L96">			cre[i] = rad_err[i] + sum;</span>
+
+<span class="fc bfc" id="L98" title="All 2 branches covered.">			if (cre[i] &gt;= cre_th) {</span>
+<span class="fc" id="L99">				s.add(stream.get(i - 1));</span>
+<span class="fc" id="L100">				last_tp_idx = i;</span>
+			} else {
+				// System.out.println(&quot;Ommit value at &quot; + stream.get(i - 1).x
+				// + &quot;, &quot; + cre[i]);
+			}
+		}
+
+<span class="fc" id="L107">		s.add(stream.get(stream.size() - 1));</span>
+
+<span class="fc" id="L109">		return s;</span>
+		// return this.stream;
+	}
+
+	public SegmentationSettings getSettings() {
+<span class="nc" id="L114">		return settings;</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

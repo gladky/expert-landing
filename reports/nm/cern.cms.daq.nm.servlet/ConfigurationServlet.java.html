@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>ConfigurationServlet.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Notification Manager</a> &gt; <a href="index.source.html" class="el_package">cern.cms.daq.nm.servlet</a> &gt; <span class="el_source">ConfigurationServlet.java</span></div><h1>ConfigurationServlet.java</h1><pre class="source lang-java linenums">package cern.cms.daq.nm.servlet;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.log4j.Logger;
+import org.hibernate.Criteria;
+import org.hibernate.Session;
+import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Restrictions;
+
+import cern.cms.daq.nm.Condition;
+import cern.cms.daq.nm.Constants;
+import cern.cms.daq.nm.persistence.Channel;
+import cern.cms.daq.nm.persistence.Configuration;
+import cern.cms.daq.nm.persistence.DummyUser;
+import cern.cms.daq.nm.persistence.EventType;
+
+<span class="nc" id="L30">public class ConfigurationServlet extends UserContextServlet {</span>
+	private static final long serialVersionUID = 1L;
+
+<span class="nc" id="L33">	private static final Logger logger = Logger.getLogger(ConfigurationServlet.class);</span>
+
+	List&lt;Configuration&gt; configurationList;
+	List&lt;Channel&gt; channelList;
+	List&lt;Condition&gt; conditionList;
+	List&lt;EventType&gt; eventTypeList;
+
+	@SuppressWarnings(&quot;unchecked&quot;)
+	private void update(EntityManager em, HttpServletRequest request, DummyUser user) {
+		/* All configuration entries */
+
+<span class="nc" id="L44">		Session session = em.unwrap(Session.class);</span>
+<span class="nc" id="L45">		Criteria configurationCriteria = session.createCriteria(Configuration.class);</span>
+<span class="nc" id="L46">		configurationCriteria.add(Restrictions.eq(&quot;user&quot;, user));</span>
+<span class="nc" id="L47">		configurationCriteria.addOrder(Order.asc(&quot;id&quot;));</span>
+<span class="nc" id="L48">		configurationList = configurationCriteria.list();</span>
+
+<span class="nc" id="L50">		Criteria eventCriteria = session.createCriteria(EventType.class);</span>
+<span class="nc" id="L51">		eventTypeList = eventCriteria.list();</span>
+
+<span class="nc" id="L53">		request.setAttribute(&quot;configurations&quot;, configurationList);</span>
+
+		/* All channels */
+<span class="nc" id="L56">		channelList = Arrays.asList(Channel.values());</span>
+<span class="nc" id="L57">		request.setAttribute(&quot;channelList&quot;, channelList);</span>
+
+		/* All conditions */
+<span class="nc" id="L60">		conditionList = Arrays.asList(Condition.values());</span>
+
+		/* importance conditions */
+<span class="nc" id="L63">		request.setAttribute(&quot;conditionList&quot;, Constants.importanceConditionsList);</span>
+
+		/* shift conditions */
+<span class="nc" id="L66">		request.setAttribute(&quot;shiftConditionList&quot;, Constants.shiftConditionsList);</span>
+
+		/* time conditions */
+<span class="nc" id="L69">		request.setAttribute(&quot;timeConditionList&quot;, Constants.timeConditionsList);</span>
+
+<span class="nc" id="L71">		request.setAttribute(&quot;eventTypeList&quot;, eventTypeList);</span>
+<span class="nc" id="L72">	}</span>
+
+	@Override
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+
+<span class="nc" id="L78">		DummyUser user = getLoggedUser(request);</span>
+
+<span class="nc" id="L80">		EntityManagerFactory emf = (EntityManagerFactory) getServletContext().getAttribute(&quot;emf&quot;);</span>
+<span class="nc" id="L81">		EntityManager em = emf.createEntityManager();</span>
+
+		try {
+
+<span class="nc" id="L85">			update(em, request, user);</span>
+
+			/* for each configuration fill settings from database */
+<span class="nc" id="L88">			HashMap&lt;Long, HashMap&lt;EventType, Boolean&gt;&gt; eventMode = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L89">			HashMap&lt;Long, HashMap&lt;Integer, Boolean&gt;&gt; channelMode = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L90">			HashMap&lt;Long, HashMap&lt;Integer, Boolean&gt;&gt; conditionMode = new HashMap&lt;&gt;();</span>
+<span class="nc bnc" id="L91" title="All 2 branches missed.">			for (Configuration configuration : configurationList) {</span>
+<span class="nc" id="L92">				Set&lt;EventType&gt; currentEventList = configuration.getEventTypes();</span>
+<span class="nc" id="L93">				Set&lt;Channel&gt; currentChannelList = configuration.getChannels();</span>
+<span class="nc" id="L94">				Set&lt;Condition&gt; currentConditionList = configuration.getConditions();</span>
+
+				/* fill settings for events */
+<span class="nc" id="L97">				HashMap&lt;EventType, Boolean&gt; eventSetting = new HashMap&lt;&gt;();</span>
+<span class="nc bnc" id="L98" title="All 2 branches missed.">				for (EventType eventType : eventTypeList) {</span>
+
+<span class="nc bnc" id="L100" title="All 2 branches missed.">					if (currentEventList.contains(eventType)) {</span>
+<span class="nc" id="L101">						eventSetting.put(eventType, true);</span>
+<span class="nc" id="L102">					} else {</span>
+<span class="nc" id="L103">						eventSetting.put(eventType, false);</span>
+					}
+
+<span class="nc" id="L106">					eventMode.put(configuration.getId(), eventSetting);</span>
+				}
+
+				/* fill settings for channels */
+<span class="nc" id="L110">				HashMap&lt;Integer, Boolean&gt; channelSetting = new HashMap&lt;Integer, Boolean&gt;();</span>
+<span class="nc bnc" id="L111" title="All 2 branches missed.">				for (Channel channel : channelList) {</span>
+
+<span class="nc bnc" id="L113" title="All 2 branches missed.">					if (currentChannelList.contains(channel)) {</span>
+<span class="nc" id="L114">						channelSetting.put(channel.ordinal(), true);</span>
+<span class="nc" id="L115">					} else {</span>
+<span class="nc" id="L116">						channelSetting.put(channel.ordinal(), false);</span>
+					}
+
+<span class="nc" id="L119">					channelMode.put(configuration.getId(), channelSetting);</span>
+				}
+
+				/* fill settings for conditions */
+<span class="nc" id="L123">				HashMap&lt;Integer, Boolean&gt; conditionSetting = new HashMap&lt;Integer, Boolean&gt;();</span>
+<span class="nc bnc" id="L124" title="All 2 branches missed.">				for (Condition condition : conditionList) {</span>
+
+<span class="nc bnc" id="L126" title="All 2 branches missed.">					if (currentConditionList.contains(condition)) {</span>
+<span class="nc" id="L127">						conditionSetting.put(condition.ordinal(), true);</span>
+<span class="nc" id="L128">					} else {</span>
+<span class="nc" id="L129">						conditionSetting.put(condition.ordinal(), false);</span>
+					}
+
+<span class="nc" id="L132">					conditionMode.put(configuration.getId(), conditionSetting);</span>
+				}
+			}
+			/* built configuration pass to page context */
+<span class="nc" id="L136">			request.setAttribute(&quot;eventMode&quot;, eventMode);</span>
+<span class="nc" id="L137">			request.setAttribute(&quot;channelMode&quot;, channelMode);</span>
+<span class="nc" id="L138">			request.setAttribute(&quot;conditionMode&quot;, conditionMode);</span>
+
+<span class="nc" id="L140">			request.getRequestDispatcher(&quot;/configuration.jsp&quot;).forward(request, response);</span>
+
+<span class="nc" id="L142">		} finally {</span>
+<span class="nc bnc" id="L143" title="All 4 branches missed.">			if (em.getTransaction().isActive())</span>
+<span class="nc" id="L144">				em.getTransaction().rollback();</span>
+<span class="nc" id="L145">			em.close();</span>
+<span class="nc" id="L146">		}</span>
+<span class="nc" id="L147">	}</span>
+
+	@Override
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+
+<span class="nc" id="L153">		DummyUser dummyUser = getLoggedUser(request);</span>
+
+<span class="nc" id="L155">		EntityManagerFactory emf = (EntityManagerFactory) getServletContext().getAttribute(&quot;emf&quot;);</span>
+<span class="nc" id="L156">		EntityManager em = emf.createEntityManager();</span>
+
+		try {
+
+<span class="nc" id="L160">			Session session = em.unwrap(Session.class);</span>
+
+<span class="nc" id="L162">			Criteria configurationCriteria = session.createCriteria(Configuration.class);</span>
+			@SuppressWarnings(&quot;unchecked&quot;)
+<span class="nc" id="L164">			List&lt;Configuration&gt; configurationList = configurationCriteria.list();</span>
+
+<span class="nc" id="L166">			em.getTransaction().begin();</span>
+
+<span class="nc" id="L168">			String[] records = request.getParameterValues(&quot;entry[]&quot;);</span>
+<span class="nc" id="L169">			List&lt;Long&gt; existingConfsFromForm = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L170">			List&lt;String&gt; confsToAddOrEdit = new ArrayList&lt;&gt;();</span>
+
+<span class="nc bnc" id="L172" title="All 2 branches missed.">			if (records != null)</span>
+<span class="nc bnc" id="L173" title="All 2 branches missed.">				for (String record : records) {</span>
+					try {
+<span class="nc" id="L175">						existingConfsFromForm.add(Long.parseLong(record));</span>
+<span class="nc" id="L176">						confsToAddOrEdit.add(record);</span>
+<span class="nc" id="L177">					} catch (NumberFormatException e) {</span>
+<span class="nc" id="L178">						confsToAddOrEdit.add(record);</span>
+					}
+				}
+
+			/*
+			 * remove block
+			 */
+<span class="nc" id="L185">			List&lt;Long&gt; confIdsToRemove = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L186" title="All 2 branches missed.">			for (Configuration conf : configurationList) {</span>
+<span class="nc bnc" id="L187" title="All 2 branches missed.">				if (!existingConfsFromForm.contains(conf.getId())) {</span>
+<span class="nc" id="L188">					confIdsToRemove.add(conf.getId());</span>
+
+<span class="nc" id="L190">					Configuration confToRemove = em.find(Configuration.class, conf.getId());</span>
+<span class="nc" id="L191">					em.remove(confToRemove);</span>
+				}
+			}
+			/* end of remove block */
+
+			/*
+			 * new/edit block
+			 */
+<span class="nc bnc" id="L199" title="All 2 branches missed.">			for (String confId : confsToAddOrEdit) {</span>
+<span class="nc" id="L200">				Set&lt;Condition&gt; conditionSet = new HashSet&lt;&gt;();</span>
+<span class="nc" id="L201">				Set&lt;Channel&gt; channelSet = new HashSet&lt;&gt;();</span>
+<span class="nc" id="L202">				Set&lt;EventType&gt; eventTypeSet = new HashSet&lt;&gt;();</span>
+
+<span class="nc" id="L204">				String[] events = request.getParameterValues(&quot;event_conf_&quot; + confId);</span>
+
+<span class="nc bnc" id="L206" title="All 2 branches missed.">				if (events == null) {</span>
+<span class="nc" id="L207">					doGet(request, response);</span>
+<span class="nc" id="L208">					return;</span>
+				}
+<span class="nc bnc" id="L210" title="All 2 branches missed.">				for (String event : events) {</span>
+					// TODO set event
+<span class="nc" id="L212">					Long id = Long.parseLong(event);</span>
+<span class="nc" id="L213">					EventType eventType = em.find(EventType.class, id);</span>
+<span class="nc" id="L214">					eventTypeSet.add(eventType);</span>
+				}
+
+<span class="nc" id="L217">				String[] importanceConfs = request.getParameterValues(&quot;importance_conf_&quot; + confId);</span>
+<span class="nc bnc" id="L218" title="All 2 branches missed.">				if (importanceConfs != null)</span>
+<span class="nc bnc" id="L219" title="All 2 branches missed.">					for (String importanceConf : importanceConfs) {</span>
+						try {
+<span class="nc" id="L221">							int id = Integer.valueOf(importanceConf);</span>
+<span class="nc" id="L222">							conditionSet.add(Condition.values()[id]);</span>
+<span class="nc" id="L223">						} catch (NumberFormatException e) {</span>
+<span class="nc" id="L224">							logger.warn(&quot;Problem processing post request &quot; + e.getMessage());</span>
+						}
+					}
+
+<span class="nc" id="L228">				String[] shiftConfs = request.getParameterValues(&quot;shift_conf_&quot; + confId);</span>
+<span class="nc bnc" id="L229" title="All 2 branches missed.">				if (shiftConfs != null)</span>
+<span class="nc bnc" id="L230" title="All 2 branches missed.">					for (String shiftConf : shiftConfs) {</span>
+						try {
+<span class="nc" id="L232">							int id = Integer.valueOf(shiftConf);</span>
+<span class="nc" id="L233">							conditionSet.add(Condition.values()[id]);</span>
+<span class="nc" id="L234">						} catch (NumberFormatException e) {</span>
+<span class="nc" id="L235">							logger.warn(&quot;Problem processing post request &quot; + e.getMessage());</span>
+						}
+					}
+
+<span class="nc" id="L239">				String[] timeConfs = request.getParameterValues(&quot;time_conf_&quot; + confId);</span>
+
+<span class="nc bnc" id="L241" title="All 2 branches missed.">				if (timeConfs != null)</span>
+<span class="nc bnc" id="L242" title="All 2 branches missed.">					for (String timeConf : timeConfs) {</span>
+						try {
+<span class="nc" id="L244">							int id = Integer.valueOf(timeConf);</span>
+<span class="nc" id="L245">							conditionSet.add(Condition.values()[id]);</span>
+<span class="nc" id="L246">						} catch (NumberFormatException e) {</span>
+<span class="nc" id="L247">							logger.warn(&quot;Problem processing post request &quot; + e.getMessage());</span>
+						}
+					}
+
+<span class="nc" id="L251">				String[] channelConfs = request.getParameterValues(&quot;channel_conf_&quot; + confId);</span>
+
+<span class="nc bnc" id="L253" title="All 2 branches missed.">				if (channelConfs != null)</span>
+<span class="nc bnc" id="L254" title="All 2 branches missed.">					for (String channelConf : channelConfs) {</span>
+						try {
+<span class="nc" id="L256">							int id = Integer.valueOf(channelConf);</span>
+<span class="nc" id="L257">							channelSet.add(Channel.values()[id]);</span>
+<span class="nc" id="L258">						} catch (NumberFormatException e) {</span>
+<span class="nc" id="L259">							logger.warn(&quot;Problem processing post request &quot; + e.getMessage());</span>
+						}
+					}
+
+				Configuration conf1;
+
+				try {
+<span class="nc" id="L266">					Long id = Long.valueOf(confId);</span>
+<span class="nc" id="L267">					conf1 = em.find(Configuration.class, id);</span>
+<span class="nc" id="L268">					logger.debug(&quot;Configuration will be updated&quot;);</span>
+<span class="nc" id="L269">				} catch (NumberFormatException e) {</span>
+<span class="nc" id="L270">					logger.debug(&quot;New configuration will be added &quot;);</span>
+<span class="nc" id="L271">					conf1 = new Configuration();</span>
+				}
+
+<span class="nc" id="L274">				conf1.setChannels(channelSet);</span>
+<span class="nc" id="L275">				conf1.setConditions(conditionSet);</span>
+<span class="nc" id="L276">				conf1.setEventTypes(eventTypeSet);</span>
+
+<span class="nc bnc" id="L278" title="All 2 branches missed.">				if (conf1.getUser() == null)</span>
+<span class="nc" id="L279">					conf1.setUser(dummyUser);</span>
+<span class="nc" id="L280">				em.persist(conf1);</span>
+
+			}
+
+<span class="nc" id="L284">			em.getTransaction().commit();</span>
+
+<span class="nc" id="L286">		} finally {</span>
+<span class="nc bnc" id="L287" title="All 6 branches missed.">			if (em.getTransaction().isActive())</span>
+<span class="nc" id="L288">				em.getTransaction().rollback();</span>
+<span class="nc" id="L289">			em.close();</span>
+<span class="nc" id="L290">		}</span>
+
+<span class="nc" id="L292">		doGet(request, response);</span>
+<span class="nc" id="L293">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

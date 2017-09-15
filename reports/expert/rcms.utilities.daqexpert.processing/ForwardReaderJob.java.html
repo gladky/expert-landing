@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>ForwardReaderJob.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DAQExpert</a> &gt; <a href="index.source.html" class="el_package">rcms.utilities.daqexpert.processing</a> &gt; <span class="el_source">ForwardReaderJob.java</span></div><h1>ForwardReaderJob.java</h1><pre class="source lang-java linenums">package rcms.utilities.daqexpert.processing;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.log4j.Logger;
+
+import rcms.utilities.daqaggregator.DAQException;
+import rcms.utilities.daqaggregator.DAQExceptionCode;
+import rcms.utilities.daqaggregator.persistence.PersistenceExplorer;
+
+/**
+ * Job for reading new snapshots in real time mode
+ * 
+ * @author Maciej Gladki (maciej.szymon.gladki@cern.ch)
+ *
+ */
+public class ForwardReaderJob implements ReaderJob {
+
+<span class="fc" id="L25">	private final static Logger logger = Logger.getLogger(ForwardReaderJob.class);</span>
+
+	private final PersistenceExplorer persistenceExplorer;
+
+	/** Tmp variable indicating date of last snapshot processed */
+	private Long last;
+
+	/**
+	 * Optional limitation on data to process. Older snapshots will not be
+	 * processed
+	 */
+	private final Long limit;
+
+	private final String sourceDirectory;
+
+	private boolean finished;
+
+	private final int batchSnapshotRead;
+
+	public ForwardReaderJob(PersistenceExplorer persistenceExplorer, Long last, Long limit, String sourceDirectory,
+			int batchSnapshotLimit) {
+<span class="fc" id="L46">		super();</span>
+<span class="fc" id="L47">		this.persistenceExplorer = persistenceExplorer;</span>
+<span class="fc" id="L48">		this.last = last;</span>
+<span class="fc" id="L49">		this.sourceDirectory = sourceDirectory;</span>
+<span class="fc" id="L50">		this.limit = limit;</span>
+<span class="fc" id="L51">		this.finished = false;</span>
+<span class="fc" id="L52">		this.batchSnapshotRead = batchSnapshotLimit;</span>
+<span class="fc" id="L53">	}</span>
+
+	@Override
+	public Pair&lt;Long, List&lt;File&gt;&gt; read() {
+		// get chunk of data
+		Pair&lt;Long, List&lt;File&gt;&gt; entry;
+		try {
+<span class="fc" id="L60">			logger.debug(&quot;Exploring with &quot; + last);</span>
+<span class="fc bfc" id="L61" title="All 2 branches covered.">			if (limit == null) {</span>
+<span class="fc" id="L62">				logger.debug(&quot;Exploring without upper limit&quot;);</span>
+<span class="fc" id="L63">				entry = persistenceExplorer.explore(last, sourceDirectory);</span>
+<span class="fc" id="L64">			} else {</span>
+<span class="fc" id="L65">				logger.debug(&quot;Exploring with upper limit of &quot; + new Date(limit));</span>
+<span class="fc" id="L66">				entry = persistenceExplorer.explore(last, limit, sourceDirectory, batchSnapshotRead);</span>
+			}
+			// remember last explored snapshot timestamp
+<span class="pc bpc" id="L69" title="1 of 6 branches missed.">			if (entry != null &amp;&amp; entry.getLeft() != null &amp;&amp; entry.getLeft() != 0) {</span>
+<span class="fc" id="L70">				last = entry.getLeft();</span>
+<span class="fc" id="L71">				return entry;</span>
+			} else {
+<span class="fc" id="L73">				List&lt;File&gt; emptyList = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L74">				return Pair.of(last, emptyList);</span>
+			}
+<span class="nc" id="L76">		} catch (FileNotFoundException e) {</span>
+			// e.printStackTrace();
+<span class="nc" id="L78">			logger.fatal(e.getMessage());</span>
+<span class="nc" id="L79">			throw new DAQException(DAQExceptionCode.ProblemExploringFiles, e.getMessage());</span>
+<span class="nc" id="L80">		} catch (IOException e) {</span>
+<span class="nc" id="L81">			e.printStackTrace();</span>
+<span class="nc" id="L82">			throw new DAQException(DAQExceptionCode.ProblemExploringFiles, &quot;Problem exploring files&quot;);</span>
+		}
+
+	}
+
+	@Override
+	public boolean finished() {
+<span class="fc" id="L89">		return finished;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

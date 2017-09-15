@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>ConditionalAction.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DAQExpert</a> &gt; <a href="index.source.html" class="el_package">rcms.utilities.daqexpert.reasoning.base.action</a> &gt; <span class="el_source">ConditionalAction.java</span></div><h1>ConditionalAction.java</h1><pre class="source lang-java linenums">package rcms.utilities.daqexpert.reasoning.base.action;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.log4j.Logger;
+
+public class ConditionalAction implements Action {
+
+<span class="fc" id="L12">	private static final Logger logger = Logger.getLogger(ConditionalAction.class);</span>
+
+<span class="fc" id="L14">	private static final String DEFAULT_KEY = &quot;default&quot;;</span>
+
+<span class="fc" id="L16">	private Map&lt;String, List&lt;String&gt;&gt; action = new HashMap&lt;&gt;();</span>
+
+<span class="fc" id="L18">	public ConditionalAction(String... steps) {</span>
+<span class="fc" id="L19">		this.action.put(DEFAULT_KEY, Arrays.asList(steps));</span>
+<span class="fc" id="L20">	}</span>
+
+	public void addContextSteps(String key, String... steps) {
+<span class="fc" id="L23">		this.action.put(key.toLowerCase(), Arrays.asList(steps));</span>
+<span class="fc" id="L24">	}</span>
+
+	@Override
+	public List&lt;String&gt; getSteps() {
+<span class="nc" id="L28">		return this.action.get(DEFAULT_KEY);</span>
+	}
+
+	public List&lt;String&gt; getContextSteps(String actionKeyy) {
+<span class="pc bpc" id="L32" title="1 of 2 branches missed.">		if (actionKeyy != null) {</span>
+<span class="fc" id="L33">			String actionKey = actionKeyy.toLowerCase();</span>
+<span class="pc bpc" id="L34" title="1 of 2 branches missed.">			if (this.action.containsKey(actionKey)) {</span>
+<span class="nc" id="L35">				return this.action.get(actionKey);</span>
+			} else {
+<span class="fc" id="L37">				logger.info(&quot;No action for key: &quot; + actionKey + &quot;, using default action&quot;);</span>
+<span class="fc" id="L38">				return this.action.get(DEFAULT_KEY);</span>
+			}
+		} else {
+<span class="nc" id="L41">			logger.warn(&quot;No action key for context action, using default action&quot;);</span>
+<span class="nc" id="L42">			return getSteps();</span>
+		}
+
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

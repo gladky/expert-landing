@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>EventArchiveServlet.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Notification Manager</a> &gt; <a href="index.source.html" class="el_package">cern.cms.daq.nm.servlet</a> &gt; <span class="el_source">EventArchiveServlet.java</span></div><h1>EventArchiveServlet.java</h1><pre class="source lang-java linenums">package cern.cms.daq.nm.servlet;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.xml.bind.DatatypeConverter;
+
+import org.apache.log4j.Logger;
+import org.hibernate.Criteria;
+import org.hibernate.Session;
+import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Projections;
+import org.hibernate.criterion.Restrictions;
+
+import cern.cms.daq.nm.persistence.Event;
+import cern.cms.daq.nm.persistence.EventType;
+import cern.cms.daq.nm.persistence.LogicModuleView;
+
+/**
+ * Event archive servlet
+ * 
+ * @author Maciej Gladki (maciej.szymon.gladki@cern.ch)
+ *
+ */
+<span class="nc" id="L34">public class EventArchiveServlet extends HttpServlet {</span>
+	private static final long serialVersionUID = 1L;
+
+<span class="nc" id="L37">	private static final Logger logger = Logger.getLogger(EventArchiveServlet.class);</span>
+
+	@Override
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+
+<span class="nc" id="L43">		String paginationEntriesPerPage = request.getParameter(&quot;entries&quot;);</span>
+<span class="nc" id="L44">		String paginationCurrentPage = request.getParameter(&quot;page&quot;);</span>
+<span class="nc" id="L45">		String[] types = request.getParameterValues(&quot;type[]&quot;);</span>
+<span class="nc" id="L46">		String[] sources = request.getParameterValues(&quot;source[]&quot;);</span>
+<span class="nc" id="L47">		String startRange = request.getParameter(&quot;start&quot;);</span>
+<span class="nc" id="L48">		String endRange = request.getParameter(&quot;end&quot;);</span>
+
+<span class="nc" id="L50">		List&lt;EventType&gt; filteredTypes = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L51" title="All 2 branches missed.">		if (types != null) {</span>
+<span class="nc bnc" id="L52" title="All 2 branches missed.">			for (String type : types) {</span>
+<span class="nc" id="L53">				EventType e = EventType.getByName(type);</span>
+<span class="nc" id="L54">				logger.info(&quot;Types: &quot; + types);</span>
+<span class="nc" id="L55">				logger.info(&quot;parsed: &quot; + e);</span>
+<span class="nc" id="L56">				filteredTypes.add(e);</span>
+			}
+		}
+<span class="nc bnc" id="L59" title="All 2 branches missed.">		if (filteredTypes.size() == 0) {</span>
+<span class="nc" id="L60">			filteredTypes = Arrays.asList(EventType.values());</span>
+		}
+
+<span class="nc" id="L63">		List&lt;LogicModuleView&gt; filteredSources = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L64" title="All 2 branches missed.">		if (sources != null) {</span>
+<span class="nc bnc" id="L65" title="All 2 branches missed.">			for (String source : sources) {</span>
+<span class="nc" id="L66">				LogicModuleView lm = LogicModuleView.valueOf(source);</span>
+<span class="nc bnc" id="L67" title="All 2 branches missed.">				if (lm != null) {</span>
+<span class="nc" id="L68">					filteredSources.add(lm);</span>
+				}
+			}
+		}
+
+		try {
+<span class="nc" id="L74">			int entries = 20;</span>
+<span class="nc bnc" id="L75" title="All 2 branches missed.">			if (paginationEntriesPerPage != null) {</span>
+<span class="nc" id="L76">				entries = Integer.parseInt(paginationEntriesPerPage);</span>
+			}
+<span class="nc" id="L78">			int page = 1;</span>
+<span class="nc bnc" id="L79" title="All 2 branches missed.">			if (paginationCurrentPage != null) {</span>
+<span class="nc" id="L80">				page = Integer.parseInt(paginationCurrentPage);</span>
+			}
+<span class="nc" id="L82">			Date startDate = null, endDate = null;</span>
+<span class="nc bnc" id="L83" title="All 2 branches missed.">			if (startRange != null)</span>
+<span class="nc" id="L84">				startDate = DatatypeConverter.parseDateTime(startRange).getTime();</span>
+
+<span class="nc bnc" id="L86" title="All 2 branches missed.">			if (endRange != null)</span>
+<span class="nc" id="L87">				endDate = DatatypeConverter.parseDateTime(endRange).getTime();</span>
+<span class="nc" id="L88">			logger.info(&quot;Range parsed : &quot; + startDate + &quot; - &quot; + endDate);</span>
+
+<span class="nc" id="L90">			logger.info(&quot;Requested events: entriesPerPage: &quot; + paginationEntriesPerPage + &quot;, currentPage: &quot;</span>
+<span class="nc" id="L91">					+ paginationCurrentPage);</span>
+
+<span class="nc" id="L93">			EntityManagerFactory emf = (EntityManagerFactory) getServletContext().getAttribute(&quot;emf&quot;);</span>
+<span class="nc" id="L94">			EntityManager em = emf.createEntityManager();</span>
+
+<span class="nc" id="L96">			Session session = em.unwrap(Session.class);</span>
+
+			try {
+<span class="nc" id="L99">				Criteria eventCriteria = session.createCriteria(Event.class);</span>
+<span class="nc" id="L100">				eventCriteria.addOrder(Order.desc(&quot;date&quot;));</span>
+<span class="nc" id="L101">				eventCriteria.add(Restrictions.in(&quot;eventType&quot;, filteredTypes));</span>
+
+<span class="nc bnc" id="L103" title="All 2 branches missed.">				if (!filteredSources.isEmpty()) {</span>
+<span class="nc" id="L104">					eventCriteria.add(Restrictions.in(&quot;logicModule&quot;, filteredSources));</span>
+				}
+<span class="nc bnc" id="L106" title="All 4 branches missed.">				if (startDate != null &amp;&amp; endDate != null)</span>
+<span class="nc" id="L107">					eventCriteria.add(Restrictions.between(&quot;date&quot;, startDate, endDate));</span>
+
+				/* process pagination */
+<span class="nc" id="L110">				eventCriteria.setFirstResult((page - 1) * entries);</span>
+<span class="nc" id="L111">				eventCriteria.setMaxResults(entries);</span>
+
+				@SuppressWarnings(&quot;unchecked&quot;)
+<span class="nc" id="L114">				List&lt;Event&gt; eventTypeList = eventCriteria.list();</span>
+
+<span class="nc" id="L116">				eventCriteria.setProjection(Projections.rowCount());</span>
+<span class="nc" id="L117">				eventCriteria.setFirstResult(0);</span>
+<span class="nc" id="L118">				Long count = (Long) eventCriteria.uniqueResult();</span>
+
+<span class="nc" id="L120">				request.setAttribute(&quot;events&quot;, eventTypeList);</span>
+<span class="nc" id="L121">				request.setAttribute(&quot;count&quot;, count);</span>
+<span class="nc" id="L122">				request.setAttribute(&quot;sources&quot;, LogicModuleView.values());</span>
+<span class="nc" id="L123">				request.setAttribute(&quot;eventTypes&quot;, EventType.values());</span>
+<span class="nc" id="L124">				request.getRequestDispatcher(&quot;/archive.jsp&quot;).forward(request, response);</span>
+
+<span class="nc" id="L126">			} finally {</span>
+<span class="nc bnc" id="L127" title="All 4 branches missed.">				if (em.getTransaction().isActive())</span>
+<span class="nc" id="L128">					em.getTransaction().rollback();</span>
+<span class="nc" id="L129">				em.close();</span>
+<span class="nc" id="L130">			}</span>
+<span class="nc" id="L131">		} catch (NumberFormatException e) {</span>
+<span class="nc" id="L132">			response.sendError(HttpServletResponse.SC_BAD_REQUEST,</span>
+<span class="nc" id="L133">					&quot;One or more parameters missing or could not be parsed: &quot; + e);</span>
+<span class="nc" id="L134">		} catch (NullPointerException e) {</span>
+<span class="nc" id="L135">			response.sendError(HttpServletResponse.SC_BAD_REQUEST, &quot;One or more parameters missing: &quot; + e);</span>
+		}
+<span class="nc" id="L137">	}</span>
+
+	@Override
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+<span class="nc" id="L142">		doGet(request, response);</span>
+<span class="nc" id="L143">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

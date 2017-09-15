@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>JobScheduler.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DAQExpert</a> &gt; <a href="index.source.html" class="el_package">rcms.utilities.daqexpert.processing</a> &gt; <span class="el_source">JobScheduler.java</span></div><h1>JobScheduler.java</h1><pre class="source lang-java linenums">package rcms.utilities.daqexpert.processing;
+
+import static java.util.concurrent.TimeUnit.SECONDS;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.log4j.Logger;
+
+/**
+ * Scheduler of the jobs retrieving the data
+ * 
+ * @author Maciej Gladki (maciej.szymon.gladki@cern.ch)
+ *
+ */
+public class JobScheduler {
+
+	/**
+	 * Period in which real time data will be accessed
+	 */
+	private final int REAL_TIME_TASK_PERION_IN_MILLISECONDS;
+
+	/** Executor of on demand reader task */
+	private final ExecutorService onDemandScheduler;
+
+	private Runnable realTimeTask;
+
+	/** Scheduled executor of real time reader task */
+	private final ScheduledExecutorService realTimeScheduler;
+
+<span class="fc" id="L34">	private static final Logger logger = Logger.getLogger(JobScheduler.class);</span>
+
+	public JobScheduler(Runnable realTimeTask, int period) {
+<span class="fc" id="L37">		this(realTimeTask, Executors.newScheduledThreadPool(1), Executors.newFixedThreadPool(1), period);</span>
+<span class="fc" id="L38">	}</span>
+
+<span class="fc" id="L40">	public JobScheduler(Runnable realTimeTask, ScheduledExecutorService realTimeScheduler,</span>
+			ExecutorService onDemandScheduler, int period) {
+
+<span class="fc" id="L43">		this.onDemandScheduler = onDemandScheduler;</span>
+<span class="fc" id="L44">		this.realTimeScheduler = realTimeScheduler;</span>
+
+<span class="fc" id="L46">		this.realTimeTask = realTimeTask;</span>
+<span class="fc" id="L47">		REAL_TIME_TASK_PERION_IN_MILLISECONDS = period;</span>
+
+<span class="fc" id="L49">	}</span>
+
+	public Future scheduleOnDemandReaderTask(Runnable onDemandReaderTask) {
+
+<span class="nc" id="L53">		logger.info(&quot;Starting on-demand reader job&quot;);</span>
+
+<span class="nc" id="L55">		Future&lt;?&gt; future = onDemandScheduler.submit(onDemandReaderTask);</span>
+<span class="nc" id="L56">		return future;</span>
+
+	}
+
+	public void fireRealTimeReaderTask() {
+<span class="fc" id="L61">		logger.info(&quot;Starting RT reader task with period of &quot; + REAL_TIME_TASK_PERION_IN_MILLISECONDS + &quot; milliseconds&quot;);</span>
+<span class="fc" id="L62">		realTimeScheduler.scheduleAtFixedRate(realTimeTask, 1, REAL_TIME_TASK_PERION_IN_MILLISECONDS,</span>
+<span class="fc" id="L63">				TimeUnit.MILLISECONDS);</span>
+<span class="fc" id="L64">	}</span>
+
+	public void stopExecutors() {
+<span class="nc" id="L67">		onDemandScheduler.shutdown();</span>
+<span class="nc" id="L68">		realTimeScheduler.shutdown();</span>
+		try {
+<span class="nc" id="L70">			onDemandScheduler.awaitTermination(5, SECONDS);</span>
+<span class="nc" id="L71">			logger.info(&quot;Successfully terminated on-demand scheduler&quot;);</span>
+<span class="nc" id="L72">		} catch (InterruptedException e) {</span>
+			// TODO Auto-generated catch block
+<span class="nc" id="L74">			e.printStackTrace();</span>
+		}
+		try {
+<span class="nc" id="L77">			realTimeScheduler.awaitTermination(5, SECONDS);</span>
+<span class="nc" id="L78">			logger.info(&quot;Successfully terminated real-time scheduler&quot;);</span>
+<span class="nc" id="L79">		} catch (InterruptedException e) {</span>
+			// TODO Auto-generated catch block
+<span class="nc" id="L81">			e.printStackTrace();</span>
+		}
+
+<span class="nc" id="L84">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

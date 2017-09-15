@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>UserContextServlet.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Notification Manager</a> &gt; <a href="index.source.html" class="el_package">cern.cms.daq.nm.servlet</a> &gt; <span class="el_source">UserContextServlet.java</span></div><h1>UserContextServlet.java</h1><pre class="source lang-java linenums">package cern.cms.daq.nm.servlet;
+
+import java.util.AbstractMap;
+import java.util.List;
+import java.util.Map.Entry;
+
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.log4j.Logger;
+import org.hibernate.Criteria;
+import org.hibernate.Session;
+import org.hibernate.criterion.Restrictions;
+
+import cern.cms.daq.nm.persistence.DummyUser;
+
+<span class="nc" id="L19">public abstract class UserContextServlet extends HttpServlet {</span>
+
+<span class="nc" id="L21">	private Logger logger = Logger.getLogger(UserContextServlet.class.getName());</span>
+
+	protected DummyUser getLoggedUser(HttpServletRequest request) {
+
+<span class="nc" id="L25">		return getUserObject(request).getKey();</span>
+	}
+
+	protected Entry&lt;DummyUser, Boolean&gt; getUserObject(HttpServletRequest request) {
+
+<span class="nc" id="L30">		String username = request.getRemoteUser();</span>
+		
+<span class="nc bnc" id="L32" title="All 4 branches missed.">		if(username == null || username.equals(&quot;&quot;)){</span>
+<span class="nc" id="L33">			username = &quot;guest&quot;;</span>
+		}
+
+<span class="nc" id="L36">		EntityManagerFactory emf = (EntityManagerFactory) getServletContext().getAttribute(&quot;emf&quot;);</span>
+<span class="nc" id="L37">		EntityManager em = emf.createEntityManager();</span>
+		try {
+<span class="nc" id="L39">			Session session = em.unwrap(Session.class);</span>
+
+<span class="nc" id="L41">			Criteria userCriteria = session.createCriteria(DummyUser.class);</span>
+<span class="nc" id="L42">			userCriteria.add(Restrictions.eq(&quot;username&quot;, username));</span>
+<span class="nc" id="L43">			List&lt;DummyUser&gt; userList = userCriteria.list();</span>
+<span class="nc" id="L44">			DummyUser dummyUser = null;</span>
+<span class="nc" id="L45">			boolean newComer = false;</span>
+
+			/*
+			 * If logged user already has some configuration then load it from Notification Manager database
+			 */
+<span class="nc bnc" id="L50" title="All 2 branches missed.">			if (userList.size() &gt; 0) {</span>
+<span class="nc" id="L51">				dummyUser = userList.get(0);</span>
+<span class="nc" id="L52">			}</span>
+
+			/*
+			 * If logged user never did any configuration then create and persist object
+			 */
+			else {
+<span class="nc" id="L58">				em.getTransaction().begin();</span>
+<span class="nc" id="L59">				newComer = true;</span>
+<span class="nc" id="L60">				dummyUser = new DummyUser();</span>
+<span class="nc" id="L61">				dummyUser.setUsername(username);</span>
+<span class="nc" id="L62">				em.persist(dummyUser);</span>
+<span class="nc" id="L63">				em.getTransaction().commit();</span>
+			}
+<span class="nc" id="L65">			Entry&lt;DummyUser, Boolean&gt; result = new AbstractMap.SimpleEntry&lt;DummyUser, Boolean&gt;(dummyUser, newComer);</span>
+
+<span class="nc" id="L67">			return result;</span>
+<span class="nc" id="L68">		} finally {</span>
+<span class="nc bnc" id="L69" title="All 4 branches missed.">			if (em.getTransaction().isActive())</span>
+<span class="nc" id="L70">				em.getTransaction().rollback();</span>
+<span class="nc" id="L71">			em.close();</span>
+<span class="nc" id="L72">		}</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

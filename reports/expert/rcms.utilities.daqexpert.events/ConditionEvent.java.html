@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>ConditionEvent.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DAQExpert</a> &gt; <a href="index.source.html" class="el_package">rcms.utilities.daqexpert.events</a> &gt; <span class="el_source">ConditionEvent.java</span></div><h1>ConditionEvent.java</h1><pre class="source lang-java linenums">package rcms.utilities.daqexpert.events;
+
+import java.util.Date;
+
+import org.apache.log4j.Logger;
+
+import rcms.utilities.daqexpert.persistence.Condition;
+import rcms.utilities.daqexpert.persistence.LogicModuleRegistry;
+import rcms.utilities.daqexpert.reasoning.base.enums.ConditionPriority;
+
+<span class="fc" id="L11">public class ConditionEvent {</span>
+
+<span class="fc" id="L13">	private final static Logger logger = Logger.getLogger(ConditionEvent.class);</span>
+
+	private Condition condition;
+
+	private EventType type;
+
+	private Date date;
+
+	private String title;
+
+	private ConditionPriority priority;
+
+	private LogicModuleRegistry logicModule;
+
+	public Condition getCondition() {
+<span class="nc" id="L28">		return condition;</span>
+	}
+
+	public void setCondition(Condition condition) {
+<span class="fc" id="L32">		this.condition = condition;</span>
+<span class="fc" id="L33">	}</span>
+
+	public EventType getType() {
+<span class="nc" id="L36">		return type;</span>
+	}
+
+	public void setType(EventType type) {
+<span class="fc" id="L40">		this.type = type;</span>
+<span class="fc" id="L41">	}</span>
+
+	public Date getDate() {
+<span class="nc" id="L44">		return date;</span>
+	}
+
+	public void setDate(Date date) {
+<span class="fc" id="L48">		this.date = date;</span>
+<span class="fc" id="L49">	}</span>
+
+	@Override
+	public String toString() {
+<span class="nc" id="L53">		return &quot;Event [condition=&quot; + condition + &quot;, type=&quot; + type + &quot;, date=&quot; + date + &quot;]&quot;;</span>
+	}
+
+	public ConditionEventResource generateEventToSend() {
+<span class="fc" id="L57">		ConditionEventResource eventToSend = new ConditionEventResource();</span>
+
+<span class="fc" id="L59">		eventToSend.setMessage(condition.getDescription());</span>
+<span class="pc bpc" id="L60" title="1 of 2 branches missed.">		if (eventToSend.getMessage() == null) {</span>
+<span class="nc" id="L61">			logger.warn(&quot;Message empty for event: &quot; + title + &quot;, replacing with empty string&quot;);</span>
+<span class="nc" id="L62">			eventToSend.setMessage(&quot;&quot;);</span>
+		}
+<span class="fc" id="L64">		eventToSend.setTitle(title);</span>
+<span class="fc" id="L65">		eventToSend.setConditionId(condition.getId());</span>
+<span class="fc" id="L66">		eventToSend.setEventType(type);</span>
+<span class="fc" id="L67">		eventToSend.setSender(this.getClass().getPackage().getImplementationVersion());</span>
+<span class="fc" id="L68">		eventToSend.setEventSenderType(EventSenderType.Expert);</span>
+<span class="fc" id="L69">		eventToSend.setDate(date);</span>
+<span class="fc" id="L70">		eventToSend.setLogicModule(logicModule);</span>
+<span class="fc" id="L71">		eventToSend.setPriority(priority);</span>
+
+<span class="fc" id="L73">		return eventToSend;</span>
+
+	}
+
+	public LogicModuleRegistry getLogicModule() {
+<span class="nc" id="L78">		return logicModule;</span>
+	}
+
+	public void setLogicModule(LogicModuleRegistry logicModule) {
+<span class="fc" id="L82">		this.logicModule = logicModule;</span>
+<span class="fc" id="L83">	}</span>
+
+	public String getTitle() {
+<span class="nc" id="L86">		return title;</span>
+	}
+
+	public void setTitle(String title) {
+<span class="fc" id="L90">		this.title = title;</span>
+<span class="fc" id="L91">	}</span>
+
+	public ConditionPriority getPriority() {
+<span class="nc" id="L94">		return priority;</span>
+	}
+
+	public void setPriority(ConditionPriority priority) {
+<span class="fc" id="L98">		this.priority = priority;</span>
+<span class="fc" id="L99">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

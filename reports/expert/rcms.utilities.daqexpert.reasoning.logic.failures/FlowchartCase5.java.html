@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>FlowchartCase5.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DAQExpert</a> &gt; <a href="index.source.html" class="el_package">rcms.utilities.daqexpert.reasoning.logic.failures</a> &gt; <span class="el_source">FlowchartCase5.java</span></div><h1>FlowchartCase5.java</h1><pre class="source lang-java linenums">package rcms.utilities.daqexpert.reasoning.logic.failures;
+
+import java.util.Map;
+
+import rcms.utilities.daqaggregator.data.DAQ;
+import rcms.utilities.daqaggregator.data.FED;
+import rcms.utilities.daqaggregator.data.SubSystem;
+import rcms.utilities.daqaggregator.data.TTCPartition;
+import rcms.utilities.daqexpert.reasoning.base.action.ConditionalAction;
+import rcms.utilities.daqexpert.reasoning.base.enums.ConditionPriority;
+import rcms.utilities.daqexpert.reasoning.base.enums.TTSState;
+import rcms.utilities.daqexpert.reasoning.logic.basic.NoRateWhenExpected;
+import rcms.utilities.daqexpert.reasoning.logic.basic.StableBeams;
+
+/**
+ * Logic module identifying 5 flowchart case.
+ * 
+ * @see flowchart at https://twiki.cern.ch/twiki/pub/CMS/ShiftNews/DAQStuck3.pdf
+ * 
+ * @author Maciej Gladki (maciej.szymon.gladki@cern.ch)
+ *
+ */
+public class FlowchartCase5 extends KnownFailure {
+
+<span class="fc" id="L25">	public FlowchartCase5() {</span>
+<span class="fc" id="L26">		this.name = &quot;FC5&quot;;</span>
+<span class="fc" id="L27">		this.description = &quot;TTCP {{TTCP}} of {{SUBSYSTEM}} subsystem is blocking trigger, it's in {{TTCPSTATE}} TTS state, &quot;</span>
+				+ &quot;The problem is caused by FED {{FED}} in {{FEDSTATE}}&quot;;
+
+		/* default action */
+<span class="fc" id="L31">		ConditionalAction action = new ConditionalAction(&quot;Stop the run&quot;,</span>
+<span class="fc" id="L32">				&quot;Red &amp; green recycle the subsystem {{SUBSYSTEM}}.&quot;, &quot;Start new run (try up to 2 times)&quot;,</span>
+<span class="fc" id="L33">				&quot;Problem fixed: Make an e-log entry. Call the DOC of the subsystem {{SUBSYSTEM}} to inform&quot;,</span>
+<span class="fc" id="L34">				&quot;Problem not fixed: Call the DOC for the subsystem {{SUBSYSTEM}}&quot;);</span>
+
+		/* ecal specific case */
+<span class="fc" id="L37">		action.addContextSteps(&quot;ECAL&quot;, &quot;Stop the run&quot;, &quot;Start new run (try up to 2 times)&quot;,</span>
+<span class="fc" id="L38">				&quot;Problem fixed: Make an e-log entry. Call the DOC of the subsystem {{SUBSYSTEM}} to inform&quot;,</span>
+<span class="fc" id="L39">				&quot;Problem not fixed: Call the DOC for the subsystem {{SUBSYSTEM}}&quot;);</span>
+
+<span class="fc" id="L41">		this.action = action;</span>
+<span class="fc" id="L42">	}</span>
+
+	private static final String RUNBLOCKED_STATE = &quot;RUNBLOCKED&quot;;
+
+	@Override
+	public boolean satisfied(DAQ daq, Map&lt;String, Boolean&gt; results) {
+
+<span class="fc bfc" id="L49" title="All 2 branches covered.">		if (!results.get(NoRateWhenExpected.class.getSimpleName()))</span>
+<span class="fc" id="L50">			return false;</span>
+<span class="fc" id="L51">		boolean stableBeams = results.get(StableBeams.class.getSimpleName());</span>
+<span class="fc bfc" id="L52" title="All 2 branches covered.">		this.priority = stableBeams ? ConditionPriority.CRITICAL : ConditionPriority.WARNING;</span>
+
+<span class="fc" id="L54">		boolean result = false;</span>
+
+<span class="fc" id="L56">		String l0state = daq.getLevelZeroState();</span>
+<span class="fc" id="L57">		String daqstate = daq.getDaqState();</span>
+
+<span class="fc bfc" id="L59" title="All 2 branches covered.">		if (!&quot;RUNBLOCKED&quot;.equalsIgnoreCase(daqstate)) {</span>
+
+<span class="fc bfc" id="L61" title="All 2 branches covered.">			for (SubSystem subSystem : daq.getSubSystems()) {</span>
+
+<span class="fc bfc" id="L63" title="All 2 branches covered.">				for (TTCPartition ttcp : subSystem.getTtcPartitions()) {</span>
+
+<span class="fc bfc" id="L65" title="All 2 branches covered.">					if (!ttcp.isMasked()) {</span>
+<span class="fc" id="L66">						TTSState currentState = TTSState.getByCode(ttcp.getTtsState());</span>
+<span class="pc bpc" id="L67" title="1 of 4 branches missed.">						if (currentState == TTSState.BUSY || currentState == TTSState.WARNING) {</span>
+<span class="fc bfc" id="L68" title="All 2 branches covered.">							for (FED fed : ttcp.getFeds()) {</span>
+<span class="pc bpc" id="L69" title="2 of 4 branches missed.">								if (!fed.isFmmMasked() &amp;&amp; !fed.isFrlMasked()) {</span>
+<span class="fc" id="L70">									TTSState currentFedState = TTSState.getByCode(fed.getTtsState());</span>
+<span class="pc bpc" id="L71" title="1 of 4 branches missed.">									if ((currentFedState == TTSState.BUSY || currentFedState == TTSState.WARNING)</span>
+<span class="fc bfc" id="L72" title="All 2 branches covered.">											&amp;&amp; fed.getPercentBackpressure() == 0F) {</span>
+
+<span class="fc" id="L74">										context.register(&quot;TTCP&quot;, ttcp.getName());</span>
+<span class="fc" id="L75">										context.register(&quot;TTCPSTATE&quot;, currentState.name());</span>
+<span class="fc" id="L76">										context.register(&quot;SUBSYSTEM&quot;, subSystem.getName());</span>
+<span class="fc" id="L77">										context.register(&quot;FED&quot;, fed.getSrcIdExpected());</span>
+<span class="fc" id="L78">										context.register(&quot;FEDSTATE&quot;, currentFedState.name());</span>
+<span class="fc" id="L79">										context.setActionKey(subSystem.getName());</span>
+<span class="fc" id="L80">										result = true;</span>
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+<span class="fc" id="L90">		return result;</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

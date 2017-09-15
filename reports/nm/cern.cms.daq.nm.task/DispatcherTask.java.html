@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>DispatcherTask.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Notification Manager</a> &gt; <a href="index.source.html" class="el_package">cern.cms.daq.nm.task</a> &gt; <span class="el_source">DispatcherTask.java</span></div><h1>DispatcherTask.java</h1><pre class="source lang-java linenums">package cern.cms.daq.nm.task;
+
+import java.util.List;
+import java.util.TimerTask;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+
+import org.apache.log4j.Logger;
+import org.hibernate.Criteria;
+import org.hibernate.Session;
+import org.hibernate.criterion.Restrictions;
+
+import cern.cms.daq.nm.persistence.Channel;
+import cern.cms.daq.nm.persistence.Configuration;
+import cern.cms.daq.nm.persistence.DummyUser;
+import cern.cms.daq.nm.persistence.Event;
+import cern.cms.daq.nm.persistence.EventStatus;
+import cern.cms.daq.nm.persistence.NotificationOccurrence;
+import cern.cms.daq.nm.persistence.NotificationStatus;
+
+/**
+ * 
+ * This task is responsible for taking the event occurrences from buffer,
+ * dispatching notifications to users based on their preferences. When all
+ * user's conditions are met the notification occurrence is generated and put to
+ * buffer for sender task
+ * 
+ * 
+ * @author Maciej Gladki (maciej.szymon.gladki@cern.ch)
+ *
+ */
+public class DispatcherTask extends TimerTask {
+
+<span class="fc" id="L36">	private static final Logger logger = Logger.getLogger(DispatcherTask.class);</span>
+
+	private final ConcurrentLinkedQueue&lt;Event&gt; eventBuffer;
+	private final ConcurrentLinkedQueue&lt;NotificationOccurrence&gt; notificationBuffer;
+	private final EntityManagerFactory notificationEMF;
+	private final EntityManagerFactory shiftEMF;
+	private EntityManager em;
+	private Session session;
+
+	private final EventFilter eventFilter;
+
+<span class="fc" id="L47">	public DispatcherTask(EntityManagerFactory notificationEMF, EntityManagerFactory shiftEMF,</span>
+			ConcurrentLinkedQueue&lt;Event&gt; eventBuffer,
+			ConcurrentLinkedQueue&lt;NotificationOccurrence&gt; notificationBuffer) {
+
+<span class="fc" id="L51">		this.notificationEMF = notificationEMF;</span>
+<span class="fc" id="L52">		this.shiftEMF = shiftEMF;</span>
+<span class="fc" id="L53">		this.eventBuffer = eventBuffer;</span>
+<span class="fc" id="L54">		this.notificationBuffer = notificationBuffer;</span>
+<span class="fc" id="L55">		this.eventFilter = new EventFilter(this.shiftEMF);</span>
+<span class="fc" id="L56">	}</span>
+
+	@Override
+	public void run() {
+
+<span class="pc bpc" id="L61" title="1 of 2 branches missed.">		if (!eventBuffer.isEmpty()) {</span>
+<span class="fc" id="L62">			final int bufferSize = eventBuffer.size();</span>
+<span class="fc" id="L63">			final Long startTime = System.currentTimeMillis();</span>
+<span class="fc" id="L64">			logger.debug(new StringBuilder(&quot;Run dispatcher task, &quot;).append(bufferSize).append(&quot; events on queue&quot;));</span>
+
+<span class="fc" id="L66">			int i = 0;</span>
+
+<span class="fc" id="L68">			start();</span>
+
+<span class="pc bpc" id="L70" title="1 of 4 branches missed.">			while (!eventBuffer.isEmpty() &amp;&amp; i &lt; bufferSize) {</span>
+<span class="fc" id="L71">				i++;</span>
+<span class="fc" id="L72">				Event eventOccurrence = eventBuffer.poll();</span>
+
+<span class="fc" id="L74">				logger.debug(&quot;Dispatching event &quot; + eventOccurrence.getEventType().getDescription() + &quot; (&quot;</span>
+<span class="fc" id="L75">						+ eventOccurrence.getMessage() + &quot;)&quot;);</span>
+
+<span class="fc" id="L77">				List&lt;DummyUser&gt; userList = getDummyUsers();</span>
+
+<span class="fc bfc" id="L79" title="All 2 branches covered.">				for (DummyUser user : userList) {</span>
+
+<span class="fc" id="L81">					List&lt;Configuration&gt; configurations = getConfiguration(user, eventOccurrence);</span>
+
+					/*
+					 * Sprawdz wszystkie konfiguracje tylko dla tego typu
+					 * eventu. TODO: wyslij tylko raz nawet jak sie powtarzaja
+					 */
+<span class="fc bfc" id="L87" title="All 2 branches covered.">					for (Configuration conf : configurations) {</span>
+
+<span class="fc" id="L89">						EventFilter ef = getEventFilter();</span>
+<span class="fc" id="L90">						boolean send = ef.conditionsSatisfied(user, conf.getConditions());</span>
+
+<span class="fc bfc" id="L92" title="All 2 branches covered.">						if (send) {</span>
+
+<span class="fc" id="L94">							StringBuilder sb = new StringBuilder(&quot;All conditions satisfied for user &quot;)</span>
+<span class="fc" id="L95">									.append(user.getUsername()).append(&quot;, for channel(s) &quot;);</span>
+<span class="fc bfc" id="L96" title="All 2 branches covered.">							for (Channel channel : conf.getChannels()) {</span>
+<span class="fc" id="L97">								NotificationOccurrence notificationOccurrence = new NotificationOccurrence();</span>
+<span class="fc" id="L98">								notificationOccurrence.setChannel(channel);</span>
+<span class="fc" id="L99">								notificationOccurrence.setEventOccurrence(eventOccurrence);</span>
+<span class="fc" id="L100">								notificationOccurrence.setUser(user);</span>
+<span class="fc" id="L101">								notificationOccurrence.setStatus(NotificationStatus.Pending);</span>
+<span class="fc" id="L102">								notificationBuffer.add(notificationOccurrence);</span>
+<span class="fc" id="L103">								persistNotificationOccurrence(notificationOccurrence);</span>
+
+							}
+<span class="fc" id="L106">							logger.debug(sb.append(conf.getChannels()).toString());</span>
+						}
+					}
+				}
+<span class="fc" id="L110">				updateEventStatus(eventOccurrence, EventStatus.Dispatched);</span>
+			}
+<span class="fc" id="L112">			stop();</span>
+
+<span class="fc" id="L114">			final Long endTime = System.currentTimeMillis();</span>
+<span class="fc" id="L115">			final Long endMemo = (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory());</span>
+<span class="fc" id="L116">			logger.info(new StringBuilder(&quot;Dispatcher processed &quot;).append(bufferSize).append(&quot; events in &quot;)</span>
+<span class="fc" id="L117">					.append(endTime - startTime).append(&quot; ms.&quot;));</span>
+		}
+<span class="fc" id="L119">	}</span>
+
+	protected void start() {
+<span class="nc" id="L122">		em = notificationEMF.createEntityManager();</span>
+<span class="nc" id="L123">		em.getTransaction().begin();</span>
+<span class="nc" id="L124">		session = em.unwrap(Session.class);</span>
+<span class="nc" id="L125">	}</span>
+
+	protected void stop() {
+<span class="nc" id="L128">		em.getTransaction().commit();</span>
+
+<span class="nc bnc" id="L130" title="All 2 branches missed.">		if (em.getTransaction().isActive())</span>
+<span class="nc" id="L131">			em.getTransaction().rollback();</span>
+<span class="nc" id="L132">		em.close();</span>
+
+<span class="nc" id="L134">	}</span>
+
+	protected void updateEventStatus(Event event, EventStatus status) {
+<span class="nc" id="L137">		Event eventOccurrence = em.find(Event.class, event.getId());</span>
+<span class="nc" id="L138">		eventOccurrence.setStatus(status);</span>
+<span class="nc" id="L139">	}</span>
+
+	protected void persistNotificationOccurrence(NotificationOccurrence notificationOccurrence) {
+<span class="nc" id="L142">		em.persist(notificationOccurrence);</span>
+<span class="nc" id="L143">	}</span>
+
+	@SuppressWarnings(&quot;unchecked&quot;)
+	protected List&lt;DummyUser&gt; getDummyUsers() {
+<span class="nc" id="L147">		Criteria userCriteria = session.createCriteria(DummyUser.class);</span>
+<span class="nc" id="L148">		return userCriteria.list();</span>
+	}
+
+	@SuppressWarnings(&quot;unchecked&quot;)
+	protected List&lt;Configuration&gt; getConfiguration(DummyUser user, Event eventOccurrence) {
+<span class="nc" id="L153">		Criteria cr = session.createCriteria(Configuration.class);</span>
+<span class="nc" id="L154">		cr.add(Restrictions.eq(&quot;user&quot;, user));</span>
+		// cr.add(Restrictions.in(&quot;eventTypes&quot;,
+		// eventOccurrence.getEventType()));
+
+<span class="nc" id="L158">		cr.createAlias(&quot;eventTypes&quot;, &quot;eventType&quot;);</span>
+<span class="nc" id="L159">		cr.add(Restrictions.eq(&quot;eventType&quot;, eventOccurrence.getEventType()));</span>
+
+<span class="nc" id="L161">		return cr.list();</span>
+	}
+
+	protected EventFilter getEventFilter() {
+<span class="nc" id="L165">		return eventFilter;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

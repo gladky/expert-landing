@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>LogicModuleRegistry.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DAQExpert</a> &gt; <a href="index.source.html" class="el_package">rcms.utilities.daqexpert.persistence</a> &gt; <span class="el_source">LogicModuleRegistry.java</span></div><h1>LogicModuleRegistry.java</h1><pre class="source lang-java linenums"><span class="pc" id="L1">package rcms.utilities.daqexpert.persistence;</span>
+
+import rcms.utilities.daqexpert.reasoning.base.LogicModule;
+import rcms.utilities.daqexpert.reasoning.base.enums.ConditionGroup;
+import rcms.utilities.daqexpert.reasoning.logic.basic.BeamActive;
+import rcms.utilities.daqexpert.reasoning.logic.basic.CriticalDeadtime;
+import rcms.utilities.daqexpert.reasoning.logic.basic.Deadtime;
+import rcms.utilities.daqexpert.reasoning.logic.basic.Downtime;
+import rcms.utilities.daqexpert.reasoning.logic.basic.ExpectedRate;
+import rcms.utilities.daqexpert.reasoning.logic.basic.FEDDeadtime;
+import rcms.utilities.daqexpert.reasoning.logic.basic.LongTransition;
+import rcms.utilities.daqexpert.reasoning.logic.basic.NoRate;
+import rcms.utilities.daqexpert.reasoning.logic.basic.NoRateWhenExpected;
+import rcms.utilities.daqexpert.reasoning.logic.basic.PartitionDeadtime;
+import rcms.utilities.daqexpert.reasoning.logic.basic.RateOutOfRange;
+import rcms.utilities.daqexpert.reasoning.logic.basic.RunOngoing;
+import rcms.utilities.daqexpert.reasoning.logic.basic.StableBeams;
+import rcms.utilities.daqexpert.reasoning.logic.basic.SubsystemError;
+import rcms.utilities.daqexpert.reasoning.logic.basic.SubsystemRunningDegraded;
+import rcms.utilities.daqexpert.reasoning.logic.basic.SubsystemSoftError;
+import rcms.utilities.daqexpert.reasoning.logic.basic.Transition;
+import rcms.utilities.daqexpert.reasoning.logic.basic.WarningInSubsystem;
+import rcms.utilities.daqexpert.reasoning.logic.comparators.DAQStateComparator;
+import rcms.utilities.daqexpert.reasoning.logic.comparators.LHCBeamModeComparator;
+import rcms.utilities.daqexpert.reasoning.logic.comparators.LHCMachineModeComparator;
+import rcms.utilities.daqexpert.reasoning.logic.comparators.LevelZeroStateComparator;
+import rcms.utilities.daqexpert.reasoning.logic.comparators.RunComparator;
+import rcms.utilities.daqexpert.reasoning.logic.comparators.SessionComparator;
+import rcms.utilities.daqexpert.reasoning.logic.comparators.TCDSStateComparator;
+import rcms.utilities.daqexpert.reasoning.logic.failures.FlowchartCase1;
+import rcms.utilities.daqexpert.reasoning.logic.failures.FlowchartCase2;
+import rcms.utilities.daqexpert.reasoning.logic.failures.FlowchartCase3;
+import rcms.utilities.daqexpert.reasoning.logic.failures.FlowchartCase4;
+import rcms.utilities.daqexpert.reasoning.logic.failures.FlowchartCase5;
+import rcms.utilities.daqexpert.reasoning.logic.failures.FlowchartCase6;
+
+<span class="fc" id="L37">public enum LogicModuleRegistry {</span>
+
+<span class="fc" id="L39">	NoRate(new NoRate(), ConditionGroup.NO_RATE, &quot;Satisfied when no rate in DAQ fed builder summary&quot;, 10),</span>
+<span class="fc" id="L40">	RateOutOfRange(new RateOutOfRange(), ConditionGroup.RATE_OUT_OF_RANGE, &quot;&quot;, 9),</span>
+<span class="fc" id="L41">	BeamActive(new BeamActive(), ConditionGroup.BEAM_ACTIVE, &quot;&quot;),</span>
+<span class="fc" id="L42">	RunOngoing(new RunOngoing(), ConditionGroup.RUN_ONGOING, &quot;&quot;, 100),</span>
+<span class="fc" id="L43">	ExpectedRate(new ExpectedRate(), ConditionGroup.EXPECTED_RATE, &quot;&quot;),</span>
+<span class="fc" id="L44">	Transition(new Transition(), ConditionGroup.TRANSITION, &quot;&quot;),</span>
+<span class="fc" id="L45">	LongTransition(new LongTransition(), ConditionGroup.HIDDEN, &quot;&quot;),</span>
+<span class="fc" id="L46">	WarningInSubsystem(new WarningInSubsystem(), ConditionGroup.Warning, &quot;&quot;, 1004),</span>
+<span class="fc" id="L47">	SubsystemRunningDegraded(new SubsystemRunningDegraded(), ConditionGroup.SUBSYS_DEGRADED, &quot;&quot;, 1006),</span>
+<span class="fc" id="L48">	SubsystemError(new SubsystemError(), ConditionGroup.SUBSYS_ERROR, &quot;&quot;, 1007),</span>
+<span class="fc" id="L49">	SubsystemSoftError(new SubsystemSoftError(), ConditionGroup.SUBSYS_SOFT_ERR, &quot;&quot;, 1005),</span>
+<span class="fc" id="L50">	FEDDeadtime(new FEDDeadtime(), ConditionGroup.FED_DEADTIME, &quot;&quot;, 1005),</span>
+<span class="fc" id="L51">	PartitionDeadtime(new PartitionDeadtime(), ConditionGroup.PARTITION_DEADTIME, &quot;&quot;, 1008),</span>
+<span class="fc" id="L52">	StableBeams(new StableBeams(), ConditionGroup.HIDDEN, &quot;&quot;),</span>
+<span class="fc" id="L53">	NoRateWhenExpected(new NoRateWhenExpected(), ConditionGroup.NO_RATE_WHEN_EXPECTED, &quot;&quot;, 104),</span>
+<span class="fc" id="L54">	Downtime(new Downtime(), ConditionGroup.DOWNTIME, &quot;&quot;),</span>
+<span class="fc" id="L55">	Deadtime(new Deadtime(), ConditionGroup.DEADTIME, &quot;&quot;),</span>
+<span class="fc" id="L56">	CriticalDeadtime(new CriticalDeadtime(), ConditionGroup.CRITICAL_DEADTIME, &quot;&quot;, 105),</span>
+<span class="fc" id="L57">	FlowchartCase1(new FlowchartCase1(), ConditionGroup.FLOWCHART, &quot;&quot;, 10004),</span>
+<span class="fc" id="L58">	FlowchartCase2(new FlowchartCase2(), ConditionGroup.FLOWCHART, &quot;&quot;, 10005),</span>
+<span class="fc" id="L59">	FlowchartCase3(new FlowchartCase3(), ConditionGroup.FLOWCHART, &quot;&quot;, 10006),</span>
+<span class="fc" id="L60">	FlowchartCase4(new FlowchartCase4(), ConditionGroup.FLOWCHART, &quot;&quot;, 10007),</span>
+<span class="fc" id="L61">	FlowchartCase5(new FlowchartCase5(), ConditionGroup.FLOWCHART, &quot;&quot;, 10008),</span>
+<span class="fc" id="L62">	FlowchartCase6(new FlowchartCase6(), ConditionGroup.FLOWCHART, &quot;&quot;, 10009),</span>
+<span class="fc" id="L63">	SessionComparator(new SessionComparator(), ConditionGroup.SESSION_NUMBER, &quot;Session&quot;, 15),</span>
+<span class="fc" id="L64">	LHCBeamModeComparator(new LHCBeamModeComparator(), ConditionGroup.LHC_BEAM, &quot;LHC Beam Mode&quot;, 20),</span>
+<span class="fc" id="L65">	LHCMachineModeComparator(new LHCMachineModeComparator(), ConditionGroup.LHC_MACHINE, &quot;LHC Machine Mode&quot;, 21),</span>
+<span class="fc" id="L66">	RunComparator(new RunComparator(), ConditionGroup.RUN_NUMBER, &quot;Run&quot;, 14),</span>
+<span class="fc" id="L67">	LevelZeroStateComparator(new LevelZeroStateComparator(), ConditionGroup.LEVEL_ZERO, &quot;Level Zero State&quot;, 13),</span>
+<span class="fc" id="L68">	TCDSStateComparator(new TCDSStateComparator(), ConditionGroup.TCDS_STATE, &quot;TCDS State&quot;, 12),</span>
+<span class="fc" id="L69">	DAQStateComparator(new DAQStateComparator(), ConditionGroup.DAQ_STATE, &quot;DAQ state&quot;, 11);</span>
+
+	private LogicModuleRegistry(LogicModule logicModule, ConditionGroup group, String description) {
+<span class="fc" id="L72">		this(logicModule, group, description, 1);</span>
+<span class="fc" id="L73">	}</span>
+
+<span class="fc" id="L75">	private LogicModuleRegistry(LogicModule logicModule, ConditionGroup group, String description, int usefulness) {</span>
+<span class="fc" id="L76">		this.logicModule = logicModule;</span>
+<span class="fc" id="L77">		this.description = description;</span>
+<span class="fc" id="L78">		this.group = group;</span>
+<span class="fc" id="L79">		this.usefulness = usefulness;</span>
+<span class="fc" id="L80">	}</span>
+
+	public LogicModule getLogicModule() {
+<span class="fc" id="L83">		return logicModule;</span>
+	}
+
+	public String getDescription() {
+<span class="fc" id="L87">		return description;</span>
+	}
+
+	private final LogicModule logicModule;
+	private final String description;
+	private final ConditionGroup group;
+	private final int usefulness;
+
+	public ConditionGroup getGroup() {
+<span class="fc" id="L96">		return group;</span>
+	}
+
+	public int getUsefulness() {
+<span class="fc" id="L100">		return usefulness;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>TTSState.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DAQExpert</a> &gt; <a href="index.source.html" class="el_package">rcms.utilities.daqexpert.reasoning.base.enums</a> &gt; <span class="el_source">TTSState.java</span></div><h1>TTSState.java</h1><pre class="source lang-java linenums"><span class="nc" id="L1">package rcms.utilities.daqexpert.reasoning.base.enums;</span>
+
+/**
+ * @author Maciej Gladki
+ */
+<span class="fc" id="L6">public enum TTSState {</span>
+
+<span class="fc" id="L8">	DISCONNECTED(&quot;D_0&quot;), WARNING(&quot;W_1&quot;), OUT_OF_SYNC(&quot;S_2&quot;), BUSY(&quot;B_4&quot;), TTS_READY(&quot;R_8&quot;), ERROR(&quot;E_c&quot;), UNKNOWN(&quot;&quot;);</span>
+
+<span class="fc" id="L10">	private TTSState(String code) {</span>
+<span class="fc" id="L11">		this.code = code;</span>
+<span class="fc" id="L12">	}</span>
+
+	private String code;
+
+	public String getCode() {
+<span class="fc" id="L17">		return code;</span>
+	}
+
+	public void setCode(String code) {
+<span class="nc" id="L21">		this.code = code;</span>
+<span class="nc" id="L22">	}</span>
+
+	public static TTSState getByCode(String code) {
+<span class="fc bfc" id="L25" title="All 2 branches covered.">		if (code == null)</span>
+<span class="fc" id="L26">			return TTSState.UNKNOWN;</span>
+<span class="fc bfc" id="L27" title="All 2 branches covered.">		if (code.equalsIgnoreCase(TTS_READY.getCode())) {</span>
+<span class="fc" id="L28">			return TTSState.TTS_READY;</span>
+<span class="pc bpc" id="L29" title="1 of 2 branches missed.">		} else if (code.equalsIgnoreCase(DISCONNECTED.getCode())) {</span>
+<span class="nc" id="L30">			return TTSState.DISCONNECTED;</span>
+<span class="fc bfc" id="L31" title="All 2 branches covered.">		} else if (code.equalsIgnoreCase(WARNING.getCode())) {</span>
+<span class="fc" id="L32">			return TTSState.WARNING;</span>
+<span class="fc bfc" id="L33" title="All 2 branches covered.">		} else if (code.equalsIgnoreCase(OUT_OF_SYNC.getCode())) {</span>
+<span class="fc" id="L34">			return TTSState.OUT_OF_SYNC;</span>
+<span class="pc bpc" id="L35" title="1 of 2 branches missed.">		} else if (code.equalsIgnoreCase(BUSY.getCode())) {</span>
+<span class="nc" id="L36">			return TTSState.BUSY;</span>
+<span class="pc bpc" id="L37" title="1 of 2 branches missed.">		} else if (code.equalsIgnoreCase(ERROR.getCode())) {</span>
+<span class="fc" id="L38">			return TTSState.ERROR;</span>
+		}
+<span class="nc" id="L40">		return TTSState.UNKNOWN;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

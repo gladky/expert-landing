@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>SoundConfigurationReader.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Notification Manager</a> &gt; <a href="index.source.html" class="el_package">cern.cms.daq.nm.sound</a> &gt; <span class="el_source">SoundConfigurationReader.java</span></div><h1>SoundConfigurationReader.java</h1><pre class="source lang-java linenums">package cern.cms.daq.nm.sound;
+
+import java.util.HashSet;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
+
+import org.apache.commons.lang3.tuple.Triple;
+import org.apache.log4j.Logger;
+
+import cern.cms.daq.nm.NotificationException;
+import cern.cms.daq.nm.persistence.EventType;
+import cern.cms.daq.nm.persistence.LogicModuleView;
+
+/**
+ * Reads the configuration of sound system from configuration file
+ * 
+ * @author Maciej Gladki (maciej.szymon.gladki@cern.ch)
+ *
+ */
+<span class="fc" id="L21">public class SoundConfigurationReader {</span>
+
+<span class="fc" id="L23">	public static final Logger logger = Logger.getLogger(SoundConfigurationReader.class);</span>
+
+	public Set&lt;Triple&lt;LogicModuleView, EventType, Sound&gt;&gt; readSoundSelectConfigurations(Properties properties) {
+<span class="fc" id="L26">		Set&lt;Triple&lt;LogicModuleView, EventType, Sound&gt;&gt; result = new HashSet&lt;&gt;();</span>
+<span class="fc bfc" id="L27" title="All 2 branches covered.">		for (Entry&lt;Object, Object&gt; entry : properties.entrySet()) {</span>
+			try {
+<span class="fc" id="L29">				String key = (String) entry.getKey();</span>
+<span class="fc bfc" id="L30" title="All 2 branches covered.">				if (key.startsWith(&quot;sound.select.&quot;)) {</span>
+<span class="fc" id="L31">					Object value = entry.getValue();</span>
+<span class="fc bfc" id="L32" title="All 2 branches covered.">					if (value instanceof String) {</span>
+<span class="fc" id="L33">						result.add(readSoundSelectConfiguration(key, (String) value));</span>
+<span class="fc" id="L34">					} else {</span>
+<span class="fc" id="L35">						logger.warn(&quot;problem parsing value: &quot; + value + &quot;, expecting sound name or filename&quot;);</span>
+					}
+				}
+<span class="fc" id="L38">			} catch (NotificationException e) {</span>
+<span class="fc" id="L39">				logger.warn(&quot;Cannot process this configuration: &quot; + entry + &quot;, &quot; + e.getMessage());</span>
+			}
+		}
+<span class="fc" id="L42">		return result;</span>
+	}
+
+	public Set&lt;Triple&lt;LogicModuleView, EventType, Priority&gt;&gt; readSoundTriggerConfigurations(
+			Properties properties) {
+<span class="nc" id="L47">		Set&lt;Triple&lt;LogicModuleView, EventType, Priority&gt;&gt; result = new HashSet&lt;&gt;();</span>
+<span class="nc bnc" id="L48" title="All 2 branches missed.">		for (Entry&lt;Object, Object&gt; entry : properties.entrySet()) {</span>
+			try {
+<span class="nc" id="L50">				String key = (String) entry.getKey();</span>
+<span class="nc bnc" id="L51" title="All 2 branches missed.">				if (key.startsWith(&quot;sound.trigger.&quot;)) {</span>
+<span class="nc" id="L52">					Object value = entry.getValue();</span>
+<span class="nc bnc" id="L53" title="All 2 branches missed.">					if (value instanceof String) {</span>
+<span class="nc" id="L54">						result.add(readSoundTriggerConfiguration(key, (String) value));</span>
+<span class="nc" id="L55">					} else {</span>
+<span class="nc" id="L56">						logger.warn(&quot;problem parsing value: &quot; + value + &quot;, expecting sound name or filename&quot;);</span>
+					}
+				}
+<span class="nc" id="L59">			} catch (NotificationException e) {</span>
+<span class="nc" id="L60">				logger.warn(&quot;Cannot process this configuration: &quot; + entry + &quot;, &quot; + e.getMessage());</span>
+			}
+		}
+<span class="nc" id="L63">		return result;</span>
+	}
+
+	private Triple&lt;LogicModuleView, EventType, Sound&gt; readSoundSelectConfiguration(String key, String value) {
+
+<span class="fc" id="L68">		String[] parts = key.split(&quot;\\.&quot;);</span>
+<span class="fc bfc" id="L69" title="All 2 branches covered.">		if (parts.length == 4) {</span>
+<span class="fc" id="L70">			return readConditionSoundSelectConfiguration(parts, value);</span>
+<span class="fc bfc" id="L71" title="All 2 branches covered.">		} else if (parts.length == 3) {</span>
+<span class="fc" id="L72">			return readSimpleSoundSelectConfiguration(parts, value);</span>
+		} else {
+<span class="fc" id="L74">			throw new NotificationException(&quot;configuration key has wrong format: &quot; + key);</span>
+		}
+	}
+
+	private Triple&lt;LogicModuleView, EventType, Priority&gt; readSoundTriggerConfiguration(String key,
+			String value) {
+
+<span class="nc" id="L81">		String[] parts = key.split(&quot;\\.&quot;);</span>
+<span class="nc bnc" id="L82" title="All 2 branches missed.">		if (parts.length == 4) {</span>
+<span class="nc" id="L83">			return readConditionSoundTriggerConfiguration(parts, value);</span>
+<span class="nc bnc" id="L84" title="All 2 branches missed.">		} else if (parts.length == 3) {</span>
+<span class="nc" id="L85">			return readSimpleSoundTriggerConfiguration(parts, value);</span>
+		} else {
+<span class="nc" id="L87">			throw new NotificationException(&quot;configuration key has wrong format: &quot; + key);</span>
+		}
+	}
+
+	private Triple&lt;LogicModuleView, EventType, Sound&gt; readSimpleSoundSelectConfiguration(String[] parts, String value) {
+<span class="fc" id="L92">		String lm = parts[2];</span>
+<span class="fc" id="L93">		LogicModuleView logicModule = getView(lm);</span>
+<span class="fc" id="L94">		Sound sound = getSound(value);</span>
+<span class="fc" id="L95">		return Triple.of(logicModule, EventType.Single, sound);</span>
+	}
+
+	private Triple&lt;LogicModuleView, EventType, Priority&gt; readSimpleSoundTriggerConfiguration(String[] parts,
+			String value) {
+<span class="nc" id="L100">		String lm = parts[2];</span>
+<span class="nc" id="L101">		LogicModuleView logicModule = getView(lm);</span>
+<span class="nc" id="L102">		Priority priority = getPriority(value);</span>
+<span class="nc" id="L103">		return Triple.of(logicModule, EventType.Single, priority);</span>
+	}
+
+	private Triple&lt;LogicModuleView, EventType, Sound&gt; readConditionSoundSelectConfiguration(String[] parts,
+			String value) {
+<span class="fc" id="L108">		String lm = parts[2];</span>
+<span class="fc" id="L109">		String type = parts[3];</span>
+
+<span class="fc" id="L111">		EventType eventType = null;</span>
+<span class="fc bfc" id="L112" title="All 2 branches covered.">		if (type.equalsIgnoreCase(&quot;start&quot;)) {</span>
+<span class="fc" id="L113">			eventType = EventType.ConditionStart;</span>
+<span class="fc bfc" id="L114" title="All 2 branches covered.">		} else if (type.equalsIgnoreCase(&quot;end&quot;)) {</span>
+<span class="fc" id="L115">			eventType = EventType.ConditionEnd;</span>
+<span class="fc bfc" id="L116" title="All 2 branches covered.">		} else if (type.equalsIgnoreCase(&quot;update&quot;)) {</span>
+<span class="fc" id="L117">			eventType = EventType.ConditionUpdate;</span>
+
+<span class="fc" id="L119">		} else {</span>
+<span class="fc" id="L120">			throw new NotificationException(&quot;unknown event type: &quot; + type);</span>
+
+		}
+
+<span class="fc" id="L124">		LogicModuleView logicModule = getView(lm);</span>
+
+<span class="fc" id="L126">		Sound sound = getSound(value);</span>
+
+<span class="fc" id="L128">		return Triple.of(logicModule, eventType, sound);</span>
+	}
+
+	private Triple&lt;LogicModuleView, EventType, Priority&gt; readConditionSoundTriggerConfiguration(String[] parts,
+			String value) {
+<span class="nc" id="L133">		String lm = parts[2];</span>
+<span class="nc" id="L134">		String type = parts[3];</span>
+
+<span class="nc" id="L136">		EventType eventType = null;</span>
+<span class="nc bnc" id="L137" title="All 2 branches missed.">		if (type.equalsIgnoreCase(&quot;start&quot;)) {</span>
+<span class="nc" id="L138">			eventType = EventType.ConditionStart;</span>
+<span class="nc bnc" id="L139" title="All 2 branches missed.">		} else if (type.equalsIgnoreCase(&quot;end&quot;)) {</span>
+<span class="nc" id="L140">			eventType = EventType.ConditionEnd;</span>
+<span class="nc bnc" id="L141" title="All 2 branches missed.">		} else if (type.equalsIgnoreCase(&quot;update&quot;)) {</span>
+<span class="nc" id="L142">			eventType = EventType.ConditionUpdate;</span>
+
+<span class="nc" id="L144">		} else {</span>
+<span class="nc" id="L145">			throw new NotificationException(&quot;unknown event type: &quot; + type);</span>
+
+		}
+
+<span class="nc" id="L149">		LogicModuleView logicModule = getView(lm);</span>
+
+<span class="nc" id="L151">		Priority priority = getPriority(value);</span>
+
+<span class="nc" id="L153">		return Triple.of(logicModule, eventType, priority);</span>
+	}
+
+	private LogicModuleView getView(String input) {
+
+		try {
+<span class="fc" id="L159">			LogicModuleView result = LogicModuleView.valueOf(input);</span>
+<span class="fc" id="L160">			return result;</span>
+
+<span class="fc" id="L162">		} catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L163">			throw new NotificationException(&quot;unknown logic module: &quot; + input);</span>
+		}
+
+	}
+
+	private Priority getPriority(String input) {
+
+<span class="nc bnc" id="L170" title="All 2 branches missed.">		for (Priority sound : Priority.values()) {</span>
+<span class="nc bnc" id="L171" title="All 4 branches missed.">			if (sound.getCode().equalsIgnoreCase(input) || sound.name().equalsIgnoreCase(input)) {</span>
+<span class="nc" id="L172">				return sound;</span>
+			}
+		}
+<span class="nc" id="L175">		throw new NotificationException(&quot;unknown priority: &quot; + input);</span>
+
+	}
+
+	private Sound getSound(String input) {
+
+<span class="fc bfc" id="L181" title="All 2 branches covered.">		for (Sound sound : Sound.values()) {</span>
+<span class="fc bfc" id="L182" title="All 4 branches covered.">			if (sound.getFilename().equalsIgnoreCase(input) || sound.name().equalsIgnoreCase(input)) {</span>
+<span class="fc" id="L183">				return sound;</span>
+			}
+		}
+<span class="fc" id="L186">		throw new NotificationException(&quot;unknown sound: &quot; + input);</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

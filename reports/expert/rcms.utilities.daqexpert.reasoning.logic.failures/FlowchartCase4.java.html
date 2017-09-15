@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>FlowchartCase4.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DAQExpert</a> &gt; <a href="index.source.html" class="el_package">rcms.utilities.daqexpert.reasoning.logic.failures</a> &gt; <span class="el_source">FlowchartCase4.java</span></div><h1>FlowchartCase4.java</h1><pre class="source lang-java linenums">package rcms.utilities.daqexpert.reasoning.logic.failures;
+
+import java.util.Map;
+
+import rcms.utilities.daqaggregator.data.DAQ;
+import rcms.utilities.daqaggregator.data.SubSystem;
+import rcms.utilities.daqaggregator.data.TTCPartition;
+import rcms.utilities.daqexpert.reasoning.base.action.SimpleAction;
+import rcms.utilities.daqexpert.reasoning.base.enums.ConditionPriority;
+import rcms.utilities.daqexpert.reasoning.base.enums.TTSState;
+import rcms.utilities.daqexpert.reasoning.logic.basic.NoRateWhenExpected;
+import rcms.utilities.daqexpert.reasoning.logic.basic.StableBeams;
+
+/**
+ * Logic module identifying 4 flowchart case.
+ * 
+ * @see flowchart at https://twiki.cern.ch/twiki/pub/CMS/ShiftNews/DAQStuck3.pdf
+ * 
+ * @author Maciej Gladki (maciej.szymon.gladki@cern.ch)
+ *
+ */
+public class FlowchartCase4 extends KnownFailure {
+
+<span class="fc" id="L24">	public FlowchartCase4() {</span>
+<span class="fc" id="L25">		this.name = &quot;FC4&quot;;</span>
+<span class="fc" id="L26">		this.description = &quot;TTCP {{TTCP}} in {{SUBSYSTEM}} subsystem is in disconnected TTS state. It's blocking trigger.&quot;</span>
+				+ &quot;The PI of the subsystem may be suffering from a firmware problem&quot;;
+<span class="fc" id="L28">		this.action = new SimpleAction(&quot;Stop the run&quot;, &quot;red &amp; green recycle the subsystem {{SUBSYSTEM}}&quot;,</span>
+<span class="fc" id="L29">				&quot;Start new run&quot;, &quot;Problem fixed: You are done make an e-log entry&quot;,</span>
+<span class="fc" id="L30">				&quot;Problem not fixed: Call the DOC of {{SUBSYSTEM}} (subsystem for the partition in disconnected)&quot;);</span>
+<span class="fc" id="L31">	}</span>
+
+	@Override
+	public boolean satisfied(DAQ daq, Map&lt;String, Boolean&gt; results) {
+<span class="fc bfc" id="L35" title="All 2 branches covered.">		if (!results.get(NoRateWhenExpected.class.getSimpleName()))</span>
+<span class="fc" id="L36">			return false;</span>
+<span class="fc" id="L37">		boolean stableBeams = results.get(StableBeams.class.getSimpleName());</span>
+<span class="fc bfc" id="L38" title="All 2 branches covered.">		this.priority = stableBeams ? ConditionPriority.CRITICAL : ConditionPriority.WARNING;</span>
+
+<span class="fc" id="L40">		boolean result = false;</span>
+
+<span class="fc" id="L42">		String daqstate = daq.getDaqState();</span>
+<span class="fc bfc" id="L43" title="All 2 branches covered.">		if (!&quot;RUNBLOCKED&quot;.equalsIgnoreCase(daqstate)) {</span>
+
+<span class="fc bfc" id="L45" title="All 2 branches covered.">			for (SubSystem subSystem : daq.getSubSystems()) {</span>
+
+<span class="fc bfc" id="L47" title="All 2 branches covered.">				for (TTCPartition ttcp : subSystem.getTtcPartitions()) {</span>
+<span class="fc bfc" id="L48" title="All 2 branches covered.">					if (!ttcp.isMasked()) {</span>
+
+<span class="fc" id="L50">						TTSState currentState = TTSState.getByCode(ttcp.getTtsState());</span>
+<span class="pc bpc" id="L51" title="1 of 2 branches missed.">						if (currentState == TTSState.DISCONNECTED) {</span>
+
+<span class="nc" id="L53">							context.register(&quot;SUBSYSTEM&quot;, subSystem.getName());</span>
+<span class="nc" id="L54">							context.register(&quot;TTCP&quot;, ttcp.getName());</span>
+<span class="nc" id="L55">							result = true;</span>
+						}
+					}
+				}
+			}
+
+		}
+
+<span class="fc" id="L63">		return result;</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

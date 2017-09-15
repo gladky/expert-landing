@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>ExperimentApi.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DAQExpert</a> &gt; <a href="index.source.html" class="el_package">rcms.utilities.daqexpert.servlets</a> &gt; <span class="el_source">ExperimentApi.java</span></div><h1>ExperimentApi.java</h1><pre class="source lang-java linenums">package rcms.utilities.daqexpert.servlets;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.xml.bind.DatatypeConverter;
+
+import org.apache.log4j.Logger;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import rcms.utilities.daqaggregator.DAQException;
+import rcms.utilities.daqexpert.Application;
+import rcms.utilities.daqexpert.persistence.Condition;
+
+/**
+ * Api to request rerun of experimental logic modules on chosen time span
+ * 
+ * @author Maciej Gladki (maciej.szymon.gladki@cern.ch)
+ *
+ */
+<span class="nc" id="L35">public class ExperimentApi extends HttpServlet {</span>
+	private static final long serialVersionUID = 1L;
+
+<span class="nc" id="L38">	private static final Logger logger = Logger.getLogger(ExperimentApi.class);</span>
+
+	@Override
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+
+<span class="nc" id="L44">		String experimentalLm = request.getParameter(&quot;experimental-lm&quot;);</span>
+		// experimentalLm = &quot;test&quot;;
+
+<span class="nc" id="L47">		logger.info(&quot;Experimental run of LM: &quot; + experimentalLm);</span>
+
+<span class="nc" id="L49">		Set&lt;Condition&gt; destination = new LinkedHashSet&lt;Condition&gt;();</span>
+<span class="nc" id="L50">		Application.get().getDataManager().experimental.put(experimentalLm, destination);</span>
+
+<span class="nc" id="L52">		String startRange = request.getParameter(&quot;start&quot;);</span>
+<span class="nc" id="L53">		String endRange = request.getParameter(&quot;end&quot;);</span>
+
+<span class="nc" id="L55">		Date startDate = DatatypeConverter.parseDateTime(startRange).getTime();</span>
+<span class="nc" id="L56">		Date endDate = DatatypeConverter.parseDateTime(endRange).getTime();</span>
+
+<span class="nc" id="L58">		logger.info(&quot;Experimenting on from : &quot; + startDate + &quot; to &quot; + endDate);</span>
+
+<span class="nc" id="L60">		Future&lt;?&gt; future = Application.get().getJobManager().fireOnDemandJob(startDate.getTime(), endDate.getTime(),</span>
+<span class="nc" id="L61">				destination, experimentalLm);</span>
+
+<span class="nc" id="L63">		HashMap&lt;String, Object&gt; result = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L64">		String message = null;</span>
+<span class="nc" id="L65">		String status = &quot;fail&quot;;</span>
+
+		try {
+<span class="nc" id="L68">			future.get(30, TimeUnit.SECONDS);</span>
+<span class="nc" id="L69">			status = &quot;success&quot;;</span>
+<span class="nc" id="L70">		} catch (ExecutionException e) {</span>
+
+
+<span class="nc" id="L73">			logger.fatal(&quot;Execution exception catched: &quot; + e.getMessage());</span>
+<span class="nc" id="L74">			StringWriter sw = new StringWriter();</span>
+<span class="nc" id="L75">			PrintWriter pw = new PrintWriter(sw);</span>
+<span class="nc" id="L76">			e.printStackTrace(pw);</span>
+<span class="nc" id="L77">			message = sw.toString();</span>
+			
+<span class="nc" id="L79">		} catch (InterruptedException e) {</span>
+<span class="nc" id="L80">			message = e.getMessage();</span>
+<span class="nc" id="L81">			logger.fatal(&quot;Interrupted exception catched&quot;);</span>
+<span class="nc" id="L82">		} catch (DAQException e) {</span>
+<span class="nc" id="L83">			message = e.getMessage();</span>
+<span class="nc" id="L84">			logger.fatal(&quot;DAQException exception catched&quot;);</span>
+<span class="nc" id="L85">		} catch (TimeoutException e) {</span>
+<span class="nc" id="L86">			message = e.getMessage();</span>
+<span class="nc" id="L87">			logger.fatal(&quot;TimeoutException exception catched&quot;);</span>
+		}
+		
+<span class="nc" id="L90">		result.put(&quot;message&quot;, message);</span>
+<span class="nc" id="L91">		result.put(&quot;status&quot;, status);</span>
+
+<span class="nc" id="L93">		ObjectMapper objectMapper = new ObjectMapper();</span>
+<span class="nc" id="L94">		String json = objectMapper.writeValueAsString(result);</span>
+<span class="nc" id="L95">		response.setContentType(&quot;application/json&quot;);</span>
+<span class="nc" id="L96">		response.setCharacterEncoding(&quot;UTF-8&quot;);</span>
+<span class="nc" id="L97">		response.getWriter().write(json);</span>
+<span class="nc" id="L98">	}</span>
+
+	@Override
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+<span class="nc" id="L103">		doGet(request, response);</span>
+<span class="nc" id="L104">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

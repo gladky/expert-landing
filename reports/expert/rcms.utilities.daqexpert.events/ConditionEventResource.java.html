@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>ConditionEventResource.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DAQExpert</a> &gt; <a href="index.source.html" class="el_package">rcms.utilities.daqexpert.events</a> &gt; <span class="el_source">ConditionEventResource.java</span></div><h1>ConditionEventResource.java</h1><pre class="source lang-java linenums">package rcms.utilities.daqexpert.events;
+
+import java.util.Date;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+
+import rcms.utilities.daqexpert.persistence.LogicModuleRegistry;
+import rcms.utilities.daqexpert.reasoning.base.enums.ConditionPriority;
+
+<span class="fc" id="L10">public class ConditionEventResource {</span>
+
+	private String message;
+
+	private String title;
+
+	private String sender;
+
+	private String textToSpeech;
+
+	private Long conditionId;
+
+	private EventSenderType eventSenderType;
+
+	private EventType eventType;
+
+	private LogicModuleRegistry logicModule;
+
+	private ConditionPriority priority;
+
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = &quot;yyyy-MM-dd'T'HH:mm:ss&quot;, timezone = &quot;CET&quot;)
+	private Date date;
+
+	public String getMessage() {
+<span class="fc" id="L34">		return message;</span>
+	}
+
+	public void setMessage(String message) {
+<span class="fc" id="L38">		this.message = message;</span>
+<span class="fc" id="L39">	}</span>
+
+	public String getTitle() {
+<span class="fc" id="L42">		return title;</span>
+	}
+
+	public void setTitle(String title) {
+<span class="fc" id="L46">		this.title = title;</span>
+<span class="fc" id="L47">	}</span>
+
+	public String getSender() {
+<span class="fc" id="L50">		return sender;</span>
+	}
+
+	public void setSender(String sender) {
+<span class="fc" id="L54">		this.sender = sender;</span>
+<span class="fc" id="L55">	}</span>
+
+	public String getTextToSpeech() {
+<span class="fc" id="L58">		return textToSpeech;</span>
+	}
+
+	public void setTextToSpeech(String textToSpeech) {
+<span class="nc" id="L62">		this.textToSpeech = textToSpeech;</span>
+<span class="nc" id="L63">	}</span>
+
+	public Long getConditionId() {
+<span class="fc" id="L66">		return conditionId;</span>
+	}
+
+	public void setConditionId(Long conditionId) {
+<span class="fc" id="L70">		this.conditionId = conditionId;</span>
+<span class="fc" id="L71">	}</span>
+
+	@Override
+	public String toString() {
+<span class="nc" id="L75">		return &quot;EventToSend [message=&quot; + message + &quot;, title=&quot; + title + &quot;, sender=&quot; + sender + &quot;, textToSpeech=&quot;</span>
+<span class="nc" id="L76">				+ textToSpeech + &quot;, conditionId=&quot; + conditionId + &quot;, eventSenderType=&quot; + eventSenderType</span>
+<span class="nc" id="L77">				+ &quot;, eventType=&quot; + eventType + &quot;]&quot;;</span>
+	}
+
+	public Date getDate() {
+<span class="fc" id="L81">		return date;</span>
+	}
+
+	public void setDate(Date date) {
+<span class="fc" id="L85">		this.date = date;</span>
+<span class="fc" id="L86">	}</span>
+
+	public void setEventSenderType(EventSenderType eventSenderType) {
+<span class="fc" id="L89">		this.eventSenderType = eventSenderType;</span>
+<span class="fc" id="L90">	}</span>
+
+	public void setEventType(EventType eventType) {
+<span class="fc" id="L93">		this.eventType = eventType;</span>
+<span class="fc" id="L94">	}</span>
+
+	public EventSenderType getEventSenderType() {
+<span class="fc" id="L97">		return eventSenderType;</span>
+	}
+
+	public EventType getEventType() {
+<span class="fc" id="L101">		return eventType;</span>
+	}
+
+	public LogicModuleRegistry getLogicModule() {
+<span class="fc" id="L105">		return logicModule;</span>
+	}
+
+	public void setLogicModule(LogicModuleRegistry logicModule) {
+<span class="fc" id="L109">		this.logicModule = logicModule;</span>
+<span class="fc" id="L110">	}</span>
+
+	public ConditionPriority getPriority() {
+<span class="fc" id="L113">		return priority;</span>
+	}
+
+	public void setPriority(ConditionPriority priority) {
+<span class="fc" id="L117">		this.priority = priority;</span>
+<span class="fc" id="L118">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

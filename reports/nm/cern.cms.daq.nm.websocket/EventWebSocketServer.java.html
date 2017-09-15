@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>EventWebSocketServer.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Notification Manager</a> &gt; <a href="index.source.html" class="el_package">cern.cms.daq.nm.websocket</a> &gt; <span class="el_source">EventWebSocketServer.java</span></div><h1>EventWebSocketServer.java</h1><pre class="source lang-java linenums">package cern.cms.daq.nm.websocket;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.websocket.OnClose;
+import javax.websocket.OnError;
+import javax.websocket.OnMessage;
+import javax.websocket.OnOpen;
+import javax.websocket.Session;
+import javax.websocket.server.ServerEndpoint;
+
+import org.apache.log4j.Logger;
+
+@ApplicationScoped
+@ServerEndpoint(&quot;/actions&quot;)
+<span class="nc" id="L15">public class EventWebSocketServer {</span>
+
+<span class="nc" id="L17">	private static final Logger logger = Logger.getLogger(EventWebSocketServer.class);</span>
+
+<span class="nc" id="L19">	public static EventSessionHandler sessionHandler = new EventSessionHandler();</span>
+
+	@OnOpen
+	public void open(Session session) {
+<span class="nc" id="L23">		logger.info(&quot;Connected &quot; + session.getId());</span>
+<span class="nc" id="L24">		sessionHandler.addSession(session);</span>
+<span class="nc" id="L25">	}</span>
+
+	@OnClose
+	public void close(Session session) {
+<span class="nc" id="L29">		logger.info(&quot;Closed &quot; + session.getId());</span>
+<span class="nc" id="L30">		sessionHandler.removeSession(session);</span>
+<span class="nc" id="L31">	}</span>
+
+	@OnError
+	public void onError(Throwable error) {
+<span class="nc" id="L35">		logger.error(error);</span>
+		//error.printStackTrace();
+<span class="nc" id="L37">	}</span>
+
+	@OnMessage
+	public void handleMessage(String message, Session session) {
+
+<span class="nc" id="L42">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

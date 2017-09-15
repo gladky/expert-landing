@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>SoundDispatcher.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Notification Manager</a> &gt; <a href="index.source.html" class="el_package">cern.cms.daq.nm.sound</a> &gt; <span class="el_source">SoundDispatcher.java</span></div><h1>SoundDispatcher.java</h1><pre class="source lang-java linenums">package cern.cms.daq.nm.sound;
+
+import java.util.concurrent.ConcurrentLinkedQueue;
+
+import org.apache.log4j.Logger;
+
+import cern.cms.daq.nm.NotificationException;
+import cern.cms.daq.nm.persistence.Event;
+
+public class SoundDispatcher {
+
+<span class="fc" id="L12">	private final static Logger logger = Logger.getLogger(SoundDispatcher.class);</span>
+
+	private final ConcurrentLinkedQueue&lt;Event&gt; soundBuffer;
+
+	private final SoundTrigger soundTrigger;
+
+	private final SoundSelector soundSelector;
+
+	private final boolean soundEnabled;
+
+	public SoundDispatcher(ConcurrentLinkedQueue&lt;Event&gt; audibleEventBuffer, SoundTrigger soundTrigger,
+			SoundSelector soundSelector, boolean soundEnabled) {
+<span class="fc" id="L24">		super();</span>
+<span class="fc" id="L25">		this.soundBuffer = audibleEventBuffer;</span>
+<span class="fc" id="L26">		this.soundTrigger = soundTrigger;</span>
+<span class="fc" id="L27">		this.soundSelector = soundSelector;</span>
+<span class="fc" id="L28">		this.soundEnabled = soundEnabled;</span>
+<span class="fc" id="L29">	}</span>
+
+	public void dispatch(Event event) {
+<span class="pc bpc" id="L32" title="1 of 2 branches missed.">		if (soundEnabled) {</span>
+			try {
+<span class="fc bfc" id="L34" title="All 2 branches covered.">				if (event.isAudible()) {</span>
+<span class="fc" id="L35">					soundBuffer.add(event);</span>
+				}
+<span class="pc" id="L37">			} catch (NotificationException e) {</span>
+<span class="nc" id="L38">				logger.warn(&quot;Exception dispatching event &quot; + event.getId() + &quot;, caused by: &quot; + e.getMessage());</span>
+			}
+		}
+<span class="fc" id="L41">	}</span>
+
+	public boolean triggerSound(Event event) {
+<span class="fc" id="L44">		return soundTrigger.triggerSound(event);</span>
+	}
+
+	public Sound selectSound(Event event) {
+<span class="nc" id="L48">		return soundSelector.selectSound(event);</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

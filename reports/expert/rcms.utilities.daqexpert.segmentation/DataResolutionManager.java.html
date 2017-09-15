@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>DataResolutionManager.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DAQExpert</a> &gt; <a href="index.source.html" class="el_package">rcms.utilities.daqexpert.segmentation</a> &gt; <span class="el_source">DataResolutionManager.java</span></div><h1>DataResolutionManager.java</h1><pre class="source lang-java linenums">package rcms.utilities.daqexpert.segmentation;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.log4j.Logger;
+
+import rcms.utilities.daqexpert.processing.DataStream;
+import rcms.utilities.daqexpert.servlets.DummyDAQ;
+
+/**
+ * This class is managing incoming data and directs it to appropriate stream
+ * processors in order to segmentate them
+ * 
+ * @author Maciej Gladki (maciej.szymon.gladki@cern.ch)
+ *
+ */
+public class DataResolutionManager {
+
+<span class="fc" id="L20">	private static final Logger logger = Logger.getLogger(DataResolutionManager.class);</span>
+
+	private final StreamProcessor minuteStreamProcessor;
+	private final StreamProcessor hourStreamProcessor;
+	private final StreamProcessor dayStreamProcessor;
+	private final StreamProcessor monthStreamProcessor;
+
+	public DataResolutionManager(StreamProcessor minuteStreamProcessor, StreamProcessor hourStreamProcessor,
+			StreamProcessor dayStreamProcessor, StreamProcessor monthStreamProcessor) {
+<span class="fc" id="L29">		super();</span>
+<span class="fc" id="L30">		this.minuteStreamProcessor = minuteStreamProcessor;</span>
+<span class="fc" id="L31">		this.hourStreamProcessor = hourStreamProcessor;</span>
+<span class="fc" id="L32">		this.dayStreamProcessor = dayStreamProcessor;</span>
+<span class="fc" id="L33">		this.monthStreamProcessor = monthStreamProcessor;</span>
+<span class="fc" id="L34">	}</span>
+
+
+	private boolean queueInProcessor(StreamProcessor current, DummyDAQ daq) {
+<span class="fc" id="L38">		current.getInput().get(DataStream.RATE).add(DAQConverter.convertToRatePoint(daq));</span>
+<span class="fc" id="L39">		current.getInput().get(DataStream.EVENTS).add(DAQConverter.convertToEventPoint(daq));</span>
+
+<span class="fc bfc" id="L41" title="All 2 branches covered.">		if (current.getInput().get(DataStream.RATE).size() &gt; current.getThreshold()) {</span>
+<span class="fc" id="L42">			logger.debug(&quot;Data of &quot; + current.getInput().get(DataStream.RATE).size() + &quot; size will be segmented&quot;);</span>
+<span class="fc" id="L43">			current.segmentateInput();</span>
+<span class="fc" id="L44">			return true;</span>
+		}
+<span class="fc" id="L46">		return false;</span>
+	}
+
+	/**
+	 * Method passes new data to appropriate stream processors
+	 * 
+	 * @param daq
+	 *            new data in form of dummy daq
+	 * @return map indicating if there is new data available depending on
+	 *         resolution
+	 */
+	public Map&lt;DataResolution, Boolean&gt; queue(DummyDAQ daq) {
+
+<span class="fc" id="L59">		logger.debug(&quot;Queuing data to segmentate&quot;);</span>
+
+<span class="fc" id="L61">		Map&lt;DataResolution, Boolean&gt; result = new HashMap&lt;&gt;();</span>
+
+<span class="fc" id="L63">		result.put(DataResolution.Minute, queueInProcessor(minuteStreamProcessor, daq));</span>
+<span class="fc" id="L64">		result.put(DataResolution.Hour, queueInProcessor(hourStreamProcessor, daq));</span>
+<span class="fc" id="L65">		result.put(DataResolution.Day, queueInProcessor(dayStreamProcessor, daq));</span>
+<span class="fc" id="L66">		result.put(DataResolution.Month, queueInProcessor(monthStreamProcessor, daq));</span>
+<span class="fc" id="L67">		return result;</span>
+
+	}
+
+	public StreamProcessor getMinuteStreamProcessor() {
+<span class="fc" id="L72">		return minuteStreamProcessor;</span>
+	}
+
+	public StreamProcessor getHourStreamProcessor() {
+<span class="nc" id="L76">		return hourStreamProcessor;</span>
+	}
+
+	public StreamProcessor getDayStreamProcessor() {
+<span class="nc" id="L80">		return dayStreamProcessor;</span>
+	}
+
+	public StreamProcessor getMonthStreamProcessor() {
+<span class="nc" id="L84">		return monthStreamProcessor;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

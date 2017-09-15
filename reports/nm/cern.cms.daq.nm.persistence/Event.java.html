@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>Event.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Notification Manager</a> &gt; <a href="index.source.html" class="el_package">cern.cms.daq.nm.persistence</a> &gt; <span class="el_source">Event.java</span></div><h1>Event.java</h1><pre class="source lang-java linenums">package cern.cms.daq.nm.persistence;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.persistence.Transient;
+
+import cern.cms.daq.nm.sound.Priority;
+import cern.cms.daq.nm.sound.Sound;
+
+@Entity
+<span class="fc" id="L18">public class Event {</span>
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.TABLE)
+	private Long id;
+
+	@Enumerated(EnumType.ORDINAL)
+	@Column(name = &quot;EVENT_TYPE&quot;)
+	private EventType eventType;
+
+	@Enumerated(EnumType.ORDINAL)
+	@Column(name = &quot;EVENT_SENDER_TYPE&quot;)
+	private EventSenderType eventSenderType;
+
+	@Column(columnDefinition = &quot;VARCHAR2(40)&quot;)
+	private String title;
+
+	@Column(columnDefinition = &quot;VARCHAR2(200)&quot;)
+	private String textToSpeech;
+
+	@Column(columnDefinition = &quot;VARCHAR2(200)&quot;)
+	private String sender;
+
+	@Column(columnDefinition = &quot;VARCHAR2(4000)&quot;)
+	private String message;
+
+	/** Sound or speech generated */
+	private boolean audible;
+
+	@Column(nullable = true)
+	private int conditionId;
+
+	@Enumerated(EnumType.ORDINAL)
+	private Sound sound;
+
+	@Enumerated(EnumType.ORDINAL)
+	private Priority priority;
+
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name = &quot;DATETIME_FIELD&quot;)
+	private java.util.Date date;
+
+	@Enumerated(EnumType.ORDINAL)
+	private EventStatus status;
+
+	@Enumerated(EnumType.ORDINAL)
+	private LogicModuleView logicModule;
+
+	/** Flag indicating if this notification should be displayed */
+	private boolean display;
+
+	@Transient
+	private String customSound;
+
+	public EventType getEventType() {
+<span class="fc" id="L73">		return eventType;</span>
+	}
+
+	public void setEventType(EventType eventType) {
+<span class="fc" id="L77">		this.eventType = eventType;</span>
+<span class="fc" id="L78">	}</span>
+
+	public String getMessage() {
+<span class="fc" id="L81">		return message;</span>
+	}
+
+	public void setMessage(String message) {
+<span class="fc" id="L85">		this.message = message;</span>
+<span class="fc" id="L86">	}</span>
+
+	public java.util.Date getDate() {
+<span class="nc" id="L89">		return date;</span>
+	}
+
+	public void setDate(java.util.Date date) {
+<span class="fc" id="L93">		this.date = date;</span>
+<span class="fc" id="L94">	}</span>
+
+	public Long getId() {
+<span class="fc" id="L97">		return id;</span>
+	}
+
+	public void setId(Long id) {
+<span class="nc" id="L101">		this.id = id;</span>
+<span class="nc" id="L102">	}</span>
+
+	public EventStatus getStatus() {
+<span class="nc" id="L105">		return status;</span>
+	}
+
+	public void setStatus(EventStatus status) {
+<span class="fc" id="L109">		this.status = status;</span>
+<span class="fc" id="L110">	}</span>
+
+	public boolean isDisplay() {
+<span class="nc" id="L113">		return display;</span>
+	}
+
+	public void setDisplay(boolean display) {
+<span class="nc" id="L117">		this.display = display;</span>
+<span class="nc" id="L118">	}</span>
+
+	public int getConditionId() {
+<span class="nc" id="L121">		return conditionId;</span>
+	}
+
+	public void setConditionId(int conditionId) {
+<span class="nc" id="L125">		this.conditionId = conditionId;</span>
+<span class="nc" id="L126">	}</span>
+
+	public EventSenderType getEventSenderType() {
+<span class="fc" id="L129">		return eventSenderType;</span>
+	}
+
+	public void setEventSenderType(EventSenderType eventSenderType) {
+<span class="fc" id="L133">		this.eventSenderType = eventSenderType;</span>
+<span class="fc" id="L134">	}</span>
+
+	public String getSender() {
+<span class="fc" id="L137">		return sender;</span>
+	}
+
+	public void setSender(String sender) {
+<span class="fc" id="L141">		this.sender = sender;</span>
+<span class="fc" id="L142">	}</span>
+
+	public String getTextToSpeech() {
+<span class="fc" id="L145">		return textToSpeech;</span>
+	}
+
+	public void setTextToSpeech(String textToSpeech) {
+<span class="fc" id="L149">		this.textToSpeech = textToSpeech;</span>
+<span class="fc" id="L150">	}</span>
+
+	public String getTitle() {
+<span class="fc" id="L153">		return title;</span>
+	}
+
+	public void setTitle(String title) {
+<span class="fc" id="L157">		this.title = title;</span>
+<span class="fc" id="L158">	}</span>
+
+	public Sound getSound() {
+<span class="fc" id="L161">		return sound;</span>
+	}
+
+	public void setSound(Sound sound) {
+<span class="fc" id="L165">		this.sound = sound;</span>
+<span class="fc" id="L166">	}</span>
+
+	@Override
+	public String toString() {
+<span class="fc" id="L170">		return &quot;Event [id=&quot; + id + &quot;, eventType=&quot; + eventType + &quot;, eventSenderType=&quot; + eventSenderType + &quot;, title=&quot;</span>
+<span class="fc" id="L171">				+ title + &quot;, textToSpeech=&quot; + textToSpeech + &quot;, sender=&quot; + sender + &quot;, message=&quot; + message</span>
+<span class="fc" id="L172">				+ &quot;, conditionId=&quot; + conditionId + &quot;, sound=&quot; + sound + &quot;, date=&quot; + date + &quot;, status=&quot; + status</span>
+<span class="fc" id="L173">				+ &quot;, display=&quot; + display + &quot;]&quot;;</span>
+	}
+
+	public LogicModuleView getLogicModule() {
+<span class="fc" id="L177">		return logicModule;</span>
+	}
+
+	public void setLogicModule(LogicModuleView logicModule) {
+<span class="fc" id="L181">		this.logicModule = logicModule;</span>
+<span class="fc" id="L182">	}</span>
+
+	public Priority getPriority() {
+<span class="fc" id="L185">		return priority;</span>
+	}
+
+	public void setPriority(Priority priority) {
+<span class="fc" id="L189">		this.priority = priority;</span>
+<span class="fc" id="L190">	}</span>
+
+	public boolean isAudible() {
+<span class="fc" id="L193">		return audible;</span>
+	}
+
+	public void setAudible(boolean audible) {
+<span class="fc" id="L197">		this.audible = audible;</span>
+<span class="fc" id="L198">	}</span>
+
+	public String getCustomSound() {
+<span class="nc" id="L201">		return customSound;</span>
+	}
+
+	public void setCustomSound(String customSound) {
+<span class="nc" id="L205">		this.customSound = customSound;</span>
+<span class="nc" id="L206">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

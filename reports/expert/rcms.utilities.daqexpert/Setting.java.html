@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>Setting.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DAQExpert</a> &gt; <a href="index.source.html" class="el_package">rcms.utilities.daqexpert</a> &gt; <span class="el_source">Setting.java</span></div><h1>Setting.java</h1><pre class="source lang-java linenums"><span class="pc" id="L1">package rcms.utilities.daqexpert;</span>
+
+<span class="fc" id="L3">public enum Setting {</span>
+
+<span class="fc" id="L5">	NM_DASHBOARD(&quot;nm.dashboard&quot;),</span>
+<span class="fc" id="L6">	NM_ARCHIVE(&quot;nm.archive&quot;),</span>
+<span class="fc" id="L7">	NM_API_CREATE(&quot;nm.api&quot;),</span>
+<span class="fc" id="L8">	NM_OFFSET(&quot;nm.offset&quot;),</span>
+
+<span class="fc" id="L10">	EXPERT_L1_RATE_MIN(&quot;expert.l1.rate.min&quot;),</span>
+<span class="fc" id="L11">	EXPERT_L1_RATE_MAX(&quot;expert.l1.rate.max&quot;),</span>
+
+<span class="fc" id="L13">	EXPERT_LOGIC_DEADTIME_THESHOLD_FED(&quot;expert.logic.deadtime.threshold.fed&quot;),</span>
+<span class="fc" id="L14">	EXPERT_LOGIC_DEADTIME_THESHOLD_PARTITION(&quot;expert.logic.deadtime.threshold.partition&quot;),</span>
+<span class="fc" id="L15">	EXPERT_LOGIC_DEADTIME_THESHOLD_TOTAL(&quot;expert.logic.deadtime.threshold.total&quot;),</span>
+
+<span class="fc" id="L17">	PROCESSING_START_DATETIME(&quot;processing.start&quot;),</span>
+<span class="fc" id="L18">	PROCESSING_END_DATETIME(&quot;processing.end&quot;),</span>
+<span class="fc" id="L19">	SNAPSHOTS_DIR(&quot;snapshots&quot;),</span>
+<span class="fc" id="L20">	LANDING(&quot;landing&quot;),</span>
+<span class="fc" id="L21">	EXPERIMENTAL_DIR(&quot;experimental&quot;),</span>
+
+<span class="fc" id="L23">	DATABASE_USER(&quot;hibernate.connection.username&quot;),</span>
+<span class="fc" id="L24">	DATABASE_PASSWORD(&quot;hibernate.connection.password&quot;),</span>
+<span class="fc" id="L25">	DATABASE_URL(&quot;hibernate.connection.url&quot;),</span>
+<span class="fc" id="L26">	DATABASE_DRIVER(&quot;hibernate.connection.driver_class&quot;),</span>
+<span class="fc" id="L27">	DATABASE_MODE(&quot;hibernate.hbm2ddl.auto&quot;),</span>
+
+	;
+
+	private final String key;
+
+	private final boolean required;
+
+<span class="fc" id="L35">	private Setting(String key) {</span>
+<span class="fc" id="L36">		this.key = key;</span>
+<span class="fc" id="L37">		this.required = true;</span>
+<span class="fc" id="L38">	}</span>
+
+	public boolean isRequired() {
+<span class="fc" id="L41">		return required;</span>
+	}
+
+	public String getKey() {
+<span class="fc" id="L45">		return key;</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

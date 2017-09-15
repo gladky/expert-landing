@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>EventCollector.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DAQExpert</a> &gt; <a href="index.source.html" class="el_package">rcms.utilities.daqexpert.events</a> &gt; <span class="el_source">EventCollector.java</span></div><h1>EventCollector.java</h1><pre class="source lang-java linenums">package rcms.utilities.daqexpert.events;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.log4j.Logger;
+
+import rcms.utilities.daqexpert.persistence.Condition;
+import rcms.utilities.daqexpert.persistence.LogicModuleRegistry;
+import rcms.utilities.daqexpert.reasoning.base.ComparatorLogicModule;
+import rcms.utilities.daqexpert.reasoning.base.ContextLogicModule;
+import rcms.utilities.daqexpert.reasoning.base.enums.ConditionPriority;
+
+<span class="fc" id="L14">public class EventCollector implements EventRegister {</span>
+
+<span class="fc" id="L16">	private static final Logger logger = Logger.getLogger(EventCollector.class);</span>
+
+<span class="fc" id="L18">	private final List&lt;ConditionEvent&gt; events = new ArrayList&lt;&gt;();</span>
+
+	@Override
+	public void registerBegin(LogicModuleRegistry logicModule, Condition condition) {
+<span class="fc bfc" id="L22" title="All 2 branches covered.">		if (condition.isShow()) {</span>
+<span class="fc bfc" id="L23" title="All 2 branches covered.">			if (condition.getPriority().ordinal() &gt; ConditionPriority.DEFAULTT.ordinal()</span>
+<span class="fc bfc" id="L24" title="All 2 branches covered.">					|| logicModule.getLogicModule() instanceof ContextLogicModule) {</span>
+<span class="fc" id="L25">				logger.debug(&quot;+ &quot; + logicModule);</span>
+
+<span class="fc" id="L27">				ConditionEvent event = new ConditionEvent();</span>
+<span class="fc" id="L28">				event.setTitle(&quot;Start &quot; + condition.getTitle());</span>
+<span class="fc" id="L29">				event.setCondition(condition);</span>
+<span class="fc" id="L30">				event.setPriority(condition.getPriority());</span>
+<span class="fc" id="L31">				event.setDate(condition.getStart());</span>
+<span class="fc" id="L32">				event.setType(EventType.ConditionStart);</span>
+<span class="fc" id="L33">				event.setLogicModule(logicModule);</span>
+
+<span class="fc" id="L35">				events.add(event);</span>
+			}
+<span class="fc bfc" id="L37" title="All 2 branches covered.">			if (logicModule.getLogicModule() instanceof ComparatorLogicModule) {</span>
+<span class="fc" id="L38">				logger.debug(&quot;# &quot; + logicModule);</span>
+
+<span class="fc" id="L40">				ConditionEvent event = new ConditionEvent();</span>
+<span class="fc" id="L41">				event.setTitle(logicModule.getDescription() + &quot;: &quot; + condition.getTitle());</span>
+<span class="fc" id="L42">				event.setCondition(condition);</span>
+<span class="fc" id="L43">				event.setPriority(condition.getPriority());</span>
+<span class="fc" id="L44">				event.setDate(condition.getStart());</span>
+<span class="fc" id="L45">				event.setType(EventType.Single);</span>
+<span class="fc" id="L46">				event.setLogicModule(logicModule);</span>
+
+<span class="fc" id="L48">				events.add(event);</span>
+			}
+		}
+<span class="fc" id="L51">	}</span>
+
+	@Override
+	public void registerEnd(LogicModuleRegistry logicModule, Condition condition) {
+<span class="fc bfc" id="L55" title="All 2 branches covered.">		if (condition.isShow())</span>
+<span class="fc bfc" id="L56" title="All 2 branches covered.">			if (condition.getPriority().ordinal() &gt; ConditionPriority.DEFAULTT.ordinal()</span>
+<span class="fc bfc" id="L57" title="All 2 branches covered.">					|| logicModule.getLogicModule() instanceof ContextLogicModule) {</span>
+<span class="fc" id="L58">				logger.debug(&quot;- &quot; + logicModule);</span>
+
+<span class="fc" id="L60">				ConditionEvent event = new ConditionEvent();</span>
+<span class="fc" id="L61">				event.setTitle(&quot;End &quot; + condition.getTitle());</span>
+<span class="fc" id="L62">				event.setPriority(condition.getPriority());</span>
+<span class="fc" id="L63">				event.setCondition(condition);</span>
+<span class="fc" id="L64">				event.setDate(condition.getEnd());</span>
+<span class="fc" id="L65">				event.setType(EventType.ConditionEnd);</span>
+<span class="fc" id="L66">				event.setLogicModule(logicModule);</span>
+
+<span class="fc" id="L68">				events.add(event);</span>
+			}
+
+<span class="fc" id="L71">	}</span>
+
+	@Override
+	public void registerUpdate(LogicModuleRegistry logicModule, Condition condition) {
+<span class="nc bnc" id="L75" title="All 2 branches missed.">		if (condition.isShow())</span>
+
+<span class="nc bnc" id="L77" title="All 2 branches missed.">			if (condition.getPriority().ordinal() &gt; ConditionPriority.DEFAULTT.ordinal()</span>
+<span class="nc bnc" id="L78" title="All 2 branches missed.">					|| logicModule.getLogicModule() instanceof ContextLogicModule) {</span>
+<span class="nc" id="L79">				logger.debug(&quot;| &quot; + logicModule);</span>
+			}
+
+<span class="nc" id="L82">	}</span>
+
+	public List&lt;ConditionEvent&gt; getEvents() {
+<span class="fc" id="L85">		return events;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

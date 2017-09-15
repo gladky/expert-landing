@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>RunConfigurator.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DAQExpert</a> &gt; <a href="index.source.html" class="el_package">rcms.utilities.daqexpert.processing</a> &gt; <span class="el_source">RunConfigurator.java</span></div><h1>RunConfigurator.java</h1><pre class="source lang-java linenums">package rcms.utilities.daqexpert.processing;
+
+import java.util.Date;
+
+import javax.xml.bind.DatatypeConverter;
+
+import org.apache.log4j.Logger;
+
+import rcms.utilities.daqexpert.Application;
+import rcms.utilities.daqexpert.ExpertException;
+import rcms.utilities.daqexpert.ExpertExceptionCode;
+import rcms.utilities.daqexpert.Setting;
+import rcms.utilities.daqexpert.persistence.PersistenceManager;
+
+public class RunConfigurator {
+
+	private final PersistenceManager persistenceManager;
+
+<span class="fc" id="L19">	public RunConfigurator(PersistenceManager persistenceManager) {</span>
+<span class="fc" id="L20">		this.persistenceManager = persistenceManager;</span>
+<span class="fc" id="L21">	}</span>
+
+<span class="fc" id="L23">	private final Logger logger = Logger.getLogger(RunConfigurator.class);</span>
+
+	public Date getStartDate() {
+
+<span class="fc" id="L27">		Date startDate = null;</span>
+<span class="fc" id="L28">		String startDateString = Application.get().getProp(Setting.PROCESSING_START_DATETIME);</span>
+
+<span class="pc bpc" id="L30" title="1 of 2 branches missed.">		if (startDateString.equalsIgnoreCase(&quot;auto&quot;)) {</span>
+<span class="nc" id="L31">			logger.info(&quot;Expert run try to find the date of last expert end&quot;);</span>
+<span class="nc" id="L32">			startDate = persistenceManager.getLastFinish();</span>
+
+<span class="nc" id="L34">		} else {</span>
+			try {
+<span class="fc" id="L36">				startDate = DatatypeConverter.parseDateTime(startDateString).getTime();</span>
+<span class="pc" id="L37">			} catch (IllegalArgumentException e) {</span>
+<span class="nc" id="L38">				throw new ExpertException(ExpertExceptionCode.CannotParseProcessingEndDate,</span>
+<span class="nc" id="L39">						&quot;Cannot parse start date &quot; + startDateString + &quot;, (special key possible 'auto')&quot;);</span>
+			}
+		}
+
+<span class="fc" id="L43">		return startDate;</span>
+
+	}
+
+	public Date getEndDate() {
+<span class="fc" id="L48">		Date endDate = null;</span>
+<span class="fc" id="L49">		String endDateString = Application.get().getProp(Setting.PROCESSING_END_DATETIME);</span>
+<span class="pc bpc" id="L50" title="1 of 2 branches missed.">		if (endDateString.equalsIgnoreCase(&quot;unlimited&quot;)) {</span>
+<span class="nc" id="L51">			logger.info(&quot;Expert run unlimited, will process as long as there are new snapshots&quot;);</span>
+<span class="nc" id="L52">		} else {</span>
+			try {
+<span class="fc" id="L54">				endDate = DatatypeConverter.parseDateTime(endDateString).getTime();</span>
+<span class="pc" id="L55">			} catch (IllegalArgumentException e) {</span>
+<span class="nc" id="L56">				throw new ExpertException(ExpertExceptionCode.CannotParseProcessingEndDate,</span>
+<span class="nc" id="L57">						&quot;Cannot parse end date &quot; + endDateString + &quot;, (special key possible 'unlimited')&quot;);</span>
+			}
+		}
+<span class="fc" id="L60">		return endDate;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

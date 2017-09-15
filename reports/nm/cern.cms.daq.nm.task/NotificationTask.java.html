@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>NotificationTask.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Notification Manager</a> &gt; <a href="index.source.html" class="el_package">cern.cms.daq.nm.task</a> &gt; <span class="el_source">NotificationTask.java</span></div><h1>NotificationTask.java</h1><pre class="source lang-java linenums">package cern.cms.daq.nm.task;
+
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.TimerTask;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+
+import org.apache.log4j.Logger;
+
+import cern.cms.daq.nm.NotificationException;
+import cern.cms.daq.nm.persistence.Channel;
+import cern.cms.daq.nm.persistence.DummyUser;
+import cern.cms.daq.nm.persistence.Event;
+import cern.cms.daq.nm.persistence.EventStatus;
+import cern.cms.daq.nm.persistence.NotificationOccurrence;
+import cern.cms.daq.nm.persistence.NotificationStatus;
+
+/*
+ * pobiera z bufora chciane notyfikacje i wysyla
+ * dodatkowa funkcja jest unikanie podwojnych notyfikacji
+ */
+public class NotificationTask extends TimerTask {
+
+	private final ConcurrentLinkedQueue&lt;NotificationOccurrence&gt; notificationBuffer;
+
+	private final EntityManagerFactory emf;
+	private EntityManager em;
+	private NotificationService notificationService;
+
+<span class="nc" id="L34">	private static final Logger logger = Logger.getLogger(NotificationTask.class);</span>
+
+<span class="nc" id="L36">	public NotificationTask(EntityManagerFactory emf,</span>
+			ConcurrentLinkedQueue&lt;NotificationOccurrence&gt; notificationBuffer) {
+<span class="nc" id="L38">		this.notificationBuffer = notificationBuffer;</span>
+<span class="nc" id="L39">		this.emf = emf;</span>
+<span class="nc" id="L40">		this.notificationService = new NotificationService();</span>
+<span class="nc" id="L41">	}</span>
+
+	@Override
+	public void run() {
+
+<span class="nc bnc" id="L46" title="All 2 branches missed.">		if (!notificationBuffer.isEmpty()) {</span>
+<span class="nc" id="L47">			int i = 0;</span>
+<span class="nc" id="L48">			final int bufferSize = notificationBuffer.size();</span>
+<span class="nc" id="L49">			final Long startTime = System.currentTimeMillis();</span>
+<span class="nc" id="L50">			logger.info(</span>
+<span class="nc" id="L51">					new StringBuilder(&quot;Run notification task, &quot;).append(bufferSize).append(&quot; notifications to send&quot;));</span>
+
+<span class="nc" id="L53">			Set&lt;Long&gt; eventOccurrencesIds = new HashSet&lt;&gt;();</span>
+
+<span class="nc" id="L55">			em = emf.createEntityManager();</span>
+<span class="nc bnc" id="L56" title="All 4 branches missed.">			while (!notificationBuffer.isEmpty() &amp;&amp; i &lt; bufferSize) {</span>
+<span class="nc" id="L57">				i++;</span>
+<span class="nc" id="L58">				NotificationOccurrence current = notificationBuffer.poll();</span>
+<span class="nc" id="L59">				eventOccurrencesIds.add(current.getEventOccurrence().getId());</span>
+
+<span class="nc" id="L61">				Channel channel = current.getChannel();</span>
+<span class="nc bnc" id="L62" title="All 2 branches missed.">				if (channel == Channel.email)</span>
+<span class="nc" id="L63">					sendEmail(current);</span>
+<span class="nc bnc" id="L64" title="All 2 branches missed.">				if (channel == Channel.sms)</span>
+<span class="nc" id="L65">					sendSMS(current);</span>
+<span class="nc bnc" id="L66" title="All 2 branches missed.">				if (channel == Channel.push)</span>
+<span class="nc" id="L67">					sendPush(current);</span>
+
+			}
+
+			/*
+			 * update related event statuses
+			 */
+<span class="nc" id="L74">			em.getTransaction().begin();</span>
+<span class="nc bnc" id="L75" title="All 2 branches missed.">			for (Long eventOccurrenceId : eventOccurrencesIds) {</span>
+<span class="nc" id="L76">				Event eventOccurrence = em.find(Event.class, eventOccurrenceId);</span>
+<span class="nc" id="L77">				eventOccurrence.setStatus(EventStatus.Notified);</span>
+			}
+<span class="nc" id="L79">			em.getTransaction().commit();</span>
+
+<span class="nc bnc" id="L81" title="All 2 branches missed.">			if (em.getTransaction().isActive())</span>
+<span class="nc" id="L82">				em.getTransaction().rollback();</span>
+<span class="nc" id="L83">			em.close();</span>
+
+<span class="nc" id="L85">			final Long endTime = System.currentTimeMillis();</span>
+<span class="nc" id="L86">			logger.info(new StringBuilder(&quot;Notification processed &quot;).append(bufferSize).append(&quot; events in &quot;)</span>
+<span class="nc" id="L87">					.append(endTime - startTime).append(&quot; ms.&quot;));</span>
+		}
+<span class="nc" id="L89">	}</span>
+
+	private void updateStatus(NotificationOccurrence no, NotificationStatus status, String message) {
+<span class="nc" id="L92">		NotificationOccurrence notificationOccurrence = em.find(NotificationOccurrence.class, no.getId());</span>
+
+<span class="nc" id="L94">		em.getTransaction().begin();</span>
+<span class="nc" id="L95">		notificationOccurrence.setStatus(status);</span>
+<span class="nc" id="L96">		notificationOccurrence.setMessage(message);</span>
+<span class="nc" id="L97">		notificationOccurrence.setDate(new Date());</span>
+<span class="nc" id="L98">		em.getTransaction().commit();</span>
+<span class="nc" id="L99">	}</span>
+
+	private void sendSMS(NotificationOccurrence notificationOccurrence) {
+
+<span class="nc" id="L103">		updateStatus(notificationOccurrence, NotificationStatus.Failure, &quot;SMS service unavailable.&quot;);</span>
+
+		// TODO create sms service
+<span class="nc" id="L106">		logger.debug(&quot;SMS will not be sent to user &quot; + notificationOccurrence.getUser().getUsername()</span>
+<span class="nc" id="L107">				+ &quot;, SMS service unavailable.&quot;);</span>
+
+		// notificationService.send(notificationOccurrence.getUser().getPhone(),
+		// notificationOccurrence.getEventOccurrence().getMessage());
+<span class="nc" id="L111">	}</span>
+
+	private void sendPush(NotificationOccurrence notificationOccurrence) {
+
+<span class="nc" id="L115">		updateStatus(notificationOccurrence, NotificationStatus.Failure, &quot;Push service unavailable.&quot;);</span>
+
+		// TODO create sms service
+<span class="nc" id="L118">		logger.debug(&quot;Push will not be sent to user &quot; + notificationOccurrence.getUser().getUsername()</span>
+<span class="nc" id="L119">				+ &quot;, Push service unavailable.&quot;);</span>
+<span class="nc" id="L120">	}</span>
+
+	private void sendEmail(NotificationOccurrence notificationOccurrence) {
+
+<span class="nc" id="L124">		DummyUser user = notificationOccurrence.getUser();</span>
+		try {
+<span class="nc" id="L126">			notificationService.send(user.getEmail(), notificationOccurrence.getEventOccurrence().getMessage());</span>
+<span class="nc" id="L127">			updateStatus(notificationOccurrence, NotificationStatus.Success, null);</span>
+<span class="nc" id="L128">			logger.trace(&quot;Email successfully sent to user &quot; + user.getUsername() + &quot;, &quot; + user.getEmail());</span>
+<span class="nc" id="L129">		} catch (NotificationException e) {</span>
+
+<span class="nc" id="L131">			updateStatus(notificationOccurrence, NotificationStatus.Failure, e.getMessage());</span>
+<span class="nc" id="L132">			logger.warn(&quot;Email could not be sent to user &quot; + user.getUsername() + &quot;, &quot; + user.getEmail());</span>
+		}
+<span class="nc" id="L134">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

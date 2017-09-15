@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>ConditionSessionHandler.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DAQExpert</a> &gt; <a href="index.source.html" class="el_package">rcms.utilities.daqexpert.websocket</a> &gt; <span class="el_source">ConditionSessionHandler.java</span></div><h1>ConditionSessionHandler.java</h1><pre class="source lang-java linenums">package rcms.utilities.daqexpert.websocket;
+
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
+import javax.json.spi.JsonProvider;
+import javax.websocket.Session;
+
+import org.apache.log4j.Logger;
+
+import rcms.utilities.daqexpert.persistence.Condition;
+
+public class ConditionSessionHandler {
+
+<span class="nc" id="L20">	private static final Logger logger = Logger.getLogger(ConditionSessionHandler.class);</span>
+
+<span class="nc" id="L22">	private final SimpleDateFormat dateFormat = new SimpleDateFormat(&quot;yyyy-MM-dd HH:mm:ss z&quot;);</span>
+
+	private final ConditionDashboard conditionDashboard;
+
+<span class="nc" id="L26">	private final Set&lt;Long&gt; createdIds = new HashSet&lt;&gt;();</span>
+
+<span class="nc" id="L28">	public ConditionSessionHandler(ConditionDashboard conditionDashboard) {</span>
+<span class="nc" id="L29">		this.conditionDashboard = conditionDashboard;</span>
+<span class="nc" id="L30">		conditionDashboard.setSessionHander(this);</span>
+<span class="nc" id="L31">	}</span>
+
+<span class="nc" id="L33">	private final Set&lt;Session&gt; sessions = new HashSet&lt;&gt;();</span>
+
+	/**
+	 * Add new session - called on page load
+	 * 
+	 * @param session
+	 */
+	public void addSession(Session session) {
+<span class="nc" id="L41">		sessions.add(session);</span>
+<span class="nc" id="L42">		logger.info(&quot;New session connected: &quot; + session);</span>
+<span class="nc bnc" id="L43" title="All 2 branches missed.">		for (Condition condition : conditionDashboard.getFilteredCurrentConditions()) {</span>
+<span class="nc" id="L44">			createdIds.add(condition.getId());</span>
+<span class="nc" id="L45">			JsonObject addMessage = createAddRecentMessage(condition);</span>
+<span class="nc" id="L46">			sendToSession(session, addMessage);</span>
+		}
+
+<span class="nc bnc" id="L49" title="All 2 branches missed.">		if (conditionDashboard.getCurrentCondition() != null) {</span>
+<span class="nc" id="L50">			logger.info(&quot;New session will have info about current condition&quot;);</span>
+<span class="nc" id="L51">			JsonObject addMessage = createCurrentMessage(conditionDashboard.getCurrentCondition());</span>
+<span class="nc" id="L52">			sendToSession(session, addMessage);</span>
+<span class="nc" id="L53">		} else {</span>
+<span class="nc" id="L54">			JsonProvider provider = JsonProvider.provider();</span>
+<span class="nc" id="L55">			JsonObject removeMessage = provider.createObjectBuilder().add(&quot;action&quot;, &quot;removeCurrent&quot;).build();</span>
+<span class="nc" id="L56">			sendToAllConnectedSessions(removeMessage);</span>
+		}
+<span class="nc" id="L58">	}</span>
+
+	/**
+	 * Remove ression - called when the browser is turned off
+	 * 
+	 * @param session
+	 */
+	public void removeSession(Session session) {
+<span class="nc" id="L66">		sessions.remove(session);</span>
+<span class="nc" id="L67">	}</span>
+
+	/**
+	 * Action to remove current suggestion
+	 */
+	public void removeCurrent() {
+<span class="nc" id="L73">		logger.info(&quot;Removing current&quot;);</span>
+<span class="nc" id="L74">		JsonProvider provider = JsonProvider.provider();</span>
+<span class="nc" id="L75">		JsonObject removeMessage = provider.createObjectBuilder().add(&quot;action&quot;, &quot;removeCurrent&quot;).build();</span>
+<span class="nc" id="L76">		sendToAllConnectedSessions(removeMessage);</span>
+
+<span class="nc" id="L78">		addRecent();</span>
+
+<span class="nc" id="L80">	}</span>
+
+	/*
+	 * public void updateCurrent(Condition condition) {
+	 * 
+	 * if (currentCondition == null) { currentCondition = condition; JsonObject
+	 * addMessage = createCurrentMessage(condition);
+	 * sendToAllConnectedSessions(addMessage); } else { logger.info(
+	 * &quot;Exists some suggestion, TODO: update it condition changed&quot;); } }
+	 */
+
+	public void setCurrent(Condition condition) {
+<span class="nc" id="L92">		logger.info(&quot;Setting current&quot;);</span>
+<span class="nc" id="L93">		JsonObject addMessage = createCurrentMessage(condition);</span>
+<span class="nc" id="L94">		sendToAllConnectedSessions(addMessage);</span>
+<span class="nc" id="L95">	}</span>
+
+	public void update(Condition condition) {
+<span class="nc" id="L98">		logger.info(&quot;Updating&quot;);</span>
+<span class="nc" id="L99">		JsonObject addMessage = createUpdateMessage(condition);</span>
+<span class="nc" id="L100">		sendToAllConnectedSessions(addMessage);</span>
+<span class="nc" id="L101">	}</span>
+
+	/**
+	 * Action to add new recent condition
+	 * 
+	 * @param condition
+	 */
+	public void addRecent() {
+
+<span class="nc" id="L110">		logger.info(&quot;Adding recents&quot;);</span>
+		// Note that it may result in empty. condition may be current
+
+<span class="nc bnc" id="L113" title="All 2 branches missed.">		for (Condition condition : conditionDashboard.getFilteredCurrentConditions()) {</span>
+<span class="nc bnc" id="L114" title="All 2 branches missed.">			if (!createdIds.contains(condition.getId())) {</span>
+<span class="nc" id="L115">				logger.info(&quot;-&gt; adding recent &quot; + condition.getId());</span>
+<span class="nc" id="L116">				JsonObject addMessage = createAddRecentMessage(condition);</span>
+<span class="nc" id="L117">				sendToAllConnectedSessions(addMessage);</span>
+<span class="nc" id="L118">				createdIds.add(condition.getId());</span>
+			}
+		}
+<span class="nc" id="L121">	}</span>
+
+	public void removeRecent(Long id) {
+<span class="nc" id="L124">		logger.info(&quot;Removing recent &quot; + id);</span>
+<span class="nc" id="L125">		createdIds.remove(id);</span>
+<span class="nc" id="L126">		JsonProvider provider = JsonProvider.provider();</span>
+<span class="nc" id="L127">		JsonObject removeMessage = provider.createObjectBuilder().add(&quot;action&quot;, &quot;remove&quot;).add(&quot;id&quot;, id).build();</span>
+<span class="nc" id="L128">		sendToAllConnectedSessions(removeMessage);</span>
+<span class="nc" id="L129">	}</span>
+
+	/**
+	 * Create message
+	 * 
+	 * @param condition
+	 * @return
+	 */
+	private JsonObject createCurrentMessage(Condition condition) {
+<span class="nc" id="L138">		JsonProvider provider = JsonProvider.provider();</span>
+<span class="nc" id="L139">		logger.info(&quot;Creating current condition message for : &quot; + condition);</span>
+
+<span class="nc bnc" id="L141" title="All 2 branches missed.">		String message = condition.getActionSteps() != null ? condition.getActionSteps().toString() : &quot;&quot;;</span>
+<span class="nc bnc" id="L142" title="All 2 branches missed.">		String description = condition.getDescription() != null ? condition.getDescription() : &quot;&quot;;</span>
+<span class="nc bnc" id="L143" title="All 2 branches missed.">		String title = condition.getTitle() != null ? condition.getTitle() + &quot; #&quot; + condition.getId() : &quot;&quot;;</span>
+<span class="nc bnc" id="L144" title="All 2 branches missed.">		String duration = condition.getEnd() == null ? &quot;Ongoing&quot; : &quot;finished&quot;;</span>
+<span class="nc" id="L145">		JsonArrayBuilder actionArrayBuilder = provider.createArrayBuilder();</span>
+<span class="nc bnc" id="L146" title="All 2 branches missed.">		if (condition.getActionSteps() != null) {</span>
+<span class="nc bnc" id="L147" title="All 2 branches missed.">			for (String step : condition.getActionSteps()) {</span>
+<span class="nc" id="L148">				actionArrayBuilder.add(step);</span>
+			}
+		}
+<span class="nc" id="L151">		JsonArray actionArray = actionArrayBuilder.build();</span>
+
+<span class="nc" id="L153">		JsonObject addMessage = provider.createObjectBuilder().add(&quot;action&quot;, &quot;addSuggestion&quot;)</span>
+<span class="nc" id="L154">				.add(&quot;id&quot;, condition.getId()).add(&quot;name&quot;, title).add(&quot;type&quot;, condition.getStart().toString())</span>
+<span class="nc" id="L155">				.add(&quot;status&quot;, message).add(&quot;description&quot;, description).add(&quot;duration&quot;, duration)</span>
+<span class="nc" id="L156">				.add(&quot;steps&quot;, actionArray).build();</span>
+
+<span class="nc" id="L158">		logger.info(&quot;Created message for current condition: &quot; + addMessage);</span>
+<span class="nc" id="L159">		return addMessage;</span>
+	}
+
+	/**
+	 * Create message
+	 * 
+	 * @param condition
+	 * @return
+	 */
+	private JsonObject createUpdateMessage(Condition condition) {
+<span class="nc" id="L169">		JsonProvider provider = JsonProvider.provider();</span>
+<span class="nc" id="L170">		logger.debug(&quot;Creating update for condition: &quot; + condition);</span>
+
+		String status;
+<span class="nc bnc" id="L173" title="All 2 branches missed.">		if (condition.getEnd() != null) {</span>
+<span class="nc" id="L174">			status = &quot;finished&quot;;</span>
+<span class="nc" id="L175">		} else {</span>
+			// this should never happend - for potential future improvements
+			// (e.g. context changed)
+<span class="nc" id="L178">			status = &quot;updated&quot;;</span>
+		}
+
+<span class="nc" id="L181">		JsonObject updateMessage = provider.createObjectBuilder().add(&quot;action&quot;, &quot;update&quot;).add(&quot;id&quot;, condition.getId())</span>
+<span class="nc" id="L182">				.add(&quot;status&quot;, status).build();</span>
+
+<span class="nc" id="L184">		logger.debug(&quot;Created message for event: &quot; + updateMessage);</span>
+<span class="nc" id="L185">		return updateMessage;</span>
+	}
+
+	/**
+	 * Create message
+	 * 
+	 * @param condition
+	 * @return
+	 */
+	private JsonObject createAddRecentMessage(Condition condition) {
+<span class="nc" id="L195">		JsonProvider provider = JsonProvider.provider();</span>
+<span class="nc" id="L196">		logger.debug(&quot;Creating message for event: &quot; + condition);</span>
+
+<span class="nc bnc" id="L198" title="All 2 branches missed.">		String message = condition.getActionSteps() != null ? condition.getActionSteps().toString() : &quot;&quot;;</span>
+<span class="nc bnc" id="L199" title="All 2 branches missed.">		String tts = condition.getDescription() != null ? condition.getDescription() : &quot;&quot;;</span>
+<span class="nc bnc" id="L200" title="All 2 branches missed.">		String title = condition.getTitle() != null ? condition.getTitle() + &quot;#&quot; + condition.getId() : &quot;&quot;;</span>
+<span class="nc bnc" id="L201" title="All 2 branches missed.">		String duration = condition.getEnd() == null ? &quot;Ongoing&quot; : &quot;finished&quot;;</span>
+
+<span class="nc" id="L203">		JsonObject addMessage = provider.createObjectBuilder().add(&quot;action&quot;, &quot;add&quot;).add(&quot;id&quot;, condition.getId())</span>
+<span class="nc" id="L204">				.add(&quot;name&quot;, title).add(&quot;type&quot;, dateFormat.format(condition.getStart())).add(&quot;status&quot;, tts)</span>
+<span class="nc" id="L205">				.add(&quot;description&quot;, message).add(&quot;duration&quot;, duration).build();</span>
+
+<span class="nc" id="L207">		logger.debug(&quot;Created message for event: &quot; + addMessage);</span>
+<span class="nc" id="L208">		return addMessage;</span>
+	}
+
+	/**
+	 * Send message to all connected sessions
+	 * 
+	 * @param message
+	 */
+	private void sendToAllConnectedSessions(JsonObject message) {
+<span class="nc bnc" id="L217" title="All 2 branches missed.">		for (Session session : sessions) {</span>
+<span class="nc" id="L218">			sendToSession(session, message);</span>
+		}
+<span class="nc" id="L220">	}</span>
+
+	/**
+	 * Send message to session
+	 * 
+	 * @param session
+	 * @param message
+	 */
+	private void sendToSession(Session session, JsonObject message) {
+		try {
+<span class="nc" id="L230">			session.getBasicRemote().sendText(message.toString());</span>
+<span class="nc" id="L231">		} catch (IOException ex) {</span>
+<span class="nc" id="L232">			ex.printStackTrace();</span>
+<span class="nc" id="L233">			sessions.remove(session);</span>
+<span class="nc" id="L234">			logger.error(ex);</span>
+		}
+<span class="nc" id="L236">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

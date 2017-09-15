@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>SimpleLogicModule.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DAQExpert</a> &gt; <a href="index.source.html" class="el_package">rcms.utilities.daqexpert.reasoning.base</a> &gt; <span class="el_source">SimpleLogicModule.java</span></div><h1>SimpleLogicModule.java</h1><pre class="source lang-java linenums">package rcms.utilities.daqexpert.reasoning.base;
+
+import java.util.Map;
+
+import rcms.utilities.daqaggregator.data.DAQ;
+
+/**
+ * Simple type of Logic Module. It checks if the condition is satisfied.
+ * 
+ * @author Maciej Gladki (maciej.szymon.gladki@cern.ch)
+ *
+ */
+<span class="fc" id="L13">public abstract class SimpleLogicModule extends LogicModule {</span>
+
+	/**
+	 * Is condition of Logic Module satisfied. *
+	 * 
+	 * @param daq
+	 *            Snapshot to examine by this Logic Module
+	 * @param results
+	 *            Results from other Logic Modules for this DAQ snapshot.
+	 * @return condition satisfied, &lt;code&gt;true&lt;/code&gt; when satisfied,
+	 *         &lt;code&gt;false&lt;/code&gt; otherwise.
+	 */
+	public abstract boolean satisfied(DAQ daq, Map&lt;String, Boolean&gt; results);
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

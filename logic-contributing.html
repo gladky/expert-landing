@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="">
+<meta name="author"
+	content="Maciej Gladki (maciej.szymon.gladki@cern.ch)">
+<title>DAQ Expert</title>
+<link href="css/bootstrap.min.css" rel="stylesheet">
+<link href="css/one-page-wonder.css" rel="stylesheet">
+<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+<!--[if lt IE 9]>
+	        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+	        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+	    <![endif]-->
+</head>
+<body>
+
+
+	<div id="navigation"></div>
+
+	<!-- Full Width Image Header -->
+	<header class="header-image">
+		<div class="headline">
+			<div class="container">
+				<h2>Contributing</h2>
+			</div>
+		</div>
+	</header>
+
+
+
+	<!-- Page Content -->
+	<div class="container">
+
+
+		<div class="alert alert-warning" role="alert">
+			<button type="button" class="close" data-dismiss="alert">×</button>
+			<strong>Beta functionality</strong> You can find this functionality
+			on <a href="http://daq-expert-dev.cms:8080/DAQExpert">dev
+				instance</a>. We will deploy it in production soon. Your feedback is
+			welcome (maciej.szymon.gladki@cern.ch).
+		</div>
+
+		<div class="alert alert-info" role="alert">
+		
+			<div class="row">
+
+				<div class="col-md-6">
+					<h3>What is Logic Module?</h3>
+					<p>Logic Module (abbr. LM) is a building block of DAQExpert
+						expert logic.</p>
+					<ul>
+						<li>Each LM defines one condition</li>
+						<li>The definition of condition is placed in satisfy method</li>
+						<li>The method returns true if condition is satisfied and
+							false otherwise</li>
+						<li>One LM can use results of another LM</li>
+					</ul>
+				</div>
+				<div class="col-md-6">
+					<h3>What can I do in LM?</h3>
+					<p>Logic Module allows you to focus on one thing: expressing
+						your knowledge about DAQ system.</p>
+					<ul>
+						<li>Easily access DAQ snapshot</li>
+						<li>Perform your checks on DAQ snapshot</li>
+					</ul>
+					<p>Just return true when your condition is satisfied and the
+						framework will do the rest (visualize, generate notifications,
+						persist results)</p>
+				</div>
+			</div>
+
+		</div>
+
+
+
+
+		<!-- Page Heading -->
+		<div class="row">
+			<div class="col-lg-12">
+				<h1 class="page-header">
+					Contribute to DAQExpert <small>step by step guide</small>
+				</h1>
+			</div>
+		</div>
+
+
+
+
+
+
+		<div class="row">
+			<div class="col-md-5">
+				<pre style="" class="default prettyprint prettyprinted"><code>$> ssh -N cmsusr</code></pre>
+			</div>
+			<div class="col-md-7">
+				<h3>
+					Step 1 <small>Set up the tunnel</small>
+				</h3>
+				<p>DAQExpert is available only in CMS cluster network.</p>
+			</div>
+		</div>
+		<hr>
+
+		<div class="row">
+			<div class="col-md-5">
+				<img class="img-responsive"
+					src="img/logic-guide/experimental-run-subtitles.gif" alt="">
+			</div>
+			<div class="col-md-7">
+				<h3>
+					Step 2<small> Run some sketch LMs</small>
+				</h3>
+				<p>To run experimental Logic Module:
+				<ol>
+					<li>Switch to Experimental mode in browser view</li>
+					<li>Click Run Experimental</li>
+					<li>Choose LM from dropdown menu</li>
+					<li>Click Run</li>
+				</ol>
+				Results of your Experimental LM and other LMs will be updated.
+				</p>
+				<p>Note that you can compare the results by switching between
+					Experimental and Extended modes.</p>
+
+			</div>
+		</div>
+
+		<hr>
+		<div class="row">
+			<div class="col-md-5">
+				<pre style="" class="default prettyprint prettyprinted"><code>$> cd /daqexpert/experimental/pro/
+$> cp SketchLogicModule.java MyLogicModule.java</code></pre>
+				<img class="img-responsive"
+					src="img/logic-guide/dropdown.png" alt="">
+			</div>
+			<div class="col-md-7">
+				<h3>
+					Step 3<small> Make your own experimental LM</small>
+					</h4>
+					<p>The best way to start is to copy the empty sketch LM.</p>
+
+					<p>Your file will be immediately available to run in the
+						dropdown list from last step. No compilation required!</p>
+			</div>
+		</div>
+
+		<hr>
+		<div class="row">
+			<div class="col-md-5">
+				<img class="img-responsive"
+					src="img/sketch-in-editor.png" alt="">
+			</div>
+			<div class="col-md-7">
+				<h3>
+					Step 4 <small> Edit your logic module</small>
+					</h4>
+					<p>Now use your favorite editor to make this Logic Module
+						useful.</p>
+					<p>Express your expert knowledge by following the TODO comments
+						from sketch file.
+					<ol>
+						<li>Set up basic information</li>
+						<li>Implement your condition</li>
+					</ol>
+					</p>
+					<hr>
+					<p>Learn about DAQ snapshot structure</p>
+
+					<button type="button" class="btn btn-primary" data-toggle="modal"
+						data-target="#myModal">
+						See class diagram <span class="glyphicon glyphicon-modal-window"></span>
+					</button>
+
+					<a class="btn btn-default" target="_blank"
+						href="https://github.com/cmsdaq/DAQAggregator/blob/master/src/main/java/rcms/utilities/daqaggregator/data">See
+						class code<span class="glyphicon glyphicon-chevron-right"></span>
+					</a> </br>
+					<!-- <p>
+						Or <a href="framework.html"> learn more about the framework</a>
+					</p> -->
+			</div>
+		</div>
+		<hr>
+		<div class="row">
+			<div class="col-md-5">
+				<img class="img-responsive"
+					src="img/logic-guide/experimental-run.gif" alt="">
+			</div>
+			<div class="col-md-7">
+				<h3>
+					Step 5<small> Verify the results</small>
+					</h4>
+					<p>Run your LM as you did in step 2 (except choose your LM from
+						dropdown menu)</p>
+			</div>
+		</div>
+
+
+
+
+		<!-- Modal -->
+		<div class="modal fade" id="myModal" tabindex="-1" role="dialog"
+			aria-labelledby="myModalLabel">
+			<div class="modal-dialog modal-lg" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal"
+							aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+						<h4 class="modal-title" id="myModalLabel">DAQ Snapshot model</h4>
+					</div>
+					<div class="modal-body">
+						<img src="img/class-diagram.png" class="img-responsive" alt="">
+					</div>
+					<div class="modal-footer">
+						<a type="button" target="_blank" class="btn btn-default"
+							href="download/class-diagram.pdf">Get printable <span
+							class="glyphicon glyphicon-print"></span></a> <a type="button"
+							target="_blank" class="btn btn-primary"
+							href="https://github.com/cmsdaq/DAQAggregator/blob/master/src/main/java/rcms/utilities/daqaggregator/data">Go
+							to repo<span class="glyphicon glyphicon-chevron-right"></span>
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+
+
+		<hr>
+		<div id="footer"></div>
+	</div>
+	<script src="js/jquery.js"></script>
+	<script src="js/bootstrap.min.js"></script>
+	<script>
+		$(function() {
+			$("#navigation").load("navigation.html");
+			$("#footer").load("footer.html");
+		});
+	</script>
+</body>
+</html>

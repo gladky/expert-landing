@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>SoundSystemConnector.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Notification Manager</a> &gt; <a href="index.source.html" class="el_package">cern.cms.daq.nm.sound</a> &gt; <span class="el_source">SoundSystemConnector.java</span></div><h1>SoundSystemConnector.java</h1><pre class="source lang-java linenums">package cern.cms.daq.nm.sound;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.net.Socket;
+import java.net.URL;
+
+import org.apache.log4j.Logger;
+
+import cern.cms.daq.nm.Application;
+import cern.cms.daq.nm.Setting;
+
+public class SoundSystemConnector {
+
+	private final String url;
+	private final int port;
+	private Socket connection;
+
+<span class="fc" id="L22">	protected final static Logger logger = Logger.getLogger(SoundSystemConnector.class);</span>
+
+<span class="fc" id="L24">	protected SoundSystemConnector(String urlString, int port) {</span>
+<span class="fc" id="L25">		this.url = urlString;</span>
+<span class="fc" id="L26">		this.port = port;</span>
+<span class="fc" id="L27">	}</span>
+
+	public String sayAndListen(String statement) throws IOException {
+
+<span class="nc" id="L31">		logger.info(&quot;Speak statement: &quot; + statement);</span>
+<span class="nc" id="L32">		setUpConnection(url, port);</span>
+<span class="nc" id="L33">		say(&quot;&lt;talk&gt;&quot; + statement + &quot;&lt;/talk&gt;&quot;);</span>
+<span class="nc" id="L34">		return listen();</span>
+	}
+
+	public String play(String soundFilename) throws IOException {
+<span class="nc" id="L38">		setUpConnection(url, port);</span>
+<span class="nc" id="L39">		say(&quot;&lt;play file=\&quot;&quot; + soundFilename + &quot;\&quot;/&gt;&quot;);</span>
+<span class="nc" id="L40">		return listen();</span>
+	}
+
+	private void say(String statement) throws IOException {
+<span class="nc" id="L44">		PrintWriter printWriter = new PrintWriter(new OutputStreamWriter(connection.getOutputStream()));</span>
+<span class="nc" id="L45">		printWriter.print(statement);</span>
+<span class="nc" id="L46">		printWriter.flush();</span>
+<span class="nc" id="L47">	}</span>
+
+	private String listen() throws IOException {
+<span class="nc" id="L50">		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(connection.getInputStream()));</span>
+<span class="nc" id="L51">		char[] buffer = new char[200];</span>
+<span class="nc" id="L52">		int count = bufferedReader.read(buffer, 0, 200);</span>
+<span class="nc" id="L53">		return new String(buffer, 0, count);</span>
+	}
+
+	private void setUpConnection(String urlString, int port) {
+		try {
+<span class="nc" id="L58">			URL theURL = new URL(urlString);</span>
+<span class="nc" id="L59">			connection = new Socket(theURL.getHost(), port);</span>
+<span class="nc" id="L60">		} catch (IOException e) {</span>
+<span class="nc" id="L61">			logger.error(&quot;Request to CMS-WOW failed: &quot;, e);</span>
+		}
+<span class="nc" id="L63">	}</span>
+
+	public static SoundSystemConnector buildSoundSystemConnector() {
+<span class="nc" id="L66">		String soundUrl = &quot;&quot;;</span>
+<span class="nc" id="L67">		int soundPort = 0;</span>
+<span class="nc" id="L68">		logger.info(&quot;Sound enabled, parsing url and port&quot;);</span>
+<span class="nc" id="L69">		String soundProp = (String) Application.get().getProp().get(Setting.SOUND_URL.getCode());</span>
+<span class="nc" id="L70">		String soundPortProp = (String) Application.get().getProp().get(Setting.SOUND_PORT.getCode());</span>
+		try {
+<span class="nc" id="L72">			soundPort = Integer.parseInt(soundPortProp);</span>
+<span class="nc" id="L73">		} catch (NumberFormatException e) {</span>
+<span class="nc" id="L74">			logger.error(&quot;Cannot parse sound port&quot;, e);</span>
+		}
+
+<span class="nc bnc" id="L77" title="All 4 branches missed.">		if (soundProp != &quot;&quot; &amp;&amp; soundPort != 0) {</span>
+<span class="nc" id="L78">			soundUrl = soundProp;</span>
+		}
+
+<span class="nc" id="L81">		logger.info(&quot;Initializing sound system with url: &quot; + soundUrl + &quot;:&quot; + soundPort);</span>
+<span class="nc" id="L82">		return new SoundSystemConnector(soundUrl, soundPort);</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

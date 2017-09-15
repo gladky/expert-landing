@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>ExpertExceptionCode.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DAQExpert</a> &gt; <a href="index.source.html" class="el_package">rcms.utilities.daqexpert</a> &gt; <span class="el_source">ExpertExceptionCode.java</span></div><h1>ExpertExceptionCode.java</h1><pre class="source lang-java linenums"><span class="nc" id="L1">package rcms.utilities.daqexpert;</span>
+
+<span class="fc" id="L3">public enum ExpertExceptionCode {</span>
+
+<span class="fc" id="L5">	/* General errors */</span>
+<span class="fc" id="L6">	ExpertProblem(100, &quot;Expert problem&quot;),</span>
+<span class="fc" id="L7">	MissingConfigurationFile(101, &quot;Missing configuration file&quot;),</span>
+<span class="fc" id="L8">	MissingProperty(102, &quot;Required configuration property missing&quot;),</span>
+<span class="fc" id="L9">	CannotParseProcessingEndDate(103, &quot;Canot parse end date of expert processing, should be ISO8601&quot;),</span>
+
+<span class="fc" id="L11">	/* Reasoning errors */</span>
+<span class="fc" id="L12">	ReasoningProblem(200, &quot;Reasoning problem&quot;),</span>
+<span class="fc" id="L13">	ExperimentalReasoningProblem(201, &quot;Experimental reasoning problem&quot;),</span>
+
+<span class="fc" id="L15">	LogicModuleUpdateException(301, &quot;Problem updating logic module parameters&quot;),;</span>
+
+<span class="fc" id="L17">	ExpertExceptionCode(int code, String name) {</span>
+<span class="fc" id="L18">		this.code = code;</span>
+<span class="fc" id="L19">		this.name = name;</span>
+<span class="fc" id="L20">	}</span>
+
+	private final int code;
+	private final String name;
+
+	public int getCode() {
+<span class="nc" id="L26">		return code;</span>
+	}
+
+	public String getName() {
+<span class="nc" id="L30">		return name;</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

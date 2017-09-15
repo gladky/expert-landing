@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>LogicModule.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DAQExpert</a> &gt; <a href="index.source.html" class="el_package">rcms.utilities.daqexpert.reasoning.base</a> &gt; <span class="el_source">LogicModule.java</span></div><h1>LogicModule.java</h1><pre class="source lang-java linenums">package rcms.utilities.daqexpert.reasoning.base;
+
+import rcms.utilities.daqexpert.persistence.LogicModuleRegistry;
+import rcms.utilities.daqexpert.reasoning.base.enums.ConditionPriority;
+
+/**
+ * Elementary part of expert knowledge. Logic Module (abbreviated LM) is a piece
+ * of knowledge focusing on one aspect. E.g.:
+ * 
+ * &lt;ul&gt;
+ * &lt;li&gt;NoRate LM - this Logic Module identifies when there is no rate in DAQ
+ * system&lt;/li&gt;
+ * &lt;li&gt;Downtime LM - this LM identifies when there is downtime in CMS Detector -
+ * note that not all no-rate is downtime (e.g. when there is no stable beams)
+ * &lt;/li&gt;
+ * &lt;li&gt;FED backpressured LM - identifies failure case when FED is backpressured
+ * by DAQ system&lt;/li&gt;
+ * &lt;/ul&gt;
+ * 
+ * Note that each Logic Module should focus on one aspect, and one aspect only.
+ * Results of a Logic Modules can be used in other Logic Modules so that there
+ * is no duplication of code. It is recommended to reuse results from Logic
+ * Modules for better performance.
+ * 
+ * Please follow the
+ * &lt;a href=&quot;http://daq-expert.cern.ch/contributing.html&quot;&gt;step-by-step guide&lt;/a&gt;
+ * before adding new Logic Modules.
+ * 
+ * 
+ * @see &lt;a href=&quot;http://daq-expert.cern.ch/contributing.html&quot;&gt;step-by-step
+ *      guide&lt;/a&gt;
+ * 
+ * 
+ * @author Maciej Gladki (maciej.szymon.gladki@cern.ch)
+ *
+ */
+<span class="fc" id="L37">public abstract class LogicModule {</span>
+
+	/**
+	 * Name of the condition found
+	 */
+	protected String name;
+
+	/**
+	 * Priority of the condition found
+	 */
+	protected ConditionPriority priority;
+
+	protected LogicModuleRegistry logicModuleRegistry;
+
+	/**
+	 * Condition description
+	 */
+	protected String description;
+
+	/**
+	 * Get name of the condition
+	 * 
+	 * @return name of the condition
+	 */
+	public String getName() {
+<span class="fc" id="L62">		return name;</span>
+	}
+
+	/**
+	 * Set name of the condition
+	 * 
+	 * @param name
+	 *            name of the condition
+	 */
+	public void setName(String name) {
+<span class="nc" id="L72">		this.name = name;</span>
+<span class="nc" id="L73">	}</span>
+
+	/**
+	 * Get priority of the condition
+	 * 
+	 * @return priority of the condition
+	 */
+	public ConditionPriority getPriority() {
+<span class="fc" id="L81">		return priority;</span>
+	}
+
+	/**
+	 * Set the priority of the condition
+	 * 
+	 * @param priority
+	 *            priority of the condition
+	 */
+	public void setPriority(ConditionPriority priority) {
+<span class="nc" id="L91">		this.priority = priority;</span>
+<span class="nc" id="L92">	}</span>
+
+	public String getDescription() {
+<span class="fc" id="L95">		return description;</span>
+	}
+
+	public void setDescription(String description) {
+<span class="nc" id="L99">		this.description = description;</span>
+<span class="nc" id="L100">	}</span>
+
+	public LogicModuleRegistry getLogicModuleRegistry() {
+<span class="fc" id="L103">		return logicModuleRegistry;</span>
+	}
+
+	public void setLogicModuleRegistry(LogicModuleRegistry logicModuleRegistry) {
+<span class="fc" id="L107">		this.logicModuleRegistry = logicModuleRegistry;</span>
+<span class="fc" id="L108">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

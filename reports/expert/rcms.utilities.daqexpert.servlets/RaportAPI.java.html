@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>RaportAPI.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DAQExpert</a> &gt; <a href="index.source.html" class="el_package">rcms.utilities.daqexpert.servlets</a> &gt; <span class="el_source">RaportAPI.java</span></div><h1>RaportAPI.java</h1><pre class="source lang-java linenums">package rcms.utilities.daqexpert.servlets;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.log4j.Logger;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import rcms.utilities.daqexpert.Application;
+import rcms.utilities.daqexpert.persistence.Condition;
+
+<span class="nc" id="L21">public class RaportAPI extends HttpServlet {</span>
+	private static final long serialVersionUID = 1L;
+
+<span class="nc" id="L24">	private static final Logger logger = Logger.getLogger(RaportAPI.class);</span>
+
+<span class="nc" id="L26">	ObjectMapper objectMapper = new ObjectMapper();</span>
+
+	@Override
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+
+<span class="nc" id="L32">		String idString = request.getParameter(&quot;id&quot;);</span>
+<span class="nc" id="L33">		logger.info(&quot;Requested explanation of event: &quot; + idString);</span>
+		try {
+<span class="nc" id="L35">			Long id = Long.parseLong(idString);</span>
+
+<span class="nc" id="L37">			Map&lt;String, Object&gt; result = new HashMap&lt;&gt;();</span>
+
+<span class="nc" id="L39">			Condition entry = Application.get().getPersistenceManager().getEntryById(id);</span>
+
+
+<span class="nc" id="L42">			result.put(&quot;description&quot;, entry.getDescription());</span>
+<span class="nc" id="L43">			result.put(&quot;name&quot;, entry.getTitle());</span>
+<span class="nc" id="L44">			result.put(&quot;duration&quot;, entry.getDuration());</span>
+			
+<span class="nc" id="L46">			result.put(&quot;action&quot;, entry.getActionSteps());</span>
+
+<span class="nc" id="L48">			String json = objectMapper.writeValueAsString(result);</span>
+			// TODO: externalize the Allow-Origin
+<span class="nc" id="L50">			response.addHeader(&quot;Access-Control-Allow-Origin&quot;, &quot;*&quot;);</span>
+<span class="nc" id="L51">			response.addHeader(&quot;Access-Control-Allow-Methods&quot;, &quot;GET&quot;);</span>
+<span class="nc" id="L52">			response.addHeader(&quot;Access-Control-Allow-Headers&quot;,</span>
+<span class="nc" id="L53">					&quot;X-PINGOTHER, Origin, X-Requested-With, Content-Type, Accept&quot;);</span>
+<span class="nc" id="L54">			response.addHeader(&quot;Access-Control-Max-Age&quot;, &quot;1728000&quot;);</span>
+
+<span class="nc" id="L56">			response.setContentType(&quot;application/json&quot;);</span>
+<span class="nc" id="L57">			response.setCharacterEncoding(&quot;UTF-8&quot;);</span>
+<span class="nc" id="L58">			response.getWriter().write(json);</span>
+
+<span class="nc" id="L60">		} catch (NumberFormatException e) {</span>
+<span class="nc" id="L61">			logger.warn(&quot;There was problem parsing number in raport api request: &quot; + e.getMessage());</span>
+		}
+<span class="nc" id="L63">	}</span>
+
+	@Override
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+<span class="nc" id="L68">		doGet(request, response);</span>
+<span class="nc" id="L69">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

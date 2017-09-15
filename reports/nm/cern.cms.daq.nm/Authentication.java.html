@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>Authentication.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Notification Manager</a> &gt; <a href="index.source.html" class="el_package">cern.cms.daq.nm</a> &gt; <span class="el_source">Authentication.java</span></div><h1>Authentication.java</h1><pre class="source lang-java linenums">package cern.cms.daq.nm;
+
+import java.text.MessageFormat;
+import java.util.Hashtable;
+
+import javax.naming.Context;
+import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
+import javax.naming.directory.Attribute;
+import javax.naming.directory.DirContext;
+import javax.naming.directory.InitialDirContext;
+import javax.naming.directory.SearchControls;
+import javax.naming.directory.SearchResult;
+
+public class Authentication {
+
+	private final String ldapAdress;
+	private final String ldapDC;
+	private final String ldapPrincipal;
+
+	public static void main(String[] args) throws NamingException {
+
+<span class="nc" id="L23">		boolean test = false;</span>
+		Authentication ldapAuthenticator;
+		String user;
+		String password;
+		String searchScope;
+		boolean sslEnabled;
+<span class="nc bnc" id="L29" title="All 2 branches missed.">		if (test) {</span>
+<span class="nc" id="L30">			System.out.println(&quot;Testing external ldap authentication&quot;);</span>
+<span class="nc" id="L31">			ldapAuthenticator = new Authentication(Constants.testLDAP, Constants.testDC, &quot;uid&quot;);</span>
+<span class="nc" id="L32">			user = &quot;tesla&quot;;</span>
+<span class="nc" id="L33">			password = &quot;password&quot;;</span>
+<span class="nc" id="L34">			sslEnabled = false;</span>
+<span class="nc" id="L35">			searchScope = Constants.testDC;</span>
+<span class="nc" id="L36">		} else {</span>
+
+<span class="nc" id="L38">			System.out.println(&quot;Testing CERN ldap authentication&quot;);</span>
+<span class="nc" id="L39">			ldapAuthenticator = new Authentication();</span>
+<span class="nc" id="L40">			user = &quot;mgladki&quot;;</span>
+<span class="nc" id="L41">			password = &quot;a&quot;;</span>
+<span class="nc" id="L42">			sslEnabled = true;</span>
+<span class="nc" id="L43">			searchScope = &quot;ou=people,o=cern,c=ch&quot;;</span>
+		}
+
+<span class="nc" id="L46">		DirContext ctx = ldapAuthenticator.authenticate(user, password, sslEnabled);</span>
+		
+<span class="nc bnc" id="L48" title="All 2 branches missed.">		if(ctx == null){</span>
+<span class="nc" id="L49">			System.err.println(&quot;not authenticated&quot;);</span>
+<span class="nc" id="L50">			return;</span>
+		}
+
+<span class="nc" id="L53">		ldapAuthenticator.getDetails(ctx, searchScope, &quot;(uid={0})&quot;, user);</span>
+
+<span class="nc bnc" id="L55" title="All 2 branches missed.">		boolean result = ctx != null;</span>
+
+<span class="nc" id="L57">		System.out.println(&quot;Auhenticated? &quot; + result);</span>
+
+<span class="nc bnc" id="L59" title="All 2 branches missed.">		if (ctx != null)</span>
+<span class="nc" id="L60">			ctx.close();</span>
+
+<span class="nc" id="L62">	}</span>
+
+	public Authentication() {
+<span class="nc" id="L65">		this(Constants.cernLDAP, Constants.cernDC, &quot;cn&quot;);</span>
+<span class="nc" id="L66">	}</span>
+
+<span class="nc" id="L68">	public Authentication(String ldapAddress, String ldapDC, String ldapPrincipal) {</span>
+<span class="nc" id="L69">		this.ldapAdress = ldapAddress;</span>
+<span class="nc" id="L70">		this.ldapDC = ldapDC;</span>
+<span class="nc" id="L71">		this.ldapPrincipal = ldapPrincipal;</span>
+<span class="nc" id="L72">	}</span>
+
+	public void getDetails(DirContext ctx, String scope, String searchFilter, String searchValue)
+			throws NamingException {
+
+<span class="nc" id="L77">		String attribute1 = &quot;mail&quot;;</span>
+<span class="nc" id="L78">		String attribute2 = &quot;mobile&quot;;</span>
+<span class="nc" id="L79">		String attribute3 = &quot;givenname&quot;;</span>
+<span class="nc" id="L80">		String attribute4 = &quot;telephoneNumber&quot;;</span>
+<span class="nc" id="L81">		String attribute5 = &quot;displayName&quot;;</span>
+<span class="nc" id="L82">		String attribute6 = &quot;employeeid&quot;;</span>
+
+<span class="nc" id="L84">		String[] attributesToReturn = new String[] { attribute1, attribute2, attribute3, attribute4, attribute5,</span>
+<span class="nc" id="L85">				attribute6 };</span>
+
+<span class="nc" id="L87">		SearchResult sr = executeSearchSingleResult(ctx, SearchControls.SUBTREE_SCOPE, scope,</span>
+<span class="nc" id="L88">				MessageFormat.format(searchFilter, new Object[] { searchValue }), attributesToReturn);</span>
+
+<span class="nc" id="L90">		System.out.println(sr);</span>
+
+<span class="nc" id="L92">		Attribute id = sr.getAttributes().get(attribute6);</span>
+<span class="nc" id="L93">		String idn = (String) id.get();</span>
+<span class="nc" id="L94">		System.out.println(idn);</span>
+<span class="nc" id="L95">	}</span>
+
+	public DirContext authenticate(String username, String passwd, boolean ssl) {
+<span class="nc" id="L98">		Hashtable&lt;String, String&gt; env = new Hashtable&lt;String, String&gt;();</span>
+
+<span class="nc" id="L100">		env.put(Context.INITIAL_CONTEXT_FACTORY, &quot;com.sun.jndi.ldap.LdapCtxFactory&quot;);</span>
+<span class="nc" id="L101">		env.put(Context.PROVIDER_URL, ldapAdress);</span>
+
+<span class="nc bnc" id="L103" title="All 2 branches missed.">		if (ssl) {</span>
+			// according to
+			// https://docs.oracle.com/javase/tutorial/jndi/ldap/ssl.html
+<span class="nc" id="L106">			env.put(Context.SECURITY_PROTOCOL, &quot;ssl&quot;);</span>
+		}
+
+<span class="nc" id="L109">		env.put(Context.SECURITY_AUTHENTICATION, &quot;simple&quot;);</span>
+<span class="nc" id="L110">		env.put(Context.SECURITY_PRINCIPAL, ldapPrincipal + &quot;=&quot; + username + &quot;,&quot; + ldapDC);</span>
+<span class="nc" id="L111">		env.put(Context.SECURITY_CREDENTIALS, passwd);</span>
+
+		// Create the initial context
+		DirContext ctx;
+
+		try {
+<span class="nc" id="L117">			ctx = new InitialDirContext(env);</span>
+
+<span class="nc" id="L119">			return ctx;</span>
+<span class="nc" id="L120">		} catch (NamingException e) {</span>
+<span class="nc" id="L121">			e.printStackTrace();</span>
+
+<span class="nc" id="L123">			return null;</span>
+		}
+
+	}
+
+	private static NamingEnumeration executeSearch(DirContext ctx, int searchScope, String searchBase,
+			String searchFilter, String[] attributes) throws NamingException {
+		// Create the search controls
+<span class="nc" id="L131">		SearchControls searchCtls = new SearchControls();</span>
+
+		// Specify the attributes to return
+<span class="nc bnc" id="L134" title="All 2 branches missed.">		if (attributes != null) {</span>
+<span class="nc" id="L135">			searchCtls.setReturningAttributes(attributes);</span>
+		}
+
+		// Specify the search scope
+<span class="nc" id="L139">		searchCtls.setSearchScope(searchScope);</span>
+
+		// Search for objects using the filter
+<span class="nc" id="L142">		NamingEnumeration result = ctx.search(searchBase, searchFilter, searchCtls);</span>
+<span class="nc" id="L143">		return result;</span>
+	}
+
+	private static SearchResult executeSearchSingleResult(DirContext ctx, int searchScope, String searchBase,
+			String searchFilter, String[] attributes) throws NamingException {
+<span class="nc" id="L148">		NamingEnumeration result = executeSearch(ctx, searchScope, searchBase, searchFilter, attributes);</span>
+
+<span class="nc" id="L150">		SearchResult sr = null;</span>
+		// Loop through the search results
+<span class="nc bnc" id="L152" title="All 2 branches missed.">		while (result.hasMoreElements()) {</span>
+<span class="nc" id="L153">			sr = (SearchResult) result.next();</span>
+			break;
+		}
+<span class="nc" id="L156">		return sr;</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

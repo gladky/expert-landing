@@ -1,0 +1,470 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>PersistenceManager.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DAQExpert</a> &gt; <a href="index.source.html" class="el_package">rcms.utilities.daqexpert.persistence</a> &gt; <span class="el_source">PersistenceManager.java</span></div><h1>PersistenceManager.java</h1><pre class="source lang-java linenums">package rcms.utilities.daqexpert.persistence;
+
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.EntityTransaction;
+import javax.persistence.Persistence;
+import javax.persistence.Query;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
+
+import org.apache.log4j.Logger;
+import org.hibernate.Criteria;
+import org.hibernate.Session;
+import org.hibernate.criterion.Conjunction;
+import org.hibernate.criterion.Disjunction;
+import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Restrictions;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import rcms.utilities.daqexpert.reasoning.base.enums.ConditionGroup;
+import rcms.utilities.daqexpert.reasoning.base.enums.ConditionPriority;
+import rcms.utilities.daqexpert.segmentation.DataResolution;
+import rcms.utilities.daqexpert.segmentation.RangeResolver;
+
+/**
+ * Unit managing persistence of analysis results and multiple resolutions of raw
+ * parameters
+ * 
+ * 
+ * Performance test: Time to insert 10000 Entries individually was 55315 ms
+ * Performance test: Time to insert 10000 Entries at once was 456 ms
+ * 
+ * @author Maciej Gladki (maciej.szymon.gladki@cern.ch)
+ *
+ */
+public class PersistenceManager {
+
+	private final EntityManagerFactory entityManagerFactory;
+
+<span class="fc" id="L51">	private static final Logger logger = Logger.getLogger(PersistenceManager.class);</span>
+
+	private final EntityManager entryEntityManager;
+
+<span class="fc" id="L55">	public PersistenceManager(String persistenceUnitName, Properties props) {</span>
+
+<span class="fc" id="L57">		entityManagerFactory = Persistence.createEntityManagerFactory(persistenceUnitName, props);</span>
+<span class="fc" id="L58">		entryEntityManager = entityManagerFactory.createEntityManager();</span>
+<span class="fc" id="L59">	}</span>
+
+	/**
+	 * Persiste multipe entries in one transaction
+	 * 
+	 * @param entries
+	 */
+	public void persist(Set&lt;Condition&gt; entries) {
+
+<span class="fc" id="L68">		EntityTransaction tx = entryEntityManager.getTransaction();</span>
+<span class="fc" id="L69">		tx.begin();</span>
+<span class="fc bfc" id="L70" title="All 2 branches covered.">		for (Condition point : entries) {</span>
+
+<span class="fc bfc" id="L72" title="All 2 branches covered.">			if (point.isShow())</span>
+<span class="fc" id="L73">				entryEntityManager.persist(point);</span>
+		}
+<span class="fc" id="L75">		tx.commit();</span>
+<span class="fc" id="L76">	}</span>
+
+	/**
+	 * Persist analysis entry
+	 * 
+	 * @param entry
+	 */
+	public void persist(Condition entry) {
+
+		// EntityManager entityManager =
+		// entityManagerFactory.createEntityManager();
+<span class="fc" id="L87">		EntityTransaction tx = entryEntityManager.getTransaction();</span>
+<span class="fc" id="L88">		tx.begin();</span>
+<span class="fc" id="L89">		entryEntityManager.persist(entry);</span>
+<span class="fc" id="L90">		tx.commit();</span>
+		// entityManager.close();
+<span class="fc" id="L92">	}</span>
+
+	public void persist(Point test) {
+<span class="fc" id="L95">		EntityManager entityManager = entityManagerFactory.createEntityManager();</span>
+<span class="fc" id="L96">		EntityTransaction tx = entityManager.getTransaction();</span>
+<span class="fc" id="L97">		tx.begin();</span>
+<span class="fc" id="L98">		entityManager.persist(test);</span>
+<span class="fc" id="L99">		tx.commit();</span>
+<span class="fc" id="L100">		entityManager.close();</span>
+<span class="fc" id="L101">	}</span>
+
+	public void persist(List&lt;Point&gt; points) {
+
+<span class="fc" id="L105">		EntityManager entityManager = entityManagerFactory.createEntityManager();</span>
+<span class="fc" id="L106">		EntityTransaction tx = entityManager.getTransaction();</span>
+<span class="fc" id="L107">		tx.begin();</span>
+<span class="fc bfc" id="L108" title="All 2 branches covered.">		for (Point point : points) {</span>
+
+<span class="fc" id="L110">			entityManager.persist(point);</span>
+		}
+<span class="fc" id="L112">		tx.commit();</span>
+<span class="fc" id="L113">		entityManager.close();</span>
+<span class="fc" id="L114">	}</span>
+
+	public List&lt;Point&gt; getRawData(Date startDate, Date endDate) {
+
+<span class="nc" id="L118">		RangeResolver rangeResolver = new RangeResolver();</span>
+<span class="nc" id="L119">		DataResolution resolution = rangeResolver.resolve(startDate, endDate);</span>
+<span class="nc" id="L120">		return getRawData(startDate, endDate, resolution);</span>
+	}
+
+	public List&lt;Point&gt; getRawData(Date startDate, Date endDate, DataResolution resolution) {
+
+<span class="fc" id="L125">		logger.debug(&quot;resolution of data to RAW API &quot; + resolution);</span>
+
+		// extend slightly timespan so that few snapshots more on the left and
+		// right are loaded to the chart - avoid cutting the chart lines
+<span class="fc" id="L129">		Calendar c = Calendar.getInstance();</span>
+<span class="fc" id="L130">		c.setTime(startDate);</span>
+<span class="fc" id="L131">		c.add(Calendar.SECOND, -10);</span>
+<span class="fc" id="L132">		startDate = c.getTime();</span>
+<span class="fc" id="L133">		c.setTime(endDate);</span>
+<span class="fc" id="L134">		c.add(Calendar.SECOND, 10);</span>
+<span class="fc" id="L135">		endDate = c.getTime();</span>
+
+<span class="fc" id="L137">		EntityManager entityManager = entityManagerFactory.createEntityManager();</span>
+<span class="fc" id="L138">		Session session = entityManager.unwrap(Session.class);</span>
+
+<span class="fc" id="L140">		Criteria elementsCriteria = session.createCriteria(Point.class);</span>
+
+<span class="fc" id="L142">		elementsCriteria.add(Restrictions.le(&quot;x&quot;, endDate));</span>
+<span class="fc" id="L143">		elementsCriteria.add(Restrictions.ge(&quot;x&quot;, startDate));</span>
+<span class="fc" id="L144">		elementsCriteria.add(Restrictions.eq(&quot;resolution&quot;, resolution.ordinal()));</span>
+<span class="fc" id="L145">		List&lt;Point&gt; result = elementsCriteria.list();</span>
+<span class="fc" id="L146">		logger.debug(</span>
+<span class="fc" id="L147">				result.size() + &quot; points of resolution &quot; + resolution.ordinal() + &quot;(&quot; + resolution + &quot;) retrieved&quot;);</span>
+
+<span class="fc" id="L149">		entityManager.close();</span>
+<span class="fc" id="L150">		return result;</span>
+	}
+
+	/**
+	 * Get entries with threshold. Inclusion of filtered entries as mask is
+	 * parameterized
+	 * 
+	 * @param startDate
+	 * @param endDate
+	 * @param durationThreshold
+	 * @param includeTinyEntriesMask
+	 * @return
+	 */
+	@SuppressWarnings(&quot;unchecked&quot;)
+	public List&lt;Condition&gt; getEntries(Date startDate, Date endDate, long durationThreshold,
+			boolean includeTinyEntriesMask) {
+		// TODO: close session?
+<span class="fc" id="L167">		EntityManager entityManager = entityManagerFactory.createEntityManager();</span>
+<span class="fc" id="L168">		Session session = entityManager.unwrap(Session.class);</span>
+
+<span class="fc" id="L170">		Criteria elementsCriteria = session.createCriteria(Condition.class);</span>
+		// elementsCriteria.addOrder(Order.desc(&quot;start&quot;));
+
+<span class="fc" id="L173">		Disjunction disjunction = Restrictions.disjunction();</span>
+
+		// 1. Event finished
+<span class="fc" id="L176">		Conjunction eventFinishedRestrictions = Restrictions.conjunction();</span>
+<span class="fc" id="L177">		eventFinishedRestrictions.add(Restrictions.le(&quot;start&quot;, endDate));</span>
+<span class="fc" id="L178">		eventFinishedRestrictions.add(Restrictions.ge(&quot;end&quot;, startDate));</span>
+<span class="fc" id="L179">		eventFinishedRestrictions.add(Restrictions.ge(&quot;duration&quot;, durationThreshold));</span>
+<span class="fc" id="L180">		disjunction.add(eventFinishedRestrictions);</span>
+
+		// 2. Event unfinished
+<span class="fc" id="L183">		Conjunction eventUninishedRestrictions = Restrictions.conjunction();</span>
+<span class="fc" id="L184">		eventUninishedRestrictions.add(Restrictions.le(&quot;start&quot;, endDate));</span>
+<span class="fc" id="L185">		eventUninishedRestrictions.add(Restrictions.isNull(&quot;end&quot;));</span>
+<span class="fc" id="L186">		disjunction.add(eventUninishedRestrictions);</span>
+
+<span class="fc" id="L188">		elementsCriteria.add(disjunction);</span>
+
+		// Events not hidden
+<span class="fc" id="L191">		elementsCriteria.add(Restrictions.ne(&quot;group&quot;, ConditionGroup.HIDDEN));</span>
+
+<span class="fc" id="L193">		List&lt;Condition&gt; result = elementsCriteria.list();</span>
+<span class="fc" id="L194">		entityManager.close();</span>
+
+<span class="fc" id="L196">		return result;</span>
+	}
+
+	public List&lt;TinyEntryMapObject&gt; getTinyEntriesMask(Date startDate, Date endDate, long durationThreshold,
+			boolean includeTinyEntriesMask, DataResolution resolution) {
+		// TODO: close session?
+<span class="fc" id="L202">		EntityManager entityManager = entityManagerFactory.createEntityManager();</span>
+
+<span class="fc" id="L204">		List&lt;TinyEntryMapObject&gt; resultTiny = new ArrayList&lt;TinyEntryMapObject&gt;();</span>
+<span class="fc" id="L205">		StringBuilder sb = new StringBuilder();</span>
+<span class="fc" id="L206">		sb.append(&quot;select e.group, count(e.id), min(e.start), max(e.end) from Condition e &quot;);</span>
+<span class="fc" id="L207">		sb.append(&quot;where duration &lt; :threshold &quot;);</span>
+<span class="fc" id="L208">		sb.append(&quot;and start_date &lt; :endDate &quot;);</span>
+<span class="fc" id="L209">		sb.append(&quot;and end_date &gt; :startDate &quot;);</span>
+<span class="fc" id="L210">		sb.append(&quot;group by GROUP_NAME &quot;);</span>
+
+<span class="pc bpc" id="L212" title="4 of 6 branches missed.">		switch (resolution) {</span>
+
+		case Month:
+<span class="nc" id="L215">			sb.append(&quot;,YEAR (start_date) &quot;);</span>
+<span class="nc" id="L216">			break;</span>
+		case Day:
+<span class="nc" id="L218">			sb.append(&quot;,YEAR (start_date) &quot;);</span>
+<span class="nc" id="L219">			sb.append(&quot;,EXTRACT(MONTH FROM start_date) &quot;);</span>
+<span class="nc" id="L220">			break;</span>
+		case Hour:
+<span class="fc" id="L222">			sb.append(&quot;,YEAR (start_date) &quot;);</span>
+<span class="fc" id="L223">			sb.append(&quot;,EXTRACT(MONTH FROM start_date) &quot;);</span>
+<span class="fc" id="L224">			sb.append(&quot;,EXTRACT(DAY FROM start_date) &quot;);</span>
+<span class="fc" id="L225">			break;</span>
+		case Minute:
+<span class="fc" id="L227">			sb.append(&quot;,YEAR (start_date) &quot;);</span>
+<span class="fc" id="L228">			sb.append(&quot;,EXTRACT(MONTH FROM start_date) &quot;);</span>
+<span class="fc" id="L229">			sb.append(&quot;,EXTRACT(DAY FROM start_date) &quot;);</span>
+<span class="fc" id="L230">			sb.append(&quot;,EXTRACT(HOUR FROM start_date) &quot;);</span>
+<span class="fc" id="L231">			break;</span>
+		case Full:
+<span class="nc" id="L233">			sb.append(&quot;,YEAR (start_date) &quot;);</span>
+<span class="nc" id="L234">			sb.append(&quot;,EXTRACT(MONTH FROM start_date) &quot;);</span>
+<span class="nc" id="L235">			sb.append(&quot;,EXTRACT(DAY FROM start_date) &quot;);</span>
+<span class="nc" id="L236">			sb.append(&quot;,EXTRACT(HOUR FROM start_date) &quot;);</span>
+<span class="nc" id="L237">			sb.append(&quot;,EXTRACT(MINUTE FROM start_date) &quot;);</span>
+		}
+
+<span class="fc" id="L240">		ObjectMapper mapper = new ObjectMapper();</span>
+<span class="fc" id="L241">		Query q2 = entityManager.createQuery(sb.toString());</span>
+
+<span class="fc" id="L243">		q2.setParameter(&quot;endDate&quot;, endDate);</span>
+<span class="fc" id="L244">		q2.setParameter(&quot;startDate&quot;, startDate);</span>
+<span class="fc" id="L245">		q2.setParameter(&quot;threshold&quot;, durationThreshold);</span>
+		// Query q2 = entityManager.createQuery(&quot;SELECT c FROM Country c&quot;);
+<span class="fc" id="L247">		List&lt;Object[]&gt; result = q2.getResultList();</span>
+<span class="fc" id="L248">		Calendar calendar = Calendar.getInstance();</span>
+<span class="fc bfc" id="L249" title="All 2 branches covered.">		for (Object[] row : result) {</span>
+			// System.out.println(result);
+<span class="fc" id="L251">			TinyEntryMapObject curr = new TinyEntryMapObject();</span>
+
+<span class="fc" id="L253">			ConditionGroup group = (ConditionGroup) row[0];</span>
+<span class="fc" id="L254">			curr.setGroup(group);</span>
+<span class="fc" id="L255">			curr.setCount((long) row[1]);</span>
+
+<span class="fc" id="L257">			calendar.setTimeInMillis(((Timestamp) row[2]).getTime());</span>
+<span class="fc" id="L258">			curr.setStart(calendar.getTime());</span>
+<span class="fc" id="L259">			calendar.setTimeInMillis(((Timestamp) row[3]).getTime());</span>
+<span class="fc" id="L260">			curr.setEnd(calendar.getTime());</span>
+<span class="fc" id="L261">			resultTiny.add(curr);</span>
+		}
+<span class="fc" id="L263">		entityManager.close();</span>
+<span class="fc" id="L264">		return resultTiny;</span>
+
+	}
+
+	/**
+	 * Gets entries with a threshold on duration and a pseudo entries
+	 * representing small, invisible entries.
+	 * 
+	 * @param startDate
+	 * @param endDate
+	 * @return
+	 */
+	public List&lt;Condition&gt; getEntriesWithMask(Date startDate, Date endDate) {
+<span class="nc" id="L277">		DataResolution dr = RangeResolver.resolve(startDate, endDate);</span>
+		/*
+		 * minimum width for filtering the blocks is calculated based on this.
+		 * This amount of sequential blocks of the same width is the threshold
+		 */
+<span class="nc" id="L282">		int elementsInRow = 80;</span>
+		/*
+		 * Filter entries based on the duration and requested range
+		 */
+<span class="nc" id="L286">		long rangeInMs = endDate.getTime() - startDate.getTime();</span>
+<span class="nc" id="L287">		long durationThreshold = rangeInMs / elementsInRow;</span>
+<span class="nc" id="L288">		logger.debug(&quot;Duration thresshold: &quot; + durationThreshold);</span>
+
+<span class="nc" id="L290">		List&lt;Condition&gt; thresholdData = getEntriesThreshold(startDate, endDate, durationThreshold);</span>
+<span class="nc" id="L291">		logger.debug(&quot;Data resolution: &quot; + dr);</span>
+<span class="nc" id="L292">		logger.debug(&quot;Retrieved &quot; + thresholdData.size() + &quot; thresholded entries&quot;);</span>
+
+<span class="nc" id="L294">		List&lt;TinyEntryMapObject&gt; tinyData = getTinyEntriesMask(startDate, endDate, durationThreshold, true, dr);</span>
+
+<span class="nc" id="L296">		logger.debug(&quot;Retrieved &quot; + tinyData.size() + &quot; masked entries: &quot; + tinyData);</span>
+
+<span class="nc" id="L298">		long filterId = 0;</span>
+<span class="nc bnc" id="L299" title="All 2 branches missed.">		for (TinyEntryMapObject mapObject : tinyData) {</span>
+<span class="nc" id="L300">			Condition curr = new Condition();</span>
+<span class="nc" id="L301">			curr.setStart(mapObject.getStart());</span>
+<span class="nc" id="L302">			curr.setEnd(mapObject.getEnd());</span>
+<span class="nc" id="L303">			curr.setTitle(Long.toString(mapObject.getCount()));</span>
+<span class="nc" id="L304">			curr.setLogicModule(mapObject.getLogicModule());</span>
+<span class="nc" id="L305">			curr.setGroup(mapObject.getGroup());</span>
+<span class="nc" id="L306">			curr.setClassName(ConditionPriority.FILTERED);</span>
+<span class="nc" id="L307">			curr.calculateDuration();</span>
+<span class="nc" id="L308">			curr.setId(-filterId++);</span>
+
+<span class="nc bnc" id="L310" title="All 2 branches missed.">			if (curr.getDuration() &lt; durationThreshold) {</span>
+<span class="nc" id="L311">				int append = (int) (durationThreshold - curr.getDuration());</span>
+
+<span class="nc" id="L313">				Date alteredStart = new Date(curr.getStart().getTime() - append / 2);</span>
+<span class="nc" id="L314">				Date alteredEnd = new Date(curr.getEnd().getTime() + append / 2);</span>
+<span class="nc" id="L315">				curr.setStart(alteredStart);</span>
+<span class="nc" id="L316">				curr.setEnd(alteredEnd);</span>
+<span class="nc" id="L317">				curr.calculateDuration();</span>
+			}
+
+<span class="nc" id="L320">			thresholdData.add(curr);</span>
+		}
+
+<span class="nc" id="L323">		return thresholdData;</span>
+	}
+
+	@SuppressWarnings(&quot;unchecked&quot;)
+	public List&lt;Condition&gt; agetEntries2(Date startDate, Date endDate, long durationThreshold,
+			boolean includeTinyEntriesMask) {
+
+<span class="nc" id="L330">		EntityManager entityManager = entityManagerFactory.createEntityManager();</span>
+<span class="nc" id="L331">		Session session = entityManager.unwrap(Session.class);</span>
+
+<span class="nc" id="L333">		CriteriaBuilder cb = entityManager.getCriteriaBuilder();</span>
+<span class="nc" id="L334">		CriteriaQuery&lt;Condition&gt; cq = cb.createQuery(Condition.class);</span>
+<span class="nc" id="L335">		Root&lt;Condition&gt; entry = cq.from(Condition.class);</span>
+<span class="nc" id="L336">		cq.groupBy(entry.get(&quot;group_name&quot;));</span>
+
+<span class="nc" id="L338">		Criteria elementsCriteria = session.createCriteria(Condition.class);</span>
+		// elementsCriteria.addOrder(Order.desc(&quot;start&quot;));
+
+<span class="nc" id="L341">		Disjunction disjunction = Restrictions.disjunction();</span>
+
+		// 1. Event finished
+<span class="nc" id="L344">		Conjunction eventFinishedRestrictions = Restrictions.conjunction();</span>
+<span class="nc" id="L345">		eventFinishedRestrictions.add(Restrictions.le(&quot;start&quot;, endDate));</span>
+<span class="nc" id="L346">		eventFinishedRestrictions.add(Restrictions.ge(&quot;end&quot;, startDate));</span>
+<span class="nc" id="L347">		eventFinishedRestrictions.add(Restrictions.ge(&quot;duration&quot;, durationThreshold));</span>
+<span class="nc" id="L348">		disjunction.add(eventFinishedRestrictions);</span>
+
+		// 2. Event unfinished
+<span class="nc" id="L351">		Conjunction eventUninishedRestrictions = Restrictions.conjunction();</span>
+<span class="nc" id="L352">		eventUninishedRestrictions.add(Restrictions.le(&quot;start&quot;, endDate));</span>
+<span class="nc" id="L353">		eventUninishedRestrictions.add(Restrictions.isNull(&quot;end&quot;));</span>
+<span class="nc" id="L354">		disjunction.add(eventUninishedRestrictions);</span>
+
+<span class="nc" id="L356">		elementsCriteria.add(disjunction);</span>
+
+		if (includeTinyEntriesMask) {
+			// elementsCriteria.add
+		}
+
+		// Events not hidden
+<span class="nc" id="L363">		elementsCriteria.add(Restrictions.ne(&quot;group&quot;, &quot;hidden&quot;));</span>
+
+<span class="nc" id="L365">		List&lt;Condition&gt; result = elementsCriteria.list();</span>
+<span class="nc" id="L366">		entityManager.close();</span>
+<span class="nc" id="L367">		return result;</span>
+	}
+
+	/**
+	 * Returns entries without any duration threshold
+	 * 
+	 * @param startDate
+	 * @param endDate
+	 * @return
+	 */
+	public List&lt;Condition&gt; getEntriesPlain(Date startDate, Date endDate) {
+<span class="fc" id="L378">		return getEntries(startDate, endDate, 0, false);</span>
+	}
+
+	/**
+	 * Get entries with threshold
+	 * 
+	 * @param startDate
+	 * @param endDate
+	 * @param threshold
+	 * @return
+	 */
+	public List&lt;Condition&gt; getEntriesThreshold(Date startDate, Date endDate, long threshold) {
+<span class="fc" id="L390">		return getEntries(startDate, endDate, threshold, false);</span>
+	}
+
+	public Condition getEntryById(Long id) {
+
+<span class="nc" id="L395">		EntityManager entityManager = entityManagerFactory.createEntityManager();</span>
+
+<span class="nc" id="L397">		Condition entry = entityManager.find(Condition.class, id);</span>
+
+		/*
+		 * Make sure to fetch all list - but dont want to annotate the main
+		 * class to be EAGER always
+		 */
+<span class="nc" id="L403">		Iterator&lt;String&gt; it = entry.getActionSteps().iterator();</span>
+<span class="nc bnc" id="L404" title="All 2 branches missed.">		while (it.hasNext()) {</span>
+<span class="nc" id="L405">			it.next();</span>
+		}
+<span class="nc" id="L407">		entityManager.close();</span>
+<span class="nc" id="L408">		return entry;</span>
+	}
+
+	public List&lt;Condition&gt; agetEntries2(Date start, Date end) {
+<span class="nc" id="L412">		EntityManager entityManager = entityManagerFactory.createEntityManager();</span>
+<span class="nc" id="L413">		entityManager.getTransaction().begin();</span>
+<span class="nc" id="L414">		List&lt;Condition&gt; result = entityManager.createQuery(&quot;from Conditions&quot;, Condition.class).getResultList();</span>
+<span class="nc bnc" id="L415" title="All 2 branches missed.">		for (Condition event : result) {</span>
+<span class="nc" id="L416">			System.out.println(&quot;Event (&quot; + event.getStart() + &quot;) : &quot; + event.getTitle());</span>
+		}
+<span class="nc" id="L418">		entityManager.getTransaction().commit();</span>
+<span class="nc" id="L419">		entityManager.close();</span>
+<span class="nc" id="L420">		return result;</span>
+	}
+
+	public Date getLastFinish() {
+<span class="nc" id="L424">		Date endDate = null;</span>
+
+<span class="nc" id="L426">		EntityManager entityManager = entityManagerFactory.createEntityManager();</span>
+<span class="nc" id="L427">		Session session = entityManager.unwrap(Session.class);</span>
+
+<span class="nc" id="L429">		Criteria elementsCriteria = session.createCriteria(Condition.class);</span>
+
+<span class="nc" id="L431">		elementsCriteria.add(Restrictions.eq(&quot;group&quot;, ConditionGroup.EXPERT_VERSION));</span>
+<span class="nc" id="L432">		elementsCriteria.addOrder(Order.desc(&quot;end&quot;));</span>
+<span class="nc" id="L433">		elementsCriteria.setMaxResults(1);</span>
+
+<span class="nc" id="L435">		List&lt;Condition&gt; result = elementsCriteria.list();</span>
+
+<span class="nc" id="L437">		entityManager.close();</span>
+
+<span class="nc bnc" id="L439" title="All 2 branches missed.">		if (result.size() &gt;= 1) {</span>
+<span class="nc" id="L440">			Condition lastVersion = result.iterator().next();</span>
+<span class="nc" id="L441">			logger.info(&quot;Last version: &quot; + lastVersion.getTitle() + &quot; finished on &quot; + lastVersion.getEnd());</span>
+<span class="nc" id="L442">			endDate = lastVersion.getEnd();</span>
+		}
+
+<span class="nc" id="L445">		return endDate;</span>
+	}
+
+	public List&lt;Condition&gt; getLastActionConditions() {
+
+<span class="fc" id="L450">		EntityManager entityManager = entityManagerFactory.createEntityManager();</span>
+<span class="fc" id="L451">		Session session = entityManager.unwrap(Session.class);</span>
+
+<span class="fc" id="L453">		Criteria elementsCriteria = session.createCriteria(Condition.class);</span>
+
+<span class="fc" id="L455">		elementsCriteria.add(Restrictions.eq(&quot;group&quot;, ConditionGroup.FLOWCHART));</span>
+<span class="fc" id="L456">		elementsCriteria.addOrder(Order.desc(&quot;end&quot;));</span>
+<span class="fc" id="L457">		elementsCriteria.setMaxResults(3);</span>
+
+<span class="fc" id="L459">		List&lt;Condition&gt; result = elementsCriteria.list();</span>
+<span class="pc bpc" id="L460" title="1 of 2 branches missed.">		for (Condition c : result) {</span>
+<span class="nc" id="L461">			c.getActionSteps().size();</span>
+		}
+
+<span class="fc" id="L464">		entityManager.close();</span>
+
+<span class="fc" id="L466">		return result;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

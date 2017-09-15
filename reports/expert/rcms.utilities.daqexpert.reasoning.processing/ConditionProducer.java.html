@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>ConditionProducer.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DAQExpert</a> &gt; <a href="index.source.html" class="el_package">rcms.utilities.daqexpert.reasoning.processing</a> &gt; <span class="el_source">ConditionProducer.java</span></div><h1>ConditionProducer.java</h1><pre class="source lang-java linenums">package rcms.utilities.daqexpert.reasoning.processing;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.log4j.Logger;
+
+import rcms.utilities.daqexpert.events.EventRegister;
+import rcms.utilities.daqexpert.persistence.Condition;
+import rcms.utilities.daqexpert.reasoning.base.ActionLogicModule;
+import rcms.utilities.daqexpert.reasoning.base.ComparatorLogicModule;
+import rcms.utilities.daqexpert.reasoning.base.Context;
+import rcms.utilities.daqexpert.reasoning.base.ContextLogicModule;
+import rcms.utilities.daqexpert.reasoning.base.LogicModule;
+import rcms.utilities.daqexpert.reasoning.base.SimpleLogicModule;
+import rcms.utilities.daqexpert.reasoning.base.enums.EntryState;
+import rcms.utilities.daqexpert.reasoning.base.enums.ConditionGroup;
+import rcms.utilities.daqexpert.reasoning.base.enums.ConditionPriority;
+
+/**
+ * From checker &amp; comparator boolean results creates events
+ * 
+ * @author Maciej Gladki (maciej.szymon.gladki@cern.ch)
+ *
+ */
+public class ConditionProducer {
+
+	public EventRegister eventRegister;
+
+<span class="fc" id="L36">	public ConditionProducer() {</span>
+<span class="fc" id="L37">		unfinished = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L38">		states = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L39">		finishedThisRound = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L40">	}</span>
+
+	/** Logger */
+<span class="fc" id="L43">	private static final Logger logger = Logger.getLogger(ConditionProducer.class);</span>
+
+	/** All events without end date are kept here (unfinished) */
+	private final Map&lt;String, Condition&gt; unfinished;
+
+	/** Current states are kept here */
+	private final Map&lt;String, Boolean&gt; states;
+
+	private final List&lt;Condition&gt; finishedThisRound;
+
+<span class="fc" id="L53">	private Date lastUpdate = null;</span>
+
+	/**
+	 * Get all unfinished reasons and force finish them (so can be displayed)
+	 * 
+	 * @param date
+	 *            date on which unfinished reasons will be finished
+	 */
+	public Set&lt;Condition&gt; finish() {
+
+<span class="nc" id="L63">		logger.debug(&quot;Artificial finishing with unfinished events: &quot; + unfinished);</span>
+<span class="nc" id="L64">		logger.trace(&quot;finished This Round: &quot; + finishedThisRound);</span>
+
+<span class="nc" id="L66">		Set&lt;Condition&gt; result = new HashSet&lt;&gt;();</span>
+<span class="nc bnc" id="L67" title="All 2 branches missed.">		if (lastUpdate != null) {</span>
+
+<span class="nc bnc" id="L69" title="All 2 branches missed.">			for (Condition entry : unfinished.values()) {</span>
+<span class="nc" id="L70">				entry.setEnd(lastUpdate);</span>
+<span class="nc" id="L71">				entry.calculateDuration();</span>
+
+<span class="nc bnc" id="L73" title="All 2 branches missed.">				if (entry.isShow()) {</span>
+<span class="nc" id="L74">					result.add(entry);</span>
+				}
+
+			}
+		}
+<span class="nc" id="L79">		return result;</span>
+	}
+
+	/**
+	 * Produces events for value 111000111000 will produce 2 events
+	 * corresponding to 1 start and end time
+	 */
+	public Pair&lt;Boolean, Condition&gt; produce(SimpleLogicModule checker, boolean value, Date date) {
+<span class="fc" id="L87">		return build(checker, value, date);</span>
+	}
+
+	/**
+	 * 00000100000100000100 will produce 3 events corresponding to 1 start and
+	 * ending on next 1 start
+	 */
+	public Pair&lt;Boolean, Condition&gt; produce(ComparatorLogicModule comparator, boolean value, Date current) {
+
+<span class="fc bfc" id="L96" title="All 2 branches covered.">		if (value) {</span>
+<span class="fc" id="L97">			logger.debug(&quot;New lazy event &quot; + current);</span>
+<span class="pc bpc" id="L98" title="1 of 2 branches missed.">			build(comparator, !value, current);</span>
+<span class="fc" id="L99">			Pair&lt;Boolean, Condition&gt; b = build(comparator, value, current);</span>
+<span class="fc" id="L100">			b.getRight().setShow(true);</span>
+
+<span class="fc" id="L102">			logger.trace(&quot;Result for comparator LM: &quot; + b.getLeft());</span>
+<span class="fc" id="L103">			return b;</span>
+		}
+
+<span class="fc" id="L106">		return Pair.of(false, null);</span>
+
+	}
+
+	private Pair&lt;Boolean, Condition&gt; build(LogicModule logicModule, boolean value, Date date) {
+<span class="fc" id="L111">		lastUpdate = date;</span>
+		// get current state
+<span class="fc" id="L113">		String logicModuleName = logicModule.getClass().getSimpleName();</span>
+<span class="fc" id="L114">		String content = logicModule.getName();</span>
+<span class="fc" id="L115">		ConditionPriority eventClass = logicModule.getPriority();</span>
+
+<span class="fc" id="L117">		Context context = null;</span>
+
+<span class="fc bfc" id="L119" title="All 2 branches covered.">		if (logicModule instanceof ContextLogicModule) {</span>
+<span class="fc" id="L120">			context = ((ContextLogicModule) logicModule).getContext();</span>
+		}
+
+<span class="fc" id="L123">		Boolean leftResult = false;</span>
+<span class="fc" id="L124">		Condition result = null;</span>
+<span class="fc bfc" id="L125" title="All 2 branches covered.">		if (states.containsKey(logicModuleName)) {</span>
+<span class="fc" id="L126">			boolean currentState = states.get(logicModuleName);</span>
+
+<span class="fc bfc" id="L128" title="All 2 branches covered.">			if (currentState != value) {</span>
+<span class="fc" id="L129">				result = finishOldAddNew(logicModule, content, value, date, eventClass, context);</span>
+<span class="fc" id="L130">				leftResult = true;</span>
+<span class="fc" id="L131">				states.put(logicModuleName, value);</span>
+<span class="fc" id="L132">			} else {</span>
+<span class="fc" id="L133">				result = unfinished.get(logicModuleName);</span>
+			}
+<span class="fc" id="L135">		}</span>
+
+		// no prior states
+		else {
+<span class="fc" id="L139">			states.put(logicModuleName, value);</span>
+<span class="fc" id="L140">			result = finishOldAddNew(logicModule, content, value, date, eventClass, context);</span>
+<span class="fc" id="L141">			leftResult = true;</span>
+		}
+<span class="fc" id="L143">		result.setLogicModule(logicModule.getLogicModuleRegistry());</span>
+<span class="fc bfc" id="L144" title="All 2 branches covered.">		if (logicModule.getLogicModuleRegistry() != null) {</span>
+<span class="fc" id="L145">			result.setGroup(logicModule.getLogicModuleRegistry().getGroup());</span>
+<span class="fc" id="L146">		} else {</span>
+<span class="fc" id="L147">			result.setGroup(ConditionGroup.HIDDEN);</span>
+		}
+
+<span class="fc bfc" id="L150" title="All 2 branches covered.">		if (value) {</span>
+
+			/* put context into description */
+<span class="fc bfc" id="L153" title="All 2 branches covered.">			if (logicModule instanceof ContextLogicModule) {</span>
+<span class="fc" id="L154">				ContextLogicModule clm = (ContextLogicModule) logicModule;</span>
+<span class="fc" id="L155">				logger.debug(&quot;Putting message into context: &quot; + logicModule.getDescription());</span>
+
+				/* Description never set */
+<span class="fc bfc" id="L158" title="All 2 branches covered.">				if (result.getDescription() == null) {</span>
+<span class="fc" id="L159">					result.setDescription(clm.getContext().getContentWithContext(logicModule.getDescription()));</span>
+				}
+<span class="fc" id="L161">			} else {</span>
+<span class="fc" id="L162">				result.setDescription(logicModule.getDescription());</span>
+			}
+
+			/* put context into action */
+<span class="fc bfc" id="L166" title="All 2 branches covered.">			if (logicModule instanceof ActionLogicModule) {</span>
+<span class="fc" id="L167">				ActionLogicModule alm = (ActionLogicModule) logicModule;</span>
+<span class="fc" id="L168">				logger.debug(&quot;Putting action into context: &quot; + alm.getAction());</span>
+
+<span class="fc bfc" id="L170" title="All 2 branches covered.">				if (result.getActionSteps() == null) {</span>
+<span class="fc" id="L171">					result.setActionSteps(</span>
+<span class="fc" id="L172">							alm.getContext().getActionWithContext(((ActionLogicModule) logicModule).getAction()));</span>
+				}
+
+			} else {
+				// nothing to do here: no action if not instance of
+				// ActionLogicModule
+
+			}
+		}
+<span class="fc" id="L181">		return Pair.of(leftResult, result);</span>
+	}
+
+	protected Condition finishOldAddNew(LogicModule logicModule, String content, Boolean value, Date date,
+			ConditionPriority eventClass, Context context) {
+
+<span class="fc" id="L187">		String logicModuleName = logicModule.getClass().getSimpleName();</span>
+
+		/* finish old entry */
+<span class="fc bfc" id="L190" title="All 2 branches covered.">		if (unfinished.containsKey(logicModuleName)) {</span>
+<span class="fc" id="L191">			Condition toFinish = unfinished.get(logicModuleName);</span>
+<span class="fc" id="L192">			toFinish.setState(EntryState.FINISHED);</span>
+<span class="fc" id="L193">			toFinish.setEnd(date);</span>
+<span class="fc" id="L194">			toFinish.calculateDuration();</span>
+<span class="fc" id="L195">			Context clone = (Context) org.apache.commons.lang.SerializationUtils.clone(context);</span>
+<span class="fc" id="L196">			toFinish.setFinishedContext(clone);</span>
+<span class="fc bfc" id="L197" title="All 2 branches covered.">			if (!toFinish.getStart().equals(toFinish.getEnd())) {</span>
+<span class="fc" id="L198">				logger.debug(&quot;Finishing entry &quot; + toFinish.getTitle() + &quot; with id: &quot; + toFinish.getId());</span>
+<span class="fc" id="L199">				finishedThisRound.add(toFinish);</span>
+			}
+
+<span class="fc" id="L202">			eventRegister.registerEnd(logicModule.getLogicModuleRegistry(), toFinish);</span>
+		}
+
+		/* add new condition */
+<span class="fc" id="L206">		Condition condition = new Condition();</span>
+<span class="fc" id="L207">		condition.setClassName(eventClass);</span>
+<span class="fc" id="L208">		condition.setTitle(content);</span>
+<span class="fc" id="L209">		condition.setShow(value);</span>
+<span class="fc" id="L210">		condition.setStart(date);</span>
+<span class="fc" id="L211">		eventRegister.registerBegin(logicModule.getLogicModuleRegistry(), condition);</span>
+
+<span class="fc" id="L213">		unfinished.put(logicModuleName, condition);</span>
+<span class="fc" id="L214">		return condition;</span>
+	}
+
+	@Override
+	public String toString() {
+<span class="nc" id="L219">		return &quot;EventProducer [states=&quot; + states + &quot;, unfinished=&quot; + unfinished + &quot;]&quot;;</span>
+	}
+
+	public List&lt;Condition&gt; getFinishedThisRound() {
+<span class="fc" id="L223">		return finishedThisRound;</span>
+	}
+
+	public void clearFinishedThisRound() {
+<span class="fc" id="L227">		finishedThisRound.clear();</span>
+<span class="fc" id="L228">	}</span>
+
+	public void clearProducer() {
+<span class="nc" id="L231">		logger.info(&quot;Clearing producer&quot;);</span>
+<span class="nc bnc" id="L232" title="All 2 branches missed.">		for (java.util.Map.Entry&lt;String, Boolean&gt; state : states.entrySet()) {</span>
+<span class="nc" id="L233">			state.setValue(false);</span>
+		}
+<span class="nc" id="L235">		states.clear();</span>
+<span class="nc" id="L236">		unfinished.clear();</span>
+<span class="nc" id="L237">		finishedThisRound.clear();</span>
+<span class="nc" id="L238">	}</span>
+
+	protected Map&lt;String, Condition&gt; getUnfinished() {
+<span class="nc" id="L241">		return unfinished;</span>
+	}
+
+	public EventRegister getEventRegister() {
+<span class="nc" id="L245">		return eventRegister;</span>
+	}
+
+	public void setEventRegister(EventRegister eventRegister) {
+<span class="fc" id="L249">		this.eventRegister = eventRegister;</span>
+<span class="fc" id="L250">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

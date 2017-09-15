@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>DataPrepareJob.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DAQExpert</a> &gt; <a href="index.source.html" class="el_package">rcms.utilities.daqexpert.processing</a> &gt; <span class="el_source">DataPrepareJob.java</span></div><h1>DataPrepareJob.java</h1><pre class="source lang-java linenums">package rcms.utilities.daqexpert.processing;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.log4j.Logger;
+
+import rcms.utilities.daqexpert.DataManager;
+import rcms.utilities.daqexpert.ExpertException;
+import rcms.utilities.daqexpert.ExpertExceptionCode;
+import rcms.utilities.daqexpert.events.ConditionEvent;
+import rcms.utilities.daqexpert.events.ConditionEventResource;
+import rcms.utilities.daqexpert.events.EventRegister;
+import rcms.utilities.daqexpert.events.EventSender;
+import rcms.utilities.daqexpert.persistence.Condition;
+import rcms.utilities.daqexpert.persistence.PersistenceManager;
+import rcms.utilities.daqexpert.persistence.Point;
+import rcms.utilities.daqexpert.reasoning.processing.SnapshotProcessor;
+import rcms.utilities.daqexpert.websocket.ConditionDashboard;
+
+/**
+ * This job manages reading and processing the snapshots
+ * 
+ * @author Maciej Gladki (maciej.szymon.gladki@cern.ch)
+ *
+ */
+public class DataPrepareJob implements Runnable {
+
+	private final ReaderJob readerJob;
+	private final ExecutorService executorService;
+<span class="fc" id="L37">	private final Logger logger = Logger.getLogger(DataPrepareJob.class);</span>
+	private DataManager dataManager;
+	private final PersistenceManager persistenceManager;
+
+	private final SnapshotProcessor snapshotProcessor;
+
+	private final EventRegister eventRegister;
+	protected final EventSender eventSender;
+
+	private final ConditionDashboard conditionDashboard;
+
+	/** flag to do demo run */
+	private final boolean demoRun;
+
+	public DataPrepareJob(ReaderJob readerJob, ExecutorService executorService, DataManager dataManager,
+			SnapshotProcessor snapshotProcessor, PersistenceManager persistenceManager, EventRegister eventRegister,
+			EventSender eventSender, ConditionDashboard conditionDashboard, boolean demoRun) {
+<span class="fc" id="L54">		super();</span>
+<span class="fc" id="L55">		this.readerJob = readerJob;</span>
+<span class="fc" id="L56">		this.executorService = executorService;</span>
+<span class="fc" id="L57">		this.dataManager = dataManager;</span>
+<span class="fc" id="L58">		this.snapshotProcessor = snapshotProcessor;</span>
+<span class="fc" id="L59">		this.persistenceManager = persistenceManager;</span>
+<span class="fc" id="L60">		this.eventRegister = eventRegister;</span>
+<span class="fc" id="L61">		this.eventSender = eventSender;</span>
+<span class="fc" id="L62">		this.conditionDashboard = conditionDashboard;</span>
+<span class="fc" id="L63">		this.demoRun = demoRun;</span>
+<span class="fc" id="L64">	}</span>
+
+<span class="fc" id="L66">	private static int priority = 0;</span>
+
+	// TODO: Delememe
+<span class="fc" id="L69">	private static Long id = 0L;</span>
+
+	@Override
+	public void run() {
+
+		try {
+			Pair&lt;Long, List&lt;File&gt;&gt; snapshots;
+
+<span class="pc bpc" id="L77" title="1 of 2 branches missed.">			if (!readerJob.finished()) {</span>
+<span class="fc" id="L78">				snapshots = readerJob.read();</span>
+
+<span class="fc bfc" id="L80" title="All 2 branches covered.">				if (snapshots.getRight().size() &gt; 0) {</span>
+
+<span class="pc bpc" id="L82" title="1 of 2 branches missed.">					if (priority == Integer.MAX_VALUE)</span>
+<span class="nc" id="L83">						priority = 0;</span>
+					else
+<span class="fc" id="L85">						priority++;</span>
+
+<span class="fc" id="L87">					ProcessJob snapshotRetrieveAndAnalyzeJob = new ProcessJob(priority, snapshots.getRight(),</span>
+<span class="fc" id="L88">							dataManager, snapshotProcessor);</span>
+<span class="fc" id="L89">					Future&lt;Pair&lt;Set&lt;Condition&gt;, List&lt;Point&gt;&gt;&gt; future = executorService</span>
+<span class="fc" id="L90">							.submit(snapshotRetrieveAndAnalyzeJob);</span>
+
+<span class="fc" id="L92">					Pair&lt;Set&lt;Condition&gt;, List&lt;Point&gt;&gt; result = future.get(10, TimeUnit.SECONDS);</span>
+
+<span class="pc bpc" id="L94" title="1 of 2 branches missed.">					if (result == null) {</span>
+<span class="nc" id="L95">						logger.info(&quot;No result this round&quot;);</span>
+<span class="nc" id="L96">						return;</span>
+					}
+
+					try {
+
+<span class="fc" id="L101">						long t1 = System.currentTimeMillis();</span>
+<span class="fc" id="L102">						persistenceManager.persist(result.getLeft());</span>
+<span class="fc" id="L103">						long t2 = System.currentTimeMillis();</span>
+<span class="fc" id="L104">						persistenceManager.persist(result.getRight());</span>
+<span class="fc" id="L105">						long t3 = System.currentTimeMillis();</span>
+
+<span class="fc" id="L107">						logger.debug(&quot;Persistence finished in: &quot; + (t3 - t1) + &quot;ms, &quot; + result.getLeft().size()</span>
+<span class="fc" id="L108">								+ &quot; entries in: &quot; + (t2 - t1) + &quot;ms , &quot; + result.getRight().size() + &quot; points in: &quot;</span>
+<span class="fc" id="L109">								+ (t3 - t2) + &quot;ms&quot;);</span>
+
+<span class="fc" id="L111">						conditionDashboard.update(result.getLeft());</span>
+
+<span class="pc bpc" id="L113" title="3 of 4 branches missed.">						if (demoRun &amp;&amp; conditionDashboard.getCurrentCondition() != null</span>
+<span class="nc bnc" id="L114" title="All 2 branches missed.">								&amp;&amp; id != conditionDashboard.getCurrentCondition().getId()) {</span>
+<span class="nc" id="L115">							Thread.sleep(2000);</span>
+<span class="nc" id="L116">							id = conditionDashboard.getCurrentCondition().getId();</span>
+						}
+
+<span class="fc" id="L119">						logger.debug(conditionDashboard.toString());</span>
+
+<span class="pc bpc" id="L121" title="1 of 2 branches missed.">						if (eventRegister.getEvents().size() &gt; 0) {</span>
+<span class="fc" id="L122">							List&lt;ConditionEventResource&gt; eventsToSend = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L123" title="All 2 branches covered.">							for (ConditionEvent conditionEvent : eventRegister.getEvents()) {</span>
+<span class="fc" id="L124">								eventsToSend.add(conditionEvent.generateEventToSend());</span>
+							}
+<span class="fc" id="L126">							int sent = eventSender.sendBatchEvents(eventsToSend);</span>
+<span class="fc" id="L127">							logger.info(sent + &quot; events sucessfully sent to NotificationManager&quot;);</span>
+<span class="fc" id="L128">							eventRegister.getEvents().clear();</span>
+						}
+
+<span class="pc" id="L131">					} catch (RuntimeException e) {</span>
+<span class="nc" id="L132">						logger.warn(&quot;Exception during result persistence - results will be forgotten&quot;);</span>
+<span class="nc" id="L133">						logger.error(e);</span>
+<span class="nc" id="L134">						e.printStackTrace();</span>
+					}
+				}
+
+			}
+
+<span class="nc" id="L140">		} catch (Exception e) {</span>
+<span class="nc" id="L141">			throw new ExpertException(ExpertExceptionCode.ExpertProblem, e.getMessage());</span>
+		}
+
+<span class="fc" id="L144">	}</span>
+
+	protected SnapshotProcessor getSnapshotProcessor() {
+<span class="nc" id="L147">		return snapshotProcessor;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

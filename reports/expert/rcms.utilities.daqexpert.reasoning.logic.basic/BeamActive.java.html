@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>BeamActive.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DAQExpert</a> &gt; <a href="index.source.html" class="el_package">rcms.utilities.daqexpert.reasoning.logic.basic</a> &gt; <span class="el_source">BeamActive.java</span></div><h1>BeamActive.java</h1><pre class="source lang-java linenums">package rcms.utilities.daqexpert.reasoning.logic.basic;
+
+import java.util.Map;
+
+import rcms.utilities.daqaggregator.data.DAQ;
+import rcms.utilities.daqexpert.reasoning.base.SimpleLogicModule;
+import rcms.utilities.daqexpert.reasoning.base.enums.ConditionPriority;
+import rcms.utilities.daqexpert.reasoning.base.enums.LHCBeamMode;
+
+/**
+ * This identifies when beams are active
+ * 
+ * @author Maciej Gladki (maciej.szymon.gladki@cern.ch)
+ */
+public class BeamActive extends SimpleLogicModule {
+
+<span class="fc" id="L17">	public BeamActive() {</span>
+<span class="fc" id="L18">		this.name = &quot;Beams active&quot;;</span>
+<span class="fc" id="L19">		this.description = &quot;Beam active identified&quot;;</span>
+<span class="fc" id="L20">		this.priority = ConditionPriority.DEFAULTT;</span>
+
+<span class="fc" id="L22">	}</span>
+
+	@Override
+	public boolean satisfied(DAQ snapshot, Map&lt;String, Boolean&gt; results) {
+
+<span class="fc" id="L27">		LHCBeamMode currentMode = LHCBeamMode.getModeByCode(snapshot.getLhcBeamMode());</span>
+<span class="pc bpc" id="L28" title="2 of 4 branches missed.">		if (currentMode == LHCBeamMode.INJECTION_PROBE_BEAM || currentMode == LHCBeamMode.INJECTION_SETUP_BEAM</span>
+<span class="pc bpc" id="L29" title="2 of 4 branches missed.">				|| currentMode == LHCBeamMode.INJECTION_PHYSICS_BEAM || currentMode == LHCBeamMode.PREPARE_RAMP</span>
+<span class="pc bpc" id="L30" title="2 of 4 branches missed.">				|| currentMode == LHCBeamMode.RAMP || currentMode == LHCBeamMode.FLAT_TOP</span>
+<span class="pc bpc" id="L31" title="2 of 4 branches missed.">				|| currentMode == LHCBeamMode.SQUEEZE || currentMode == LHCBeamMode.ADJUST</span>
+<span class="pc bpc" id="L32" title="1 of 2 branches missed.">				|| currentMode == LHCBeamMode.STABLE_BEAMS)</span>
+<span class="fc" id="L33">			return true;</span>
+
+<span class="nc" id="L35">		return false;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>DataResolution.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DAQExpert</a> &gt; <a href="index.source.html" class="el_package">rcms.utilities.daqexpert.segmentation</a> &gt; <span class="el_source">DataResolution.java</span></div><h1>DataResolution.java</h1><pre class="source lang-java linenums"><span class="pc" id="L1">package rcms.utilities.daqexpert.segmentation;</span>
+
+/**
+ * Enumeration of data resolution
+ * 
+ * @author Maciej Gladki (maciej.szymon.gladki@cern.ch)
+ *
+ */
+<span class="fc" id="L9">public enum DataResolution {</span>
+
+<span class="fc" id="L11">	Full(60 * 60 * 1000L), // full resoltion when range less than 60 min.</span>
+<span class="fc" id="L12">	Minute(48 * 60 * 60 * 1000L), // minute resolution when range less than 48h</span>
+<span class="fc" id="L13">	Hour(60 * 24 * 60 * 60 * 1000L), // hour range when range less than 60 d</span>
+<span class="fc" id="L14">	Day(48 * 30 * 24 * 60 * 60 * 1000L), // day range when range less than 48m</span>
+<span class="fc" id="L15">	Month(Long.MAX_VALUE);</span>
+
+	/**
+	 * Max difference in milliseconds
+	 */
+	private final long maxDifference;
+
+<span class="fc" id="L22">	private DataResolution(long maxDifference) {</span>
+<span class="fc" id="L23">		this.maxDifference = maxDifference;</span>
+<span class="fc" id="L24">	}</span>
+
+	public long getMaxDifference() {
+<span class="nc" id="L27">		return maxDifference;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

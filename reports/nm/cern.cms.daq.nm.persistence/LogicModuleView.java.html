@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>LogicModuleView.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Notification Manager</a> &gt; <a href="index.source.html" class="el_package">cern.cms.daq.nm.persistence</a> &gt; <span class="el_source">LogicModuleView.java</span></div><h1>LogicModuleView.java</h1><pre class="source lang-java linenums"><span class="fc" id="L1">package cern.cms.daq.nm.persistence;</span>
+
+/**
+ * NOTE: do not change the order of this enums as ordinal number is used for db
+ * mapping, add only in the end - sync with expert
+ * 
+ * @author Maciej Gladki (maciej.szymon.gladki@cern.ch)
+ *
+ */
+<span class="fc" id="L10">public enum LogicModuleView {</span>
+<span class="fc" id="L11">	NoRate(&quot;No rate&quot;, 10),</span>
+<span class="fc" id="L12">	RateOutOfRange(&quot;Rate out of range&quot;, 9),</span>
+<span class="fc" id="L13">	BeamActive(&quot;Beam active&quot;),</span>
+<span class="fc" id="L14">	RunOngoing(&quot;Run ongoing&quot;, 100),</span>
+<span class="fc" id="L15">	ExpectedRate(&quot;Expected rate&quot;),</span>
+<span class="fc" id="L16">	Transition(&quot;Short transition&quot;),</span>
+<span class="fc" id="L17">	LongTransition(&quot;Long transition&quot;),</span>
+<span class="fc" id="L18">	WarningInSubsystem(&quot;Warning in subsystem&quot;, 1004),</span>
+<span class="fc" id="L19">	SubsystemRunningDegraded(&quot;Running degraded&quot;, 1006),</span>
+<span class="fc" id="L20">	SubsystemError(&quot;Subsystem error&quot;, 1007),</span>
+<span class="fc" id="L21">	SubsystemSoftError(&quot;Subsystem soft error&quot;, 1005),</span>
+<span class="fc" id="L22">	FEDDeadtime(&quot;FED deadtime&quot;, 1005),</span>
+<span class="fc" id="L23">	PartitionDeadtime(&quot;Partition deadtime&quot;, 1008),</span>
+<span class="fc" id="L24">	StableBeams(&quot;Stable beams&quot;),</span>
+<span class="fc" id="L25">	NoRateWhenExpected(&quot;No rate when expected&quot;, 104),</span>
+<span class="fc" id="L26">	Downtime(&quot;Downtime&quot;),</span>
+<span class="fc" id="L27">	Deadtime(&quot;Deadtime&quot;),</span>
+<span class="fc" id="L28">	CriticalDeadtime(&quot;Critical deadtime&quot;, 105),</span>
+<span class="fc" id="L29">	FlowchartCase1(&quot;FC1&quot;, 10004),</span>
+<span class="fc" id="L30">	FlowchartCase2(&quot;FC2&quot;, 10005),</span>
+<span class="fc" id="L31">	FlowchartCase3(&quot;FC3&quot;, 10006),</span>
+<span class="fc" id="L32">	FlowchartCase4(&quot;FC4&quot;, 10007),</span>
+<span class="fc" id="L33">	FlowchartCase5(&quot;FC5&quot;, 10008),</span>
+<span class="fc" id="L34">	FlowchartCase6(&quot;FC6&quot;, 10009),</span>
+<span class="fc" id="L35">	SessionComparator(&quot;Session&quot;, 15),</span>
+<span class="fc" id="L36">	LHCBeamModeComparator(&quot;LHC Beam Mode&quot;, 20),</span>
+<span class="fc" id="L37">	LHCMachineModeComparator(&quot;LHC Machine Mode&quot;, 21),</span>
+<span class="fc" id="L38">	RunComparator(&quot;Run&quot;, 14),</span>
+<span class="fc" id="L39">	LevelZeroStateComparator(&quot;Level Zero State&quot;, 13),</span>
+<span class="fc" id="L40">	TCDSStateComparator(&quot;TCDS State&quot;, 12),</span>
+<span class="fc" id="L41">	DAQStateComparator(&quot;DAQ state&quot;, 11);</span>
+
+	private final String displayedName;
+
+	/**
+	 * 
+	 * This parameter will be used to determine dominant event if multiple
+	 * events of the same priority arrives. Sound system will then play the one
+	 * with higher usefulness. e.g. No rate when expected and FC6 both with
+	 * Important priority arrives at the some time. Which one to play? FC6 as it
+	 * indicates that system has found the solution - not only found fault
+	 * 
+	 * NOTE: try to not assign the some usefulness to multiple LM. Otherwise
+	 * determining dominant event for events with same priority and usefulness
+	 * will be based on alphabetical order
+	 * 
+	 * &lt;code&gt;&lt;pre&gt;
+	 * 1-9			not useful for shifter, not interesting, some internal changes
+	 * 10-99		not useful, maybe interesting for shifter
+	 * 100-999		catch attention before something goes wrong
+	 * 1000-9999	useful, maybe not full solutions but some useful context information 
+	 * 10000-99999	very useful, e.g. diagnosis, ready suggestions 
+	 * &lt;/pre&gt;&lt;/code&gt;
+	 */
+	private final int usefulness;
+
+	private LogicModuleView(String name) {
+<span class="fc" id="L68">		this(name, 1);</span>
+<span class="fc" id="L69">	}</span>
+
+<span class="fc" id="L71">	private LogicModuleView(String name, int usefulness) {</span>
+<span class="fc" id="L72">		this.displayedName = name;</span>
+<span class="fc" id="L73">		this.usefulness = usefulness;</span>
+<span class="fc" id="L74">	}</span>
+
+	public String getDisplayedName() {
+<span class="nc" id="L77">		return displayedName;</span>
+	}
+
+	public int getUsefulness() {
+<span class="fc" id="L81">		return usefulness;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

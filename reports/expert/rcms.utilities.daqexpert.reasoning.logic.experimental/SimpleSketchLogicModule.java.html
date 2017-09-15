@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>SimpleSketchLogicModule.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DAQExpert</a> &gt; <a href="index.source.html" class="el_package">rcms.utilities.daqexpert.reasoning.logic.experimental</a> &gt; <span class="el_source">SimpleSketchLogicModule.java</span></div><h1>SimpleSketchLogicModule.java</h1><pre class="source lang-java linenums">package rcms.utilities.daqexpert.reasoning.logic.experimental;
+
+import java.util.Date;
+import java.util.Map;
+
+import rcms.utilities.daqaggregator.data.DAQ;
+import rcms.utilities.daqexpert.reasoning.base.SimpleLogicModule;
+import rcms.utilities.daqexpert.reasoning.base.enums.ConditionGroup;
+import rcms.utilities.daqexpert.reasoning.base.enums.ConditionPriority;
+
+/**
+ * This is an sketch of Logic Module (LM)
+ * 
+ * @author Maciej Gladki (maciej.szymon.gladki@cern.ch)
+ */
+public class SimpleSketchLogicModule extends SimpleLogicModule {
+
+	/** TODO: 1. Set up basic information about this Logic Module here */
+<span class="nc" id="L19">	public SimpleSketchLogicModule() {</span>
+<span class="nc" id="L20">		this.name = &quot;Sketch LM&quot;; // TODO: 1a. set descriptive name</span>
+<span class="nc" id="L21">		this.description = &quot;Easy start sketch LM&quot;; // TODO 1b. provide more info</span>
+
+<span class="nc" id="L23">		this.priority = ConditionPriority.DEFAULTT; // leave it like this</span>
+<span class="nc" id="L24">	}</span>
+
+	/**
+	 * TODO: 2. Implement condition of this LM in this method. Return true when
+	 * your condition is satisfied, otherwise return false.
+	 * 
+	 * @param snapshot
+	 *            access any parameter of DAQ system using this object
+	 * @param results
+	 *            access results of other LMs using this map, name is the key
+	 * @return return true when condition satisfied, false otherwise.
+	 * 
+	 */
+	@Override
+	public boolean satisfied(DAQ snapshot, Map&lt;String, Boolean&gt; results) {
+
+		/*
+		 * TODO: 2a. implement your condition here
+		 * 
+		 * TODO: 2b. you can reuse other LMs results by accessing
+		 * results.get(NoRate.class.getSimpleName())
+		 * 
+		 * TODO: 2c. register your module at
+		 * rcms.utilities.daqexpert.reasoning.processing.CheckManager:77
+		 */
+<span class="nc" id="L49">		Date snapshotDate = new Date(snapshot.getLastUpdate());</span>
+<span class="nc bnc" id="L50" title="All 2 branches missed.">		if(snapshotDate.getMinutes() %2 == 0){</span>
+<span class="nc" id="L51">			return true;</span>
+		}
+<span class="nc" id="L53">		return false;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>
