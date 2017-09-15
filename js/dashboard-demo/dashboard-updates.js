@@ -429,7 +429,7 @@ function newEventsDataArrived(event) {
 function newConditionsDataArrived(condition) {
 
 
-    console.log("New Condition data arrived to REACT: " + JSON.stringify(condition));
+    //console.log("New Condition data arrived to REACT: " + JSON.stringify(condition));
     conditionsData.push.apply(conditionsData, condition);
     conditionsData = conditionsData.splice(-conditionsToKeep, conditionsToKeep);
     renderApp();
@@ -464,10 +464,10 @@ function newUpdateDataArrived(update) {
 }
 
 function newVersionDataArrived(version) {
-    console.log("New version available: " + version);
+    //console.log("New version available: " + version);
     websocketDeclaredVersion = version;
     if (currentVersion == null) {
-        console.log("First connect to websocket, establishing current version as " + version);
+        //console.log("First connect to websocket, establishing current version as " + version);
         currentVersion = websocketDeclaredVersion;
     }
 }
@@ -502,7 +502,7 @@ function updateDuration() {
 
 
 function updateSelected(id) {
-    console.log("Updating selected condition, id= " + id);
+    //console.log("Updating selected condition, id= " + id);
     lastDominatingConditionId = currentConditionId;
     currentConditionId = id;
 
@@ -516,10 +516,10 @@ function updateSelected(id) {
 setInterval(function () {
     if (currentConditionId == null || currentConditionId == 0) {
         durationSinceLastOngoingCondition += 5000;
-        console.log("Nothing happening for " + durationSinceLastOngoingCondition + " ms");
+        //console.log("Nothing happening for " + durationSinceLastOngoingCondition + " ms");
 
         if (lastDominatingConditionId != 0 && durationSinceLastOngoingCondition > timeToKeepTheLastSuggestion) {
-            console.log("Last condition is no longer needed");
+            //console.log("Last condition is no longer needed");
             lastDominatingConditionId = 0;
             renderApp();
         }

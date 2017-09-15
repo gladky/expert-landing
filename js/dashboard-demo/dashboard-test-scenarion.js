@@ -6,8 +6,8 @@ var conditionId = 1;
 var factor = 1;
 
 (function loop() {
-    var rand = Math.ceil(Math.random() * (3000 + factor )) + (1000 * factor);
-    if(factor <  20)factor+= factor;
+    var rand = Math.ceil(Math.random() * (3000 + 500*factor )) + (1000 * factor);
+    if(factor <  40)factor+= factor ;
 
     setTimeout(function() {
         //alert('A');
@@ -53,26 +53,47 @@ setInterval(function () {
 
 function randomizeDominating(){
     var existsUnfinished = false;
+
     conditionsData.forEach(function (item) {
-        if (item.end === null) {
+        if (item.status == 'ongoing') {
             existsUnfinished = true;
         }
     });
 
     if(existsUnfinished === false){
-        console.log("There is no conditions ongoing at the moment");
+        //console.log("There is no conditions ongoing at the moment");
         return true;
     } else{
-        console.log("1 or more conditions are ongoing at the time");
+        //console.log("1 or more conditions are ongoing at the time");
         var random = Math.random();
         if(random < 0.5){
-            console.log("50% of the chance that current is dominating");
+            //console.log("50% of the chance that current is dominating");
             return true;
         }
     }
-    console.log("Do not select current as dominant");
+    //console.log("Do not select current as dominant");
     return false;
 }
+
+setInterval(function () {
+   if(currentConditionObject && currentConditionObject.status && currentConditionObject.status ==='finished'){
+
+       //console.log("Current condition is finished, either switch to other unfinished or fade this: " + currentConditionObject.id);
+
+       var existsUnfinished = 0;
+       conditionsData.forEach(function (item) {
+           if (item.status ==='ongoing') {
+               //console.log("Exists other unfinished: " + item.title + " with id: " + item.id);
+               existsUnfinished = item.id;
+           }
+       });
+
+       if(currentConditionId !==0){
+           //console.log("Current has finished, faking the selection of: " + existsUnfinished);
+           updateSelected(existsUnfinished);
+       }
+   }
+}, 1000);
 
 /**
  * ADD new Condition
