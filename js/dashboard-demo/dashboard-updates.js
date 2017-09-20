@@ -1,5 +1,5 @@
-var eventsToKeep = 10;
-var conditionsToKeep = 5;
+var eventsToKeep = 20;
+var conditionsToKeep = 10;
 
 var eventsData = [];
 var conditionsData = [];
@@ -11,7 +11,7 @@ var currentVersion = null;
 var websocketDeclaredVersion = null;
 var durationSinceLastOngoingCondition = 0;
 
-var timeToKeepTheLastSuggestion = 20000;
+var timeToKeepTheLastSuggestion = 1000;
 
 var daqViewUrl;
 
@@ -410,7 +410,7 @@ function CurrentPanel(props) {
 function Dashboard(props) {
 
     var versionMessageElement = null;
-    if (currentVersion !== websocketDeclaredVersion) {
+    if (false && currentVersion !== websocketDeclaredVersion) {
         const exclamation = React.createElement('span', {className: 'glyphicon glyphicon-exclamation-sign'});
         const versionText = React.createElement('span', {}, "New version available, please hard reload the browser to update the cached scripts. Version available: " + websocketDeclaredVersion + ", currently loaded version: " + currentVersion);
         const versionMessage = React.createElement('p', {}, exclamation, " ", versionText);
@@ -419,8 +419,8 @@ function Dashboard(props) {
 
 
     const currentPanel = React.createElement('div', {className: ""}, React.createElement(CurrentPanel, props));
-    const leftPanel = React.createElement('div', {className: "col-md-8"}, currentPanel, React.createElement(ConditionPanel, props));
-    const rightPanel = React.createElement('div', {className: "col-md-4"}, React.createElement(EventPanel, props));
+    const leftPanel = React.createElement('div', {className: "col-xs-8"}, currentPanel, React.createElement(ConditionPanel, props));
+    const rightPanel = React.createElement('div', {className: "col-xs-4"}, React.createElement(EventPanel, props));
 
 
     const pageHead = React.createElement('div', {className: 'row'}, versionMessageElement);
@@ -583,5 +583,5 @@ setInterval(function () {
         }
     }
 
-}, 5000);
+}, 1000);
 

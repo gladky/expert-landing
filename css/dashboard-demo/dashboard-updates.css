@@ -67,10 +67,10 @@
 
 
 .highlight {
-    -webkit-animation: highlight-fade 10s ease-out;
-    -moz-animation: highlight-fade 10s ease-out;
-    -o-animation: highlight-fade 10s ease-out;
-    animation: highlight-fade 10s ease-out;
+    -webkit-animation: highlight-fade 2s ease-out;
+    -moz-animation: highlight-fade 2s ease-out;
+    -o-animation: highlight-fade 2s ease-out;
+    animation: highlight-fade 2s ease-out;
 }
 
 .highlight-info {

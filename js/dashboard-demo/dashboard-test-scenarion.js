@@ -7,6 +7,12 @@ var factor = 1;
     var rand = Math.ceil(Math.random() * (3000 + 500 * factor )) + (1000 * factor);
     if (factor < 40) factor += factor;
 
+    if(factor < 20){
+        rand = 1000;
+    } else{
+        rand = 10000;
+    }
+
     setTimeout(function () {
         //alert('A');
         generateNewCondition();
@@ -28,7 +34,7 @@ setInterval(function () {
         timestamp: moment().toISOString()
     }];
     newEventsDataArrived(newData);
-}, 1800);
+}, 2500);
 
 
 /**
@@ -132,7 +138,8 @@ setInterval(function () {
  * Update Condition after random time
  */
 function randomizeUpdate(id) {
-    var random = 1500 + Math.random() * 15000;
+    var random = 10000 + Math.random() * 10;
+    random = 1000;
 
     setTimeout(function () {
         var updateData = {
@@ -142,21 +149,7 @@ function randomizeUpdate(id) {
         newUpdateDataArrived(updateData);
     }, 2 * random)
 
-    setTimeout(function () {
-        var updateData = {
-            id: id,
-            description: sampleUpdatedConditions[id % 7].description,
-        };
-        newUpdateDataArrived(updateData);
-    }, random * 0.3)
 
-    setTimeout(function () {
-        var updateData = {
-            id: id,
-            description: sampleUpdatedConditions2[id % 7].description,
-        };
-        newUpdateDataArrived(updateData);
-    }, random * 0.6)
 
     setTimeout(function () {
         var updateData = {
@@ -164,7 +157,7 @@ function randomizeUpdate(id) {
             description: sampleUpdatedConditions[id % 7].description,
         };
         newUpdateDataArrived(updateData);
-    }, random * 0.8)
+    }, random * 0.4)
 
     setTimeout(function () {
         var updateData = {
@@ -182,13 +175,7 @@ function randomizeUpdate(id) {
         newUpdateDataArrived(updateData);
     }, random * 1.4)
 
-    setTimeout(function () {
-        var updateData = {
-            id: id,
-            description: sampleUpdatedConditions2[id % 7].description,
-        };
-        newUpdateDataArrived(updateData);
-    }, random * 1.8)
+
 }
 
 
