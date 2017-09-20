@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Dashboard demo</title>
+    <meta name="viewport" content="width=device-width, user-scalable=no">
     <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 
@@ -41,12 +42,15 @@
             </button>
 
             <a class="navbar-brand"
-               href="daq-expert.cern.ch"><b>DAQ</b>
+               href="index.html"><b>DAQ</b>
                 Expert</a>
             <div style="display: none;" id="nm-socket-address"
-                 url="daq-expert.cern.ch"></div>
+                 url="index.html"></div>
             <div style="display: none;" id="expert-socket-address"
-                 url="daq-expert.cern.ch"></div>
+                 url="index.html"></div>
+            <div style="display: none;" id="daq-view-url"
+                                             data-url="http://daq-expert.cms/daq2view-react/index.html"></div>
+
         </div>
 
         <!-- Collect the nav links, forms, and other content for toggling -->
@@ -57,17 +61,17 @@
 
 
                 <!-- NM DASHBOARD -->
-                <li id="dashboard"><a href="daq-expert.cern.ch"><i
+                <li id="dashboard"><a href="index.html"><i
                         class="glyphicon glyphicon-bell"></i> Dashboard</a></li>
 
                 <!-- EXPERT BROWSER -->
                 <li><a id="expertLink"
-                       href="daq-expert.cern.ch"><i
+                       href="index.html"><i
                         class="glyphicon glyphicon-tasks"></i> Browser</a></li>
 
 
                 <!-- NM NOTIFICATIONS -->
-                <li id="event_occurrences"><a href=daq-expert.cern.ch><i
+                <li id="event_occurrences"><a href=index.html><i
                         class="glyphicon glyphicon-calendar"></i> Archive</a></li>
 
 
