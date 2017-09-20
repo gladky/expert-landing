@@ -121,6 +121,7 @@ function generateNewCondition () {
     randomizeUpdate(id);
 
 
+
 }
 
 /**
@@ -136,7 +137,7 @@ setInterval(function () {
  * Update Condition after random time
  */
 function randomizeUpdate(id) {
-    var random = Math.random() * 15000;
+    var random = 500+ Math.random() * 15000;
 
     setTimeout(function () {
         var updateData = {
@@ -150,6 +151,46 @@ function randomizeUpdate(id) {
         var updateData = {
             id: id,
             description: sampleUpdatedConditions[id % 7].description,
+        };
+        newUpdateDataArrived(updateData);
+    }, random/6)
+
+    setTimeout(function () {
+        var updateData = {
+            id: id,
+            description: sampleUpdatedConditions2[id % 7].description,
+        };
+        newUpdateDataArrived(updateData);
+    }, random/5)
+
+    setTimeout(function () {
+        var updateData = {
+            id: id,
+            description: sampleUpdatedConditions[id % 7].description,
+        };
+        newUpdateDataArrived(updateData);
+    }, random/4)
+
+    setTimeout(function () {
+        var updateData = {
+            id: id,
+            description: sampleUpdatedConditions2[id % 7].description,
+        };
+        newUpdateDataArrived(updateData);
+    }, random/3)
+
+    setTimeout(function () {
+        var updateData = {
+            id: id,
+            description: sampleUpdatedConditions[id % 7].description,
+        };
+        newUpdateDataArrived(updateData);
+    }, random/2)
+
+    setTimeout(function () {
+        var updateData = {
+            id: id,
+            description: sampleUpdatedConditions2[id % 7].description,
         };
         newUpdateDataArrived(updateData);
     }, random)
@@ -218,7 +259,7 @@ const sampleUpdatedConditions = [{
 },
     {
         title: "FED deadtime",
-        description: "Deadtime of fed(s) <<853>> in subsystem(s) <<CSC>> is greater than <<5.0%>>"
+        description: "Deadtime of fed(s) <<(**avg:**1129)>> in subsystem(s) <<CSC>> is greater than <<5.0%>>"
     },
     {
         title: "Partition deadtime",
@@ -239,6 +280,36 @@ const sampleUpdatedConditions = [{
     {
         title: "Rate too high",
         description: "The readout rate is <<119382.0 Hz>> which is above the expected maximum 100000.0 Hz. This may be a problem with the L1 trigger."
+    },
+]
+
+const sampleUpdatedConditions2 = [{
+    title: "Deadtime during run",
+    description: "There is <<critical>> deadtime during running"
+},
+    {
+        title: "FED deadtime",
+        description: "Deadtime of fed(s) <<(**avg:**1325)>> in subsystem(s) <<DSG>> is greater than <<5.0%>>"
+    },
+    {
+        title: "Partition deadtime",
+        description: "Deadtime of partition(s) <<CHH>> in subsystem(s) <<CDD>> is greater than <<5.0%>>"
+    },
+    {
+        title: "Warning in subsystem",
+        description: "TTCP <<CSC+>> of CSC subsystem is in warning <<180>>, it may affect rate."
+    },
+    {
+        title: "Corrupted data received",
+        description: "Run blocked by corrupted data from FED <<3225>> received by RU ru-c2e14-29-01.cms which is now in failed state. Problem FED belongs to partition <<DF+>> in ECAL subsystem This causes backpressure at FED 1386 in partition MUTFUP of TRG"
+    },
+    {
+        title: "Fed stuck",
+        description: "TTCP EB+ of ECAL subsystem is blocking trigger, it's in BUSY TTS state, The problem is caused by FED <<324>> in <<ERROR>>"
+    },
+    {
+        title: "Rate too high",
+        description: "The readout rate is <<322532.0 Hz>> which is above the expected maximum 100000.0 Hz. This may be a problem with the L1 trigger."
     },
 ]
 
