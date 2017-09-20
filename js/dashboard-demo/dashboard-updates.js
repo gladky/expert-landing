@@ -16,8 +16,7 @@ var timeToKeepTheLastSuggestion = 20000;
 var daqViewUrl;
 
 $(document).ready(function () {
-    daqViewUrl = document.getElementById(
-        "daq-view-url");
+    daqViewUrl = $('#daq-view-url').data('url');
     renderApp();
 });
 
