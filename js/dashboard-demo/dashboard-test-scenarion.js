@@ -1,5 +1,5 @@
 var idCounter = 1;
-var conditionId = 1;
+var conditionId = 10000;
 
 var factor = 1;
 
