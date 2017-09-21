@@ -14,9 +14,11 @@ var durationSinceLastOngoingCondition = 0;
 var timeToKeepTheLastSuggestion = 20000;
 
 var daqViewUrl;
+var daqSetup;
 
 $(document).ready(function () {
     daqViewUrl = $('#daq-view-url').data('url');
+    daqSetup = $('#daq-view-url').data('setup');
     renderApp();
 });
 
@@ -42,7 +44,7 @@ function FormattedDate(props) {
 
         if(daqViewUrl){
             dateLink = React.createElement('a',{
-                href:(daqViewUrl+'?setup=cdaq&time='+moment(props.date).format('YYYY-MM-DD\'T\'HH:mm:ss')),
+                href:(daqViewUrl+'?setup='+daqSetup+'&time='+moment(props.date).format('YYYY-MM-DD\'T\'HH:mm:ss')),
                 target:"_blank"
             },dateString);
             linkAvailable = true;
