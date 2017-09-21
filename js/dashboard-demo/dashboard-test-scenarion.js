@@ -235,18 +235,18 @@ const sampleConditions = [
     {
         title: "Corrupted data received",
         description: "Run blocked by corrupted data from FED 622 received by RU ru-c2e14-29-01.cms which is now in failed state. Problem FED belongs to partition EB- in ECAL subsystem This causes backpressure at FED 1386 in partition MUTFUP of TRG",
-        action: ["Try a stop/start for ECAL", "If this doesn't help: Stop the run. Red & Green recycle both the DAQ and the subsystem ECAL. Start new Run.", "Problem fixed: Make an e-log entry. Call the DOC of ECAL (subsystem that sent corrupted data) to inform about the problem", "Problem not fixed: Call the DOC of ECAL (subsystem that sent corrupted data)"]
+        action: ["Try a stop/start for <strong>ECAL</strong>", "If this doesn't help: Stop the run. Red & Green recycle both the DAQ and the subsystem ECAL. Start new Run.", "Problem fixed: Make an e-log entry. Call the DOC of ECAL (subsystem that sent corrupted data) to inform about the problem", "Problem not fixed: Call the DOC of ECAL (subsystem that sent corrupted data)"]
     },
     {
         title: "Fed stuck",
         description: "TTCP EB+ of ECAL subsystem is blocking trigger, it's in BUSY TTS state, The problem is caused by FED 632 in BUSY",
-        action: ["Stop the run", "Red & green recycle the subsystem ECAL", "Start new run (try up to 2 times)", "Problem fixed: Make an e-log entry. Call the DOC of the subsystem ECAL to inform", "Problem not fixed: Call the DOC for the subsystem ECAL"]
+        action: ["Stop the run", "Red & green recycle the <strong>ECAL</strong>", "Start new run (try up to 2 times)", "Problem fixed: Make an e-log entry. Call the DOC of the subsystem ECAL to inform", "Problem not fixed: Call the DOC for the subsystem ECAL"]
 
     },
     {
         title: "Readout rate too high",
         description: "The readout rate is 106552.0 Hz which is above the expected maximum 100000.0 Hz. This may be a problem with the L1 trigger.",
-        action: ["Ask the trigger shifter to check the inputs to the L1 trigger", "Make an e-log entry"]
+        action: ["Ask the trigger shifter to check the inputs to the <strong>L1</strong> trigger", "Make an e-log entry"]
     },
 ]
 
@@ -270,18 +270,18 @@ const sampleUpdatedConditions = [
     {
         title: "Corrupted data received",
         description: "Run blocked by corrupted data from FED 622 received by RU ru-c2e14-29-01.cms which is now in failed state. Problem FED belongs to partition EB- in ECAL subsystem This causes backpressure at FED 1386 in partition MUTFUP of TRG",
-        action: ["Try a stop/start for ECAL", "If this doesn't help: Stop the run. Red & Green recycle both the DAQ and the subsystem ECAL. Start new Run.", "Problem fixed: Make an e-log entry. Call the DOC of ECAL (subsystem that sent corrupted data) to inform about the problem", "Problem not fixed: Call the DOC of ECAL (subsystem that sent corrupted data)"]
+        action: ["Try a stop/start for <strong>ECAL</strong>", "If this doesn't help: Stop the run. Red & Green recycle both the DAQ and the subsystem ECAL. Start new Run.", "Problem fixed: Make an e-log entry. Call the DOC of ECAL (subsystem that sent corrupted data) to inform about the problem", "Problem not fixed: Call the DOC of ECAL (subsystem that sent corrupted data)"]
     },
     {
         title: "Fed stuck",
         description: "TTCP EB+ of ECAL subsystem is blocking trigger, it's in BUSY TTS state, The problem is caused by FED 632 in BUSY",
-        action: ["Stop the run", "Red & green recycle the subsystem ECAL", "Start new run (try up to 2 times)", "Problem fixed: Make an e-log entry. Call the DOC of the subsystem ECAL to inform", "Problem not fixed: Call the DOC for the subsystem ECAL"]
+        action: ["Stop the run", "Red & green recycle the <strong>ECAL</strong>", "Start new run (try up to 2 times)", "Problem fixed: Make an e-log entry. Call the DOC of the subsystem ECAL to inform", "Problem not fixed: Call the DOC for the subsystem ECAL"]
 
     },
     {
         title: "Readout rate too high",
         description: "The readout rate is <strong>(<sub><sup> last: </sub></sup>110012.6Hz,<sub><sup> avg: </sub></sup>109156.2 Hz,<sub><sup> max: </sub></sup>116374.2 Hz,<sub><sup> min: </sub></sup>106552.0 Hz)</strong> which is above the expected maximum 100000.0 Hz. This may be a problem with the L1 trigger.",
-        action: ["Ask the trigger shifter to check the inputs to the L1 trigger", "Make an e-log entry"]
+        action: ["Ask the trigger shifter to check the inputs to the <strong>L1</strong> trigger", "Make an e-log entry"]
     },
 ]
 
@@ -306,18 +306,18 @@ const sampleUpdatedConditions2 = [
     {
         title: "Corrupted data received",
         description: "Run blocked by corrupted data from FED 622 received by RU ru-c2e14-29-01.cms which is now in failed state. Problem FED belongs to partition EB- in ECAL subsystem This causes backpressure at FED 1386 in partition MUTFUP of TRG",
-        action: ["Try a stop/start for ECAL", "If this doesn't help: Stop the run. Red & Green recycle both the DAQ and the subsystem ECAL. Start new Run.", "Problem fixed: Make an e-log entry. Call the DOC of ECAL (subsystem that sent corrupted data) to inform about the problem", "Problem not fixed: Call the DOC of ECAL (subsystem that sent corrupted data)"]
+        action: ["Try a stop/start for <strong>ECAL</strong>", "If this doesn't help: Stop the run. Red & Green recycle both the DAQ and the subsystem ECAL. Start new Run.", "Problem fixed: Make an e-log entry. Call the DOC of ECAL (subsystem that sent corrupted data) to inform about the problem", "Problem not fixed: Call the DOC of ECAL (subsystem that sent corrupted data)"]
     },
     {
         title: "Fed stuck",
         description: "TTCP EB+ of ECAL subsystem is blocking trigger, it's in BUSY TTS state, The problem is caused by FED 632 in BUSY",
-        action: ["Stop the run", "Red & green recycle the subsystem ECAL", "Start new run (try up to 2 times)", "Problem fixed: Make an e-log entry. Call the DOC of the subsystem ECAL to inform", "Problem not fixed: Call the DOC for the subsystem ECAL"]
+        action: ["Stop the run", "Red & green recycle the <strong>ECAL</strong>", "Start new run (try up to 2 times)", "Problem fixed: Make an e-log entry. Call the DOC of the subsystem ECAL to inform", "Problem not fixed: Call the DOC for the subsystem ECAL"]
 
     },
     {
         title: "Readout rate too high",
         description: "The readout rate is <strong>(<sub><sup> last: </sub></sup>110108.4Hz,<sub><sup> avg: </sub></sup>109156.3 Hz,<sub><sup> max: </sub></sup>116374.2 Hz,<sub><sup> min: </sub></sup>106552.0 Hz)</strong> which is above the expected maximum 100000.0 Hz. This may be a problem with the L1 trigger.",
-        action: ["Ask the trigger shifter to check the inputs to the L1 trigger", "Make an e-log entry"]
+        action: ["Ask the trigger shifter to check the inputs to the <strong>L1</strong> trigger", "Make an e-log entry"]
     },
 ]
 
