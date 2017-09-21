@@ -146,6 +146,7 @@ function randomizeUpdate(id) {
         var updateData = {
             id: id,
             description: sampleUpdatedConditions[id % 7].description,
+            action: sampleUpdatedConditions[id % 7].action,
         };
         newUpdateDataArrived(updateData);
     }, random * 0.3)
@@ -154,6 +155,7 @@ function randomizeUpdate(id) {
         var updateData = {
             id: id,
             description: sampleUpdatedConditions2[id % 7].description,
+            action: sampleUpdatedConditions2[id % 7].action,
         };
         newUpdateDataArrived(updateData);
     }, random * 0.6)
@@ -162,6 +164,7 @@ function randomizeUpdate(id) {
         var updateData = {
             id: id,
             description: sampleUpdatedConditions[id % 7].description,
+            action: sampleUpdatedConditions[id % 7].action,
         };
         newUpdateDataArrived(updateData);
     }, random * 0.8)
@@ -170,6 +173,7 @@ function randomizeUpdate(id) {
         var updateData = {
             id: id,
             description: sampleUpdatedConditions2[id % 7].description,
+            action: sampleUpdatedConditions2[id % 7].action,
         };
         newUpdateDataArrived(updateData);
     }, random * 1.1)
@@ -178,6 +182,7 @@ function randomizeUpdate(id) {
         var updateData = {
             id: id,
             description: sampleUpdatedConditions[id % 7].description,
+            action: sampleUpdatedConditions[id % 7].action,
         };
         newUpdateDataArrived(updateData);
     }, random * 1.4)
@@ -186,6 +191,7 @@ function randomizeUpdate(id) {
         var updateData = {
             id: id,
             description: sampleUpdatedConditions2[id % 7].description,
+            action: sampleUpdatedConditions2[id % 7].action,
         };
         newUpdateDataArrived(updateData);
     }, random * 1.8)
@@ -212,19 +218,19 @@ const sampleConditions = [
 
     {
         title: "Deadtime during run",
-        description: "There is <<99.8%>> deadtime during run.",
+        description: "There is <strong>99.8%</strong> deadtime during run.",
     },
     {
         title: "FED deadtime",
-        description: "Deadtime of fed(s) 853 in subsystem(s) CSC is <<25.1%>> the threshold is 5.0%",
+        description: "Deadtime of fed(s) 853 in subsystem(s) CSC is <strong>25.1%</strong> the threshold is 5.0%",
     },
     {
         title: "Partition deadtime",
-        description: "Deadtime of partition(s) CSC- in subsystem(s) CSC is <<25.1%>> the threshold is 5.0%",
+        description: "Deadtime of partition(s) CSC- in subsystem(s) CSC is <strong>25.1%</strong> the threshold is 5.0%",
     },
     {
         title: "Warning in subsystem",
-        description: "TTCP CSC+ of CSC subsystem is in warning <<50.7%>>, it may affect rate.",
+        description: "TTCP CSC+ of CSC subsystem is in warning <strong>50.7%</strong>, it may affect rate.",
     },
     {
         title: "Corrupted data received",
@@ -247,19 +253,19 @@ const sampleConditions = [
 const sampleUpdatedConditions = [
     {
         title: "Deadtime during run",
-        description: "There is <<(**curr:**99.9**%**,**avg:**99.7**%**,**max:**100.0**%**,**min:**99.5**%**)>> deadtime during run.",
+        description: "There is <strong>(<sub><sup> last: </sub></sup>99.9%,<sub><sup> avg: </sub></sup>99.7%,<sub><sup> max: </sub></sup>100.0%,<sub><sup> min: </sub></sup>99.5%)</strong> deadtime during run.",
     },
     {
         title: "FED deadtime",
-        description: "Deadtime of fed(s) 853 in subsystem(s) CSC is <<(**curr:**85.1**%**,**avg:**98.6**%**,**max:**100.0**%**,**min:**22.5**%**)>> the threshold is 5.0%",
+        description: "Deadtime of fed(s) 853 in subsystem(s) CSC is <strong>(<sub><sup> last: </sub></sup>85.1%,<sub><sup> avg: </sub></sup>98.6%,<sub><sup> max: </sub></sup>100.0%,<sub><sup> min: </sub></sup>22.5%)</strong> the threshold is 5.0%",
     },
     {
         title: "Partition deadtime",
-        description: "Deadtime of partition(s) CSC- in subsystem(s) CSC is <<(**curr:**75.7**%**,**avg:**99.2**%**,**max:**100.0**%**,**min:**25.1**%**)>> the threshold is 5.0%",
+        description: "Deadtime of partition(s) CSC- in subsystem(s) CSC is <strong>(<sub><sup> last: </sub></sup>75.7%,<sub><sup> avg: </sub></sup>99.2%,<sub><sup> max: </sub></sup>100.0%,<sub><sup> min: </sub></sup>25.1%)</strong> the threshold is 5.0%",
     },
     {
         title: "Warning in subsystem",
-        description: "TTCP CSC+ of CSC subsystem is in warning <<(**curr:**97.1**%**,**avg:**95.1**%**,**max:**100.0**%**,**min:**50.7**%**)>>, it may affect rate.",
+        description: "TTCP CSC+ of CSC subsystem is in warning <strong>(<sub><sup> last: </sub></sup>97.1%,<sub><sup> avg: </sub></sup>95.1%,<sub><sup> max: </sub></sup>100.0%,<sub><sup> min: </sub></sup>50.7%)</strong>, it may affect rate.",
     },
     {
         title: "Corrupted data received",
@@ -274,7 +280,7 @@ const sampleUpdatedConditions = [
     },
     {
         title: "Readout rate too high",
-        description: "The readout rate is <<(**curr:**110012.6**Hz**,**avg:**109156.2 **Hz**,**max:**116374.2 **Hz**,**min:**106552.0 **Hz**)>> which is above the expected maximum 100000.0 Hz. This may be a problem with the L1 trigger.",
+        description: "The readout rate is <strong>(<sub><sup> last: </sub></sup>110012.6Hz,<sub><sup> avg: </sub></sup>109156.2 Hz,<sub><sup> max: </sub></sup>116374.2 Hz,<sub><sup> min: </sub></sup>106552.0 Hz)</strong> which is above the expected maximum 100000.0 Hz. This may be a problem with the L1 trigger.",
         action: ["Ask the trigger shifter to check the inputs to the L1 trigger", "Make an e-log entry"]
     },
 ]
@@ -283,19 +289,19 @@ const sampleUpdatedConditions = [
 const sampleUpdatedConditions2 = [
     {
         title: "Deadtime during run",
-        description: "There is <<(**curr:**99.5**%**,**avg:**99.6**%**,**max:**100.0**%**,**min:**99.5**%**)>> deadtime during run.",
+        description: "There is <strong>(<sub><sup> last: </sub></sup>99.5%,<sub><sup> avg: </sub></sup>99.6%,<sub><sup> max: </sub></sup>100.0%,<sub><sup> min: </sub></sup>99.5%)</strong> deadtime during run.",
     },
     {
         title: "FED deadtime",
-        description: "Deadtime of fed(s) 853 in subsystem(s) CSC is <<(**curr:**86.9**%**,**avg:**98.5**%**,**max:**100.0**%**,**min:**22.5**%**)>> the threshold is 5.0%",
+        description: "Deadtime of fed(s) 853 in subsystem(s) CSC is <strong>(<sub><sup> last: </sub></sup>86.9%,<sub><sup> avg: </sub></sup>98.5%,<sub><sup> max: </sub></sup>100.0%,<sub><sup> min: </sub></sup>22.5%)</strong> the threshold is 5.0%",
     },
     {
         title: "Partition deadtime",
-        description: "Deadtime of partition(s) CSC- in subsystem(s) CSC is <<(**curr:**78.3**%**,**avg:**99.1**%**,**max:**100.0**%**,**min:**25.1**%**)>> the threshold is 5.0%",
+        description: "Deadtime of partition(s) CSC- in subsystem(s) CSC is <strong>(<sub><sup> last: </sub></sup>78.3%,<sub><sup> avg: </sub></sup>99.1%,<sub><sup> max: </sub></sup>100.0%,<sub><sup> min: </sub></sup>25.1%)</strong> the threshold is 5.0%",
     },
     {
         title: "Warning in subsystem",
-        description: "TTCP CSC+ of CSC subsystem is in warning <<(**curr:**96.3**%**,**avg:**95.0**%**,**max:**100.0**%**,**min:**50.7**%**)>>, it may affect rate.",
+        description: "TTCP CSC+ of CSC subsystem is in warning <strong>(<sub><sup> last: </sub></sup>96.3%,<sub><sup> avg: </sub></sup>95.0%,<sub><sup> max: </sub></sup>100.0%,<sub><sup> min: </sub></sup>50.7%)</strong>, it may affect rate.",
     },
     {
         title: "Corrupted data received",
@@ -310,7 +316,7 @@ const sampleUpdatedConditions2 = [
     },
     {
         title: "Readout rate too high",
-        description: "The readout rate is <<(**curr:**110108.4**Hz**,**avg:**109156.3 **Hz**,**max:**116374.2 **Hz**,**min:**106552.0 **Hz**)>> which is above the expected maximum 100000.0 Hz. This may be a problem with the L1 trigger.",
+        description: "The readout rate is <strong>(<sub><sup> last: </sub></sup>110108.4Hz,<sub><sup> avg: </sub></sup>109156.3 Hz,<sub><sup> max: </sub></sup>116374.2 Hz,<sub><sup> min: </sub></sup>106552.0 Hz)</strong> which is above the expected maximum 100000.0 Hz. This may be a problem with the L1 trigger.",
         action: ["Ask the trigger shifter to check the inputs to the L1 trigger", "Make an e-log entry"]
     },
 ]
