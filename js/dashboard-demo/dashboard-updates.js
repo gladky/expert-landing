@@ -321,7 +321,7 @@ function ActionElement(action) {
 
     const actionStep = React.createElement('span', {}, icon, " ", action.text);
 
-    const element = React.createElement('div', {className: ""}, actionStep);
+    const element = React.createElement('div', {className: ""}, React.createElement(UpdatedMessage, {element:{description:action.text,id:action.key}}));
 
 
     return React.createElement('li', {
