@@ -218,8 +218,8 @@ function ConditionPanel(props) {
         {
             elements: props.conditions,
             childType: ConditionElement,
-            header: "Conditions",
-            emptyMessage: "No conditions at the moment",
+            header: "Recent problems",
+            emptyMessage: "No recent problems at the moment",
             sizeSelector: listSizeSelectorPanel,
             reverse: true
         });
@@ -238,8 +238,8 @@ function EventPanel(props) {
     return React.createElement(ListPanel, {
         elements: props.events,
         childType: EventElement,
-        header: "Events",
-        emptyMessage: "No events at the moment",
+        header: "Recent events",
+        emptyMessage: "No recent events at the moment",
         sizeSelector: listSizeSelectorPanel,
         reverse: true
     });
