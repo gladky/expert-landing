@@ -383,11 +383,11 @@ function Dashboard(props) {
 
 
     const currentPanel = React.createElement('div', {className: ""}, React.createElement(CurrentPanel, props));
-    const leftPanel = React.createElement('div', {className: "col-md-8"}, currentPanel, React.createElement(ConditionPanel, props));
-    const rightPanel = React.createElement('div', {className: "col-md-4"}, React.createElement(EventPanel, props));
+    const leftPanel = React.createElement('div', {className: "col-md-8 pre-scrollable"}, currentPanel, React.createElement(ConditionPanel, props));
+    const rightPanel = React.createElement('div', {className: "col-md-4 pre-scrollable"}, React.createElement(EventPanel, props));
 
 
-    const pageHead = React.createElement('div', {className: 'row'}, versionMessageElement);
+    const pageHead = React.createElement('div', {className: 'row col-xs-12', id: 'message'}, versionMessageElement);
     const pageContent = React.createElement('div', {className: 'row'}, leftPanel, rightPanel);
 
     return React.createElement('div', {}, pageHead, pageContent);
@@ -423,6 +423,8 @@ function renderApp() {
         }),
         document.getElementById('react-list-container')
     );
+
+    updateScrollable();
 }
 
 function newEventsDataArrived(event) {
