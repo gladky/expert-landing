@@ -5,7 +5,10 @@ var factor = 1;
 
 (function loop() {
     var rand = Math.ceil(Math.random() * (3000 + 500 * factor )) + (1000 * factor);
-    if (factor < 40) factor += factor;
+
+    if (factor < 40) {
+        factor += factor;
+    }
 
     setTimeout(function () {
         //alert('A');
@@ -13,12 +16,48 @@ var factor = 1;
         loop();
     }, rand);
 }());
+$( document ).ready(function() {
+    console.log( "ready!" );
 
+
+
+    for(var i = 0; i < 100; i++)
+    {
+        var newData = [{
+            id: idCounter++,
+            title: sampleEvents[idCounter % 10].title,
+            description: sampleEvents[idCounter % 10].description,
+            sound: sampleEvents[idCounter % 10].sound,
+            tts: sampleEvents[idCounter % 10].tts,
+            timestamp: moment().toISOString()
+        }];
+        eventsData.push.apply(eventsData, newData);
+    }
+
+    for(var i = 0; i < 50; i++)
+    {
+        var newData = [{
+            id: conditionId++,
+            title: sampleConditions[conditionId % 7].title,
+            description: sampleConditions[conditionId % 7].description,
+            action: sampleConditions[conditionId % 7].action,
+            status: "finished",
+            announced: false,
+            timestamp: moment().subtract('minutes', 100-conditionId).toISOString(),
+            duration: (Math.random()*5000/ 100).toPrecision(2)
+        }];
+        conditionsData.push.apply(conditionsData, newData);
+    }
+
+
+    renderApp();
+});
 
 /**
  * Add new Event
  */
 setInterval(function () {
+
     var newData = [{
         id: idCounter++,
         title: sampleEvents[idCounter % 10].title,
