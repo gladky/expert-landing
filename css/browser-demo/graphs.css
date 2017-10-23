@@ -1,0 +1,118 @@
+@CHARSET "UTF-8";
+
+.vis-item {
+	height: 16px;
+	font-size: 8pt;
+	background-image: none;
+	color: #333;
+	background-color: #f4f4f4;
+	border-color: #ccc;
+}
+
+.vis-timeline {
+	border: 2px solid #bfbfbf;
+}
+
+.vis-item.critical {
+	background-image: linear-gradient(to bottom, #d9534f 0, #c12e2a 100%);
+	border-color: #b92c28;
+	color: white;
+	font-family: monospace;
+}
+
+.vis-item.immature {
+	background-image: none;
+	background-color: transparent;
+	border-color: #ccc;
+	color: #ccc;
+	font-family: monospace;
+}
+
+.vis-item.vis-background.filtered {
+	background-color: rgba(94, 142, 156, 0.1);
+	background-image: unset;
+}
+
+.vis-item.vis-background.filtered-important {
+	background-color: rgba(42, 171, 210, 0.5);
+	background-image: unset;
+}
+
+.vis-item.important {
+	background-image: none;
+	color: #fff;
+	background-color: #337ab7;
+	border-color: #2e6da4;
+	font-family: monospace;
+}
+
+.vis-item.warning {
+	background-image: none;
+	background-color: #f0ad4e;
+	color: white;
+	border-color: #eea236;
+	font-family: monospace;
+}
+
+.vis-item.blue {
+	background-color: rgba(141, 180, 226, 0.1);
+	background-image: unset;
+}
+
+.vis-item.green {
+	background-color: rgba(146, 208, 80, 0.1);
+	background-image: unset;
+}
+
+.vis-item.red {
+	background-color: rgba(255, 0, 0, 0.1);
+	background-image: unset;
+}
+
+.vis-item.experimental {
+	background-image: linear-gradient(to bottom, #5cb85c 0, #4cae4c 100%);
+	border-color: #4cae4c;
+	color: white;
+	font-family: monospace;
+}
+
+/* gray background in weekends, white text color */
+.vis-time-axis .vis-grid.vis-saturday, .vis-time-axis .vis-grid.vis-sunday
+	{
+	background: rgba(244, 244, 244, .4);
+}
+
+.vis-time-axis .vis-grid.vis-h0-h4, .vis-time-axis .vis-grid.vis-h4-h8 {
+	background: rgba(244, 244, 244, .4);
+}
+
+.vis-time-axis .vis-grid.vis-h0, .vis-time-axis .vis-grid.vis-h1,
+	.vis-time-axis .vis-grid.vis-h2, .vis-time-axis .vis-grid.vis-h3,
+	.vis-time-axis .vis-grid.vis-h4, .vis-time-axis .vis-grid.vis-h5,
+	.vis-time-axis .vis-grid.vis-h6, .vis-time-axis .vis-grid.vis-h7 {
+	background: rgba(244, 244, 244, .4);
+}
+
+/* The max width is dependant on the container (more info below) */
+.popover {
+	max-width: 350px;
+	/* Max Width of the popover (depending on the container!) */
+}
+
+.vis-labelset .vis-inner {
+	width: 8em;
+}
+
+.vis-left .vis-content {
+	width: 8em;
+}
+
+.vis-right .vis-content {
+	width: 8em;
+}
+
+.vis-panel.vis-background.vis-horizontal .vis-grid {
+	left: 7.5em !important;
+	right: 7.5em !important;
+	width: auto !important;
+}

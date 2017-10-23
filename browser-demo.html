@@ -1,0 +1,368 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <title>DAQ Expert</title>
+
+    <!-- external scripts and stylesheets -->
+    <script
+            src="https://code.jquery.com/jquery-3.2.1.min.js"
+            integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+            crossorigin="anonymous"></script>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
+            integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+            crossorigin="anonymous"></script>
+    <!-- perhaps bootstrap-theme.css -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tour/0.11.0/css/bootstrap-tour.min.css"
+          rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tour/0.11.0/js/bootstrap-tour.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-duration-format/1.3.0/moment-duration-format.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.7.1/clipboard.min.js"></script>
+    <script src="http://code.highcharts.com/stock/highstock.js"></script>
+
+    <!-- external edited -->
+    <script src="js/browser-demo/vis.min.js"></script>
+    <link href="css/browser-demo/vis.min.css" rel="stylesheet" type="text/css"/>
+
+    <!--  internal scripts -->
+    <script src="js/browser-demo/raw-graph.js"></script>
+    <script src="js/browser-demo/analysis-graph.js"></script>
+
+    <script src="js/browser-demo/basic.js"></script>
+
+    <script src="static/js/tour.js"></script>
+    <script src="js/browser-demo/experimental.js"></script>
+    <script src="js/browser-demo/navigation.js"></script>
+    <script src="static/js/run-info-link.js"></script>
+    <script src="static/js/wbm-link.js"></script>
+    <script src="static/js/daqview-link.js"></script>
+    <script src="static/js/share.js"></script>
+
+    <!--  internal stylesheets -->
+    <link rel="stylesheet" href="css/browser-demo/experimental.css">
+    <link rel="stylesheet" href="css/browser-demo/graphs.css">
+    <link rel="stylesheet" href="css/browser-demo/navigation.css">
+
+    <!-- demo -->
+    <link rel="stylesheet" href="css/dashboard-demo/dashboard-ribbon.css">
+    <script src="js/browser-demo/demo.js"></script>
+
+
+</head>
+
+<body onscroll="myFunction()">
+
+<nav class="navbar navbar-default navbar-xs" role="navigation">
+
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="index.html"><b>DAQ</b>Expert</a>
+    </div>
+
+
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+        <ul class="nav navbar-nav">
+
+            <!-- NM DASHBOARD -->
+            <li><a href="dashboard-demo.html">
+                <i class="glyphicon glyphicon-bell"></i> Dashboard</a></li>
+
+            <!-- EXPERT BROWSER -->
+            <li class="active"><a id="browser-link" href="#" data-url="index.html">
+                <i class="glyphicon glyphicon-tasks"></i> Browser</a></li>
+
+
+            <!-- NM NOTIFICATIONS -->
+            <li><a href="index.html">
+                <i class="glyphicon glyphicon-calendar"></i> Archive</a></li>
+
+        </ul>
+    </div>
+</nav>
+
+
+<div class="container-fluid">
+
+    <div class="btn-group btn-toggle" id="extended-view">
+        <button id="mode1" type="button"
+                class="mode-btn btn btn-sm btn-default btn-primary">Simple
+        </button>
+        <button id="mode2" type="button"
+                class="mode-btn btn btn-sm btn-default">Extended
+        </button>
+        <button id="mode3" type="button"
+                class="mode-btn btn btn-sm btn-default">
+            LMFactory <span><sup><b>beta</b></sup></span>
+        </button>
+    </div>
+
+    <div class="btn-group pull-right ">
+
+        <div class="btn-group" role="group" aria-label="...">
+            <div class="btn-group" role="group">
+                <button class="btn btn-info btn-sm" id="daqview-button"
+                        target="_blank" data-url="<%out.println(Application.get().getProp(Setting.DAQVIEW_LINK));%>"
+                        data-setup="<%out.println(Application.get().getProp(Setting.DAQVIEW_SETUP));%>">
+                    DAQView <span class="glyphicon glyphicon-list"></span>
+                </button>
+                <button class="btn btn-default btn-sm btn-copy" id="share-button">
+                    Share <span class="glyphicon glyphicon-share"></span>
+                </button>
+                <button type="button"
+                        class="btn btn-default btn-sm dropdown-toggle"
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    External Links <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu">
+
+                    <li><a id="run-info-button" target="_blank"> RunInfo <span
+                            class="glyphicon glyphicon-chevron-right"></span>
+                    </a></li>
+                    <li><a id="wbm-button" target="_blank"> WBM run summary <span
+                            class="glyphicon glyphicon-chevron-right"></span>
+                    </a></li>
+                </ul>
+            </div>
+            <button type="button" class="btn btn-sm btn-info"
+                    id="run-experimental-lm-button" href="#" style="display: none;">
+                Run experimental LMs <i class="glyphicon glyphicon-play"></i>
+            </button>
+
+            <button type="button" class="btn btn-sm btn-warning" id="tour"
+                    href="#">
+                Help <i class="glyphicon glyphicon-question-sign"></i>
+            </button>
+        </div>
+    </div>
+
+    <div id="navbar">
+        <a href="#home">Home</a>
+        <a href="#news">News</a>
+        <a href="#contact">Contact</a>
+    </div>
+
+    <div id="visualization" style="margin-top: 15px;"></div>
+    <div id="raw" style="margin-top: 5px;"></div>
+    <div id="container"></div>
+
+    <p></p>
+
+    <div id="log"></div>
+</div>
+
+<div id="snapshot-popup" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"
+                        aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">Snapshot</h4>
+            </div>
+            <div class="modal-body">
+                <p>
+                    Snapshot <span id="snapshot-date">/date/</span>. Persisted in <code id="snapshot-file">/path/</code>
+                </p>
+                <pre class="prettyprint lang-json" id="json-body"></pre>
+            </div>
+            <div class="modal-footer"></div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<!-- /.modal -->
+
+<div id="experimental-run-popup" class="modal fade" tabindex="-1"
+     role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"
+                        aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">Summary of experimental run</h4>
+            </div>
+            <div class="modal-body">
+
+                <label for="timespan-summary">Timespan</label>
+                <p id="timespan-summary">
+                    <span class="badge" id="experimental-time-span-start">{}</span> -
+                    <span class="badge" id="experimental-time-span-end">{}</span>
+                </p>
+
+                <label for="duration-summary">Duration</label>
+                <p id="duration-summary">
+                    <span class="badge" id="duration-humanized">{}</span>
+                </p>
+                <p id="processing-warning0-message" class="bg-danger">
+                    You are trying to process <span class='duration-in-message'></span>
+                    of snapshots. Processing will take too long. Please zoom in to
+                    interesting period of few minutes.
+                </p>
+                <p id="processing-warning1-message" class="bg-warning">
+                    You are about to process <span class='duration-in-message'></span>
+                    of snapshots. Processing may take few seconds. Be patient or
+                    zoom-in to interesting period.
+                </p>
+
+                <label for="elm-select">Select Logic Module from <code
+                        id='experimental-dir' class="inlinecode">/current/dir/to/lms/</code></label>
+                <select class="form-control" id="elm-select">
+                    <option>sketch-file-name.java</option>
+                </select>
+
+                <div id="loader-animation" style="display: none;"
+                     class="loader text-centered"></div>
+
+                <p id="processing-error-message" class="bg-danger">Error
+                    occurred while processing your Logic Module.</p>
+                <pre id="processing-error-stacktrace"></pre>
+
+            </div>
+
+            <div class="modal-footer">
+                <button id="experimental-load-button" type="button"
+                        class="btn btn-default">
+                    <i class="glyphicon glyphicon-repeat"></i> Load
+                </button>
+                <button id="experimental-run-process-button" type="button"
+                        class="btn btn-info">
+                    <i class="glyphicon glyphicon-play"></i> Run
+                </button>
+
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<!-- /.modal -->
+
+
+<div id="reasonModal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"
+                        aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">
+                    Condition details <span
+                        class="immature-information label label-warning">Ignored</span>
+                </h4>
+            </div>
+            <div class="modal-body">
+                <div class="immature-information alert alert-warning">
+                    <strong>Ignored condition</strong> The condition was satisfied in
+                    only one snapshot and thus it is ignored. It was not
+                    sent to Notification Manager.
+                </div>
+                <h4 id="raport-name">/Name/</h4>
+                <p id="raport-description">/description/</p>
+                <p>
+                    Duration: <span id="raport-duration" class="badge">/duration/</span>
+                    <small class="text-muted" id="raport-duration-humanized">aa</small>
+                </p>
+
+
+                <div id="action-section">
+                    <h4>Action</h4>
+                    <p id="raport-action">/action/</p>
+                </div>
+                <div id="context-section">
+
+                    <button type="button" class="btn btn-info" data-toggle="collapse"
+                            data-target="#context-collapse">Show raw context
+                    </button>
+                    <div id="context-collapse" class="collapse">
+                        <h4>Context</h4>
+                        <pre id="raport-body"></pre>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer"></div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<!-- /.modal -->
+
+<div id="runinfo-popup" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"
+                        aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">Go to run info</h4>
+            </div>
+            <div class="modal-body">
+                <p>Session id ambiguous. Please set the time span so that there
+                    is exactly one session id.</p>
+            </div>
+            <div class="modal-footer"></div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<!-- /.modal -->
+
+<div id="wbm-popup" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"
+                        aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">Go to WBM</h4>
+            </div>
+            <div class="modal-body">
+                <p>Run number ambiguous. Please set the time span so that there
+                    is exactly one run number.</p>
+            </div>
+            <div class="modal-footer"></div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<!-- /.modal -->
+
+
+<div class="corner-ribbon top-right sticky red shadow">Auto generated data</div>
+
+<script>
+    var navbar = document.getElementById("navbar");
+    var sticky = navbar.offsetTop;
+
+    function myFunction() {
+        if (window.pageYOffset >= sticky) {
+            navbar.classList.add("sticky")
+        } else {
+            navbar.classList.remove("sticky");
+        }
+    }
+</script>
+
+
+</body>
+
+</html>
