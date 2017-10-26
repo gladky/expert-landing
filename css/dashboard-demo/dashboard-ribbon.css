@@ -5,6 +5,7 @@
 
 .corner-ribbon{
     width: 200px;
+    z-index: 3;
     background: #e43;
     position: absolute;
     top: 25px;

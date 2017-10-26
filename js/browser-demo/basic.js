@@ -5,7 +5,7 @@
 var graph2d;
 var timeline;
 
-var filtering = true;
+var filtering = false;
 var mode = "standard";
 var lastTimeSpan = {};
 var lastData = [];
