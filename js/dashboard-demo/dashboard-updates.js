@@ -426,6 +426,14 @@ function renderApp() {
 }
 
 function newEventsDataArrived(event) {
+  let tts = event[0].tts;
+  let sound = event[0].sound;
+  if(sound !== undefined || tts !== undefined){
+    console.log(tts);
+    console.log(sound);
+  playOrDelay(sound, tts);
+  }
+
     eventsData.push.apply(eventsData, event);
     eventsData = eventsData.splice(-eventsToKeep, eventsToKeep);
     renderApp();
@@ -548,4 +556,3 @@ setInterval(function () {
     }
 
 }, 5000);
-

@@ -84,11 +84,21 @@ audio.onerror = function(){
 function playSound(filename){
     audio.src = ('sounds/' + filename);
     audio.volume = 0.5;
-    audio.play();
-    playing = true;
-    audio.addEventListener('ended', function() {
-      playing = false;
-    });
+
+    var playPromise = audio.play();
+
+    if (playPromise !== undefined) {
+        playPromise.then(function() {
+          playing = true;
+          console.log(playing)
+          audio.addEventListener('ended', function() {
+            playing = false;
+            console.log(playing)
+          });
+        }).catch(function(error) {
+        //  console.log('No sound')
+        });
+}
 
 }
 
