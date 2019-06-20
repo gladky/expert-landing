@@ -49,11 +49,11 @@ function playOrDelay(filename, text){
  *@function annonymous Pronnounces the text when the audio is finish thanks to .onended
  */
 function playSoundAndSpeak(filename, text){
-  if(filename === undefined || filename == null || filename == ''){
+  if(filename === undefined){
     console.log('No sound - only text');
     textToSpeech(text);
   }
-  else if (text === undefined || text == null || text == ''){
+  else if (text === undefined){
     console.log('Message empty - only sound');
     playSound(filename);
   }
@@ -70,7 +70,6 @@ function playSoundAndSpeak(filename, text){
 var speaking = false;
 var playing = false;
 var audio = new Audio();
-
 
 /**
  *@function playSound Play a sound
@@ -94,7 +93,7 @@ function playSound(filename){
             console.log(playing)
           });
     }).catch(function(error) {
-        console.log('No sound')
+
     });
   }
 }

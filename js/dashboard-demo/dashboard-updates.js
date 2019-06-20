@@ -431,7 +431,7 @@ function newEventsDataArrived(event) {
   if(sound !== undefined || tts !== undefined){
     console.log(tts);
     console.log(sound);
-//playOrDelay(sound, tts); 
+    playOrDelay(sound, tts); 
   }
 
     eventsData.push.apply(eventsData, event);
