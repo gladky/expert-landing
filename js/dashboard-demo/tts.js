@@ -70,9 +70,7 @@ function playSoundAndSpeak(filename, text){
 var speaking = false;
 var playing = false;
 var audio = new Audio();
-audio.onerror = function(){
-  playSound('u2bell.wav');
-}
+
 
 /**
  *@function playSound Play a sound
@@ -82,26 +80,24 @@ audio.onerror = function(){
  *
  */
 function playSound(filename){
-    audio.src = ('sounds/' + filename);
-    audio.volume = 0.5;
+  audio.src = ('sounds/' + filename);
+  audio.volume = 0.5;
 
-    var playPromise = audio.play();
+  var playPromise = audio.play();
 
-    if (playPromise !== undefined) {
-        playPromise.then(function() {
-          playing = true;
-          console.log(playing)
+  if (playPromise !== undefined) {
+    playPromise.then(function() {
+      playing = true;
+        console.log(playing)
           audio.addEventListener('ended', function() {
             playing = false;
             console.log(playing)
           });
-        }).catch(function(error) {
-        //  console.log('No sound')
-        });
+    }).catch(function(error) {
+        console.log('No sound')
+    });
+  }
 }
-
-}
-
 
 var msg;
 var synth;
