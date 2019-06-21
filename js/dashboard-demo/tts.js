@@ -1,34 +1,71 @@
 /**
  * Created by mgl on 03.06.19.
  */
-const textToSpeechLimit = 30;
-var socket;
 
 /**
- *@function connect Connects the user html page to the server, connects the client to WebSocket, subscribes client to notifications
+ * Create a limit for the text to pronnounce.
+ * @type {number}
  */
+const textToSpeechLimit = 30;
+/**
+ * Link of the end point.
+ * @type {Object}
+ */
+var socket;
+/**
+ * Text content and parametters.
+ * @type {Object}
+ */
+var msg;
+/**
+ * Synthetis voice API.
+ * @type {string}
+ */
+var synth;
+/**
+ * Voice parametters.
+ * @type {array}
+ */
+var voices;
+/**
+ * Text is actually playing or not.
+ * @type {bool}
+ */
+var speaking = false;
+/**
+ * Sound is actually playing or not.
+ * @type {bool}
+ */
+var playing = false;
+/**
+ * Sound content and parametters.
+ * @type {Object}
+ */
+var audio = new Audio();
+
+
+ /**
+  * Connects the user html page to the server,
+  * connects the client to WebSocket and
+  * subscribes client to notifications
+  * @constructor
+  */
 function connect() {
   socket = new SockJS('http://mgladki.cern.ch:8080/fake-notifications');
   stompClient = Stomp.over(socket);
   stompClient.connect({}, function (frame) {
-    console.log(typeof(frame));
-    console.log('Connected: ' + frame);
     stompClient.subscribe('/topic/notification', function (content) {
-      console.log(content.body);
       var body = JSON.parse(content.body);
       playOrDelay(body.filename, body.text);
-      console.log(body.filename);
-      console.log(body.text);
     });
   });
 }
 
 /**
- *@function playOrDelay plays or not a notification if there is already a notification playing
- *@param {string} filename The sound to play
- *@param {string} text The text to pronnounce
- *
- *@function annonymous Calls the playOrDelay function after a delay of 3 seconds
+ * Plays or not a notification if there
+ * is already a notification playing
+ * @param {string} filename The sound to play
+ * @param {string} text The text to pronnounce
  */
 function playOrDelay(filename, text){
   if(playing == false && speaking == false){
@@ -36,25 +73,21 @@ function playOrDelay(filename, text){
   }
   else{
     var wait;
-    console.log('Ignoring');
     wait = setTimeout(function() {playOrDelay(filename, text);}, 3000);
   }
 }
 
 /**
- *@function playSoundAndSpeak Plays at first the sound (with Playsound function) and then pronnounces the text (with textToSpeech function)
- *@param {string} filename The sound to play
- *@param {string} text The text to pronnounce
- *
- *@function annonymous Pronnounces the text when the audio is finish thanks to .onended
+ * Plays at first the sound (with Playsound function)
+ * and then pronnounces the text (with textToSpeech function)
+ * @param {string} filename The sound to play
+ * @param {string} text The text to pronnounce
  */
 function playSoundAndSpeak(filename, text){
   if(filename === undefined){
-    console.log('No sound - only text');
     textToSpeech(text);
   }
   else if (text === undefined){
-    console.log('Message empty - only sound');
     playSound(filename);
   }
   else{
@@ -64,19 +97,11 @@ function playSoundAndSpeak(filename, text){
     }
   }
 }
-/**
- *@function annonymous Assigns by default the U2Bell.wav sound if filename is wrong or null
- */
-var speaking = false;
-var playing = false;
-var audio = new Audio();
 
 /**
- *@function playSound Play a sound
- *@param {string} filename The sound to play
- *
- *@function annonymous Create an event called 'ended' on the audio in purpose to assign back to speaking the value : false
- *
+ * Play a sound
+ * @param {string} filename The sound to play
+ * @constructor
  */
 function playSound(filename){
   audio.src = ('sounds/' + filename);
@@ -87,47 +112,23 @@ function playSound(filename){
   if (playPromise !== undefined) {
     playPromise.then(function() {
       playing = true;
-        console.log(playing)
-          audio.addEventListener('ended', function() {
-            playing = false;
-            console.log(playing)
-          });
+      audio.addEventListener('ended', function() {
+        playing = false;
+      });
     }).catch(function(error) {
-
     });
   }
 }
 
-var msg;
-var synth;
-var voices;
-
 /**
- *@function textToSpeech Pronnounce a text via a synthesis voice
- *@param {string} text The text to pronnounce
- *
- *@function annonymous function create an event on the end of the text notification in purpose to assign back to speaking the value : false
- *@param {bool} event End event of the text notification
+ * Pronnounce a text via a synthesis voice
+ * @param {string} text The text to pronnounce
+ * @constructor
  */
 function textToSpeech(text){
   if (text.length > textToSpeechLimit){
-    console.log(text)
     text = text.substring(0, textToSpeechLimit);
-    console.log(text)
-    msg = new SpeechSynthesisUtterance(text);
-    synth = window.speechSynthesis;
-    voices = synth.getVoices();
-    msg.voices = voices[0];
-    msg.lang = 'en-EN';
-    msg.volume = 0.9;
-    synth.speak(msg);
-    speaking = true;
-    msg.onend = function(event){
-      speaking = false;
-    }
   }
-
-  else{
     msg = new SpeechSynthesisUtterance(text);
     synth = window.speechSynthesis;
     voices = synth.getVoices();
@@ -142,9 +143,6 @@ function textToSpeech(text){
   }
 }
 
-/**
-*@function annonymous Play functions
-*/
 (function() {
   //connect();
   //playSoundAndSpeak(undefined, 'exemple')
