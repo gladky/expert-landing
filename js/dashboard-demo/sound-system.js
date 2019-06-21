@@ -120,24 +120,14 @@ function textToSpeech(text){
   }
 
   msg = new SpeechSynthesisUtterance(text);
-    synth = window.speechSynthesis;
-    voices = synth.getVoices();
-    msg.voices = voices[0];
-    msg.lang = 'en-EN';
-    msg.volume = 0.9;
-    synth.speak(msg);
-    speaking = true;
-    msg.onend = function(event){
-      speaking = false;
-    }
-
+  synth = window.speechSynthesis;
+  voices = synth.getVoices();
+  msg.voices = voices[0];
+  msg.lang = 'en-EN';
+  msg.volume = 0.9;
+  synth.speak(msg);
+  speaking = true;
+  msg.onend = function(event){
+    speaking = false;
+  }
 }
-
-(function() {
-  //connect();
-  //playSoundAndSpeak(undefined, 'exemple')
-  //playSoundAndSpeak('u2bell.wav', undefined)
-  //textToSpeech('11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111112222222222');
-  //playOrDelay('slowdownmybeatingheart.wav', 'thats a test');
-  //playOrDelay('test.mp3', 'try');
-})();
