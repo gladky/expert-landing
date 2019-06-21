@@ -13,21 +13,6 @@ const textToSpeechLimit = 30;
  */
 var socket;
 /**
- * Text content and parametters.
- * @type {Object}
- */
-var msg;
-/**
- * Synthetis voice API.
- * @type {string}
- */
-var synth;
-/**
- * Voice parametters.
- * @type {array}
- */
-var voices;
-/**
  * Text is actually playing or not.
  * @type {bool}
  */
@@ -42,13 +27,15 @@ var playing = false;
  * @type {Object}
  */
 var audio = new Audio();
+audio.onerror = function(){
+  playSound('u2bell.wav')
+}
 
 
  /**
   * Connects the user html page to the server,
   * connects the client to WebSocket and
   * subscribes client to notifications
-  * @constructor
   */
 function connect() {
   socket = new SockJS('http://mgladki.cern.ch:8080/fake-notifications');
@@ -101,7 +88,6 @@ function playSoundAndSpeak(filename, text){
 /**
  * Play a sound
  * @param {string} filename The sound to play
- * @constructor
  */
 function playSound(filename){
   audio.src = ('sounds/' + filename);
@@ -123,13 +109,17 @@ function playSound(filename){
 /**
  * Pronnounce a text via a synthesis voice
  * @param {string} text The text to pronnounce
- * @constructor
  */
 function textToSpeech(text){
+  var msg;
+  var voices;
+  var synth;
+
   if (text.length > textToSpeechLimit){
     text = text.substring(0, textToSpeechLimit);
   }
-    msg = new SpeechSynthesisUtterance(text);
+
+  msg = new SpeechSynthesisUtterance(text);
     synth = window.speechSynthesis;
     voices = synth.getVoices();
     msg.voices = voices[0];
@@ -140,7 +130,7 @@ function textToSpeech(text){
     msg.onend = function(event){
       speaking = false;
     }
-  }
+
 }
 
 (function() {
@@ -150,5 +140,4 @@ function textToSpeech(text){
   //textToSpeech('11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111112222222222');
   //playOrDelay('slowdownmybeatingheart.wav', 'thats a test');
   //playOrDelay('test.mp3', 'try');
-  //playSoundAndSpeak('zefoihoi','');
 })();
