@@ -31,7 +31,6 @@ audio.onerror = function(){
   playSound('u2bell.wav')
 }
 
-
  /**
   * Connects the user html page to the server,
   * connects the client to WebSocket and
@@ -118,7 +117,6 @@ function textToSpeech(text){
   if (text.length > textToSpeechLimit){
     text = text.substring(0, textToSpeechLimit);
   }
-
   msg = new SpeechSynthesisUtterance(text);
   synth = window.speechSynthesis;
   voices = synth.getVoices();
