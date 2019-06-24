@@ -1,7 +1,6 @@
 /**
  * Created by mgl on 03.06.19.
  */
-
 /**
  * Create a limit for the text to pronnounce.
  * @type {number}
@@ -102,7 +101,8 @@ function playSound(filename){
     }).catch(function(error) {
       playSound('u2bell.wav');
     });
-  }
+    }
+
 }
 
 /**
@@ -134,3 +134,8 @@ function textToSpeech(text){
     speaking = false;
   }
 }
+
+canAutoplay.audio().then(({result, error}) => {
+           if(result === false)
+               alert('autoplay disabled please enable it');
+        });
