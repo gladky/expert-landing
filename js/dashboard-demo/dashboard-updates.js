@@ -429,7 +429,9 @@ function newEventsDataArrived(event) {
   let tts = event[0].tts;
   let sound = event[0].sound;
   if(sound !== undefined || tts !== undefined){
-    playOrDelay(sound, tts);
+    
+  playOrDelay(sound, tts);
+
   }
 
     eventsData.push.apply(eventsData, event);
@@ -554,4 +556,3 @@ setInterval(function () {
     }
 
 }, 5000);
-

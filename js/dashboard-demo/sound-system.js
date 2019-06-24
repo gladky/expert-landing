@@ -27,9 +27,6 @@ var playing = false;
  * @type {Object}
  */
 var audio = new Audio();
-audio.onerror = function(){
-  playSound('u2bell.wav')
-}
 
  /**
   * Connects the user html page to the server,
@@ -59,7 +56,7 @@ function playOrDelay(filename, text){
   }
   else{
     var wait;
-    wait = setTimeout(function() {playOrDelay(filename, text);}, 3000);
+    wait = setTimeout(function() {playOrDelay(filename, text);}, 1000);
   }
 }
 
@@ -75,11 +72,13 @@ function playSoundAndSpeak(filename, text){
   }
   else if (text === undefined){
     playSound(filename);
+
   }
-  else{
+  else if(filename !== undefined && text !== undefined){
     playSound(filename);
     audio.onended = function(){
       textToSpeech(text);
+      audio.onended = undefined;
     }
   }
 }
@@ -91,16 +90,17 @@ function playSoundAndSpeak(filename, text){
 function playSound(filename){
   audio.src = ('sounds/' + filename);
   audio.volume = 0.5;
-
+  playing = true;
   var playPromise = audio.play();
 
   if (playPromise !== undefined) {
     playPromise.then(function() {
-      playing = true;
+
       audio.addEventListener('ended', function() {
         playing = false;
       });
     }).catch(function(error) {
+      playSound('u2bell.wav');
     });
   }
 }
@@ -117,6 +117,11 @@ function textToSpeech(text){
   if (text.length > textToSpeechLimit){
     text = text.substring(0, textToSpeechLimit);
   }
+
+  if(text === undefined){
+    text = "empty";
+  }
+
   msg = new SpeechSynthesisUtterance(text);
   synth = window.speechSynthesis;
   voices = synth.getVoices();
