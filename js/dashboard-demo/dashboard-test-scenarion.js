@@ -205,7 +205,7 @@ const sampleEvents = [{
 },
     {title: "TCDS State: Running", description: "New TCDS state identified"},
     {title: "Level Zero State: Running", description: "New Level zero state identified"},
-    {title: "DAQ state: Running", description: "New DAQ state identified", sound: "magic.wav"},
+    {title: "DAQ state: Running", description: "New DAQ state identified", sound: "ItsAKindOfMagic.wav"},
     {title: "DAQ state: Starting", description: "New DAQ state identified"},
     {title: "Level Zero State: Starting", description: "New Level zero state identified"},
     {title: "Level Zero State: Recovering", description: "New Level zero state identified"},
