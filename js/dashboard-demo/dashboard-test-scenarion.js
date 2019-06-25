@@ -21,10 +21,10 @@ var factor = 1;
 setInterval(function () {
     var newData = [{
         id: idCounter++,
-        title: sampleEvents[idCounter % 10].title,
-        description: sampleEvents[idCounter % 10].description,
-        sound: sampleEvents[idCounter % 10].sound,
-        tts: sampleEvents[idCounter % 10].tts,
+        title: sampleEvents[idCounter % 12].title,
+        description: sampleEvents[idCounter % 12].description,
+        sound: sampleEvents[idCounter % 12].sound,
+        tts: sampleEvents[idCounter % 12].tts,
         timestamp: moment().toISOString()
     }];
     newEventsDataArrived(newData);
@@ -209,9 +209,12 @@ const sampleEvents = [{
     {title: "DAQ state: Starting", description: "New DAQ state identified"},
     {title: "Level Zero State: Starting", description: "New Level zero state identified"},
     {title: "Level Zero State: Recovering", description: "New Level zero state identified"},
+    {title: "Automatic recovery started", description: "Automatic recovery", tts: "Starting recovery", sound: "alert.wav"},
     {title: "Level Zero State: Undefined", description: "New Level zero state identified"},
-    {title: "Run: 302492", description: "New run has been identified", sound: "alert.wav", tts: "New run started!"},
-    {title: "TCDS State: Configured", description: "New TCDS state identified"},];
+    {title: "Run: 302492", description: "New run has been identified", sound: "info.wav", tts: "New run started!"},
+    {title: "TCDS State: Configured", description: "New TCDS state identified"},
+    {title: "Recovery completed", description: "Automatic recovery completed successfuly", tts:"Recovered successfully" ,sound: "recovery-complete.wav"},
+];
 
 const sampleConditions = [
 
