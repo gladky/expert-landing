@@ -113,7 +113,7 @@ function playSound(filename){
         playing = false;
       });
     }).catch(function(error) {
-      playSound('u2bell.wav');
+      //playSound('u2bell.wav');
     });
     }
 
