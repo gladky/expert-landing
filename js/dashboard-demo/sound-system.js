@@ -136,6 +136,13 @@ function textToSpeech(text){
 }
 
 canAutoplay.audio().then(({result, error}) => {
-           if(result === false)
-               alert('autoplay disabled please enable it');
-        });
+  if(result === false){
+    Swal.fire({
+      title: 'Autoplay disabled !',
+      text: 'Need to enabled it in your settings if not sounds notifications will not play',
+      type: 'error',
+      confirmButtonText: 'Ok'
+    })
+
+  }
+});
