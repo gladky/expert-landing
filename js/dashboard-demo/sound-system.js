@@ -43,17 +43,6 @@ function connect() {
   });
 }
 
-canAutoplay.audio().then(({result, error}) => {
-  if(result === false){
-    Swal.fire({
-      title: 'Autoplay disabled !',
-      text: 'Need to enabled it in your settings if not sounds notifications will not play',
-      type: 'error',
-      confirmButtonText: 'Ok'
-    })
-  }
-});
-
 /**
  * Plays or not a notification if there
  * is already a notification playing
@@ -145,3 +134,15 @@ function textToSpeech(text){
     speaking = false;
   }
 }
+
+canAutoplay.audio().then(({result, error}) => {
+  if(result === false){
+    Swal.fire({
+      title: 'Autoplay disabled !',
+      text: 'Need to enabled it in your settings if not sounds notifications will not play',
+      type: 'error',
+      confirmButtonText: 'Ok'
+    })
+
+  }
+});
