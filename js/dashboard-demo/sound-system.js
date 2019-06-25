@@ -1,6 +1,7 @@
 /**
  * Created by mgl on 03.06.19.
  */
+
 /**
  * Create a limit for the text to pronnounce.
  * @type {number}
@@ -32,6 +33,7 @@ var audio = new Audio();
   * connects the client to WebSocket and
   * subscribes client to notifications
   */
+
 function connect() {
   socket = new SockJS('http://mgladki.cern.ch:8080/fake-notifications');
   stompClient = Stomp.over(socket);
@@ -43,16 +45,17 @@ function connect() {
   });
 }
 
-canAutoplay.audio().then(({result, error}) => {
-  if(result === false){
-    Swal.fire({
-      title: 'Autoplay disabled !',
-      text: 'Need to enabled it in your settings if not sounds notifications will not play',
-      type: 'error',
-      confirmButtonText: 'Ok'
-    })
-  }
-});
+
+  canAutoplay.audio().then(({result, error}) => {
+    if(result === false){
+      Swal.fire({
+        title: 'Autoplay disabled !',
+        text: 'Need to enabled it in your settings if not sounds notifications will not play',
+        type: 'error',
+        confirmButtonText: 'Ok'
+      })
+    }
+  });
 
 /**
  * Plays or not a notification if there
