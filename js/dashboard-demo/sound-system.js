@@ -100,7 +100,8 @@ function playSound(filename){
         playing = false;
       });
     }).catch(function(error) {
-      playSound('u2bell.wav');
+      console.log(error);
+      //playSound('u2bell.wav');
     });
   }
 }
