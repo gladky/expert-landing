@@ -28,6 +28,7 @@ var playing = false;
  */
 var audio = new Audio();
 
+
  /**
   * Connects the user html page to the server,
   * connects the client to WebSocket and
@@ -45,7 +46,6 @@ function connect() {
   });
 }
 
-
   canAutoplay.audio().then(({result, error}) => {
     if(result === false){
       Swal.fire({
@@ -56,6 +56,29 @@ function connect() {
       })
     }
   });
+
+
+  var queue = [];
+
+function produce(filename, text){
+  var job = {filename : filename,
+             text: text};
+
+  queue.push(job);
+  job.onended = function(){
+    consume();
+  }
+}
+
+function consume(){
+  var job = queue.shift();
+
+  if(job !== undefined){
+    playSoundAndSpeak(job.filename, job.text);
+    console.log(job)
+  }
+}
+
 
 /**
  * Plays or not a notification if there
@@ -100,7 +123,7 @@ function playSoundAndSpeak(filename, text){
  * Play a sound
  * @param {string} filename The sound to play
  */
-function playSound(filename){
+function playSound (filename){
   audio.src = ('sounds/' + filename);
   audio.volume = 0.5;
   playing = true;
@@ -113,9 +136,14 @@ function playSound(filename){
         playing = false;
       });
     }).catch(function(error) {
-      //playSound('u2bell.wav');
+      var keys = Object.keys(error)
+      console.log(error);
+      console.log(error.code);
+      if(error.code === 9){
+        playSound('u2bell.wav');
+      }
     });
-    }
+  }
 
 }
 
@@ -123,7 +151,7 @@ function playSound(filename){
  * Pronnounce a text via a synthesis voice
  * @param {string} text The text to pronnounce
  */
-function textToSpeech(text){
+function textToSpeech (text){
   var msg;
   var voices;
   var synth;
@@ -140,6 +168,7 @@ function textToSpeech(text){
   synth = window.speechSynthesis;
   voices = synth.getVoices();
   msg.voices = voices[0];
+
   msg.lang = 'en-EN';
   msg.volume = 0.9;
   synth.speak(msg);
@@ -148,3 +177,8 @@ function textToSpeech(text){
     speaking = false;
   }
 }
+
+(function(){
+  produce('test', undefined)
+  setInterval(function(){consume()}, 1000);
+})();

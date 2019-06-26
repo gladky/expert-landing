@@ -429,9 +429,10 @@ function newEventsDataArrived(event) {
   let tts = event[0].tts;
   let sound = event[0].sound;
   if(sound !== undefined || tts !== undefined){
-    
-  playOrDelay(sound, tts);
-
+    if(playing == false && speaking == false){
+      produce();
+      consume();
+    }
   }
 
     eventsData.push.apply(eventsData, event);
