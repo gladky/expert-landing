@@ -27,14 +27,18 @@ var playing = false;
  * @type {Object}
  */
 var audio = new Audio();
+/**
+* Dynamic array for playing notifications
+* one by one.
+* @type {array}
+*/
+var queue = [];
 
-
- /**
-  * Connects the user html page to the server,
-  * connects the client to WebSocket and
-  * subscribes client to notifications
-  */
-
+/**
+ * Connects the user html page to the server,
+ * connects the client to WebSocket and
+ * subscribes client to notifications
+ */
 function connect() {
   socket = new SockJS('http://mgladki.cern.ch:8080/fake-notifications');
   stompClient = Stomp.over(socket);
@@ -46,39 +50,16 @@ function connect() {
   });
 }
 
-  canAutoplay.audio().then(({result, error}) => {
-    if(result === false){
-      Swal.fire({
-        title: 'Autoplay disabled !',
-        text: 'Need to enabled it in your settings if not sounds notifications will not play',
-        type: 'error',
-        confirmButtonText: 'Ok'
-      })
-    }
-  });
-
-
-  var queue = [];
-
-function produce(filename, text){
-  var job = {filename : filename,
-             text: text};
-
-  queue.push(job);
-  job.onended = function(){
-    consume();
+canAutoplay.audio().then(({result, error}) => {
+  if(result === false) {
+    Swal.fire({
+      title: 'Autoplay disabled !',
+      text: 'Need to enabled it in your settings if not sounds notifications will not play',
+      type: 'error',
+      confirmButtonText: 'Ok'
+    })
   }
-}
-
-function consume(){
-  var job = queue.shift();
-
-  if(job !== undefined){
-    playSoundAndSpeak(job.filename, job.text);
-    console.log(job)
-  }
-}
-
+});
 
 /**
  * Plays or not a notification if there
@@ -86,13 +67,17 @@ function consume(){
  * @param {string} filename The sound to play
  * @param {string} text The text to pronnounce
  */
-function playOrDelay(filename, text){
-  if(playing == false && speaking == false){
-    playSoundAndSpeak(filename, text);
-  }
-  else{
-    var wait;
-    wait = setTimeout(function() {playOrDelay(filename, text);}, 1000);
+function produce(filename,text) {
+  var job;
+  job = {filename: filename, text : text};
+  queue.push(job);
+  consume();
+}
+
+async function consume() {
+  let job = queue.shift();
+  if(job !== undefined) {
+    await playSoundAndSpeak(job.filename, job.text);
   }
 }
 
@@ -102,17 +87,16 @@ function playOrDelay(filename, text){
  * @param {string} filename The sound to play
  * @param {string} text The text to pronnounce
  */
-function playSoundAndSpeak(filename, text){
-  if(filename === undefined){
+function playSoundAndSpeak(filename, text) {
+  if(filename === undefined) {
     textToSpeech(text);
   }
-  else if (text === undefined){
+  else if (text === undefined) {
     playSound(filename);
-
   }
-  else if(filename !== undefined && text !== undefined){
+  else if(filename !== undefined && text !== undefined) {
     playSound(filename);
-    audio.onended = function(){
+    audio.onended = function() {
       textToSpeech(text);
       audio.onended = undefined;
     }
@@ -120,10 +104,10 @@ function playSoundAndSpeak(filename, text){
 }
 
 /**
- * Play a sound
+ * Plays a sound
  * @param {string} filename The sound to play
  */
-function playSound (filename){
+function playSound (filename) {
   audio.src = ('sounds/' + filename);
   audio.volume = 0.5;
   playing = true;
@@ -131,36 +115,31 @@ function playSound (filename){
 
   if (playPromise !== undefined) {
     playPromise.then(function() {
-
       audio.addEventListener('ended', function() {
         playing = false;
       });
     }).catch(function(error) {
       var keys = Object.keys(error)
-      console.log(error);
-      console.log(error.code);
-      if(error.code === 9){
+      if(error.code === 9) {
         playSound('u2bell.wav');
       }
     });
   }
-
 }
 
 /**
- * Pronnounce a text via a synthesis voice
+ * Pronnounces a text via a synthesis voice
  * @param {string} text The text to pronnounce
  */
-function textToSpeech (text){
+function textToSpeech(text) {
   var msg;
   var voices;
   var synth;
 
-  if (text.length > textToSpeechLimit){
+  if (text.length > textToSpeechLimit) {
     text = text.substring(0, textToSpeechLimit);
   }
-
-  if(text === undefined){
+  if(text === undefined) {
     text = "empty";
   }
 
@@ -173,12 +152,7 @@ function textToSpeech (text){
   msg.volume = 0.9;
   synth.speak(msg);
   speaking = true;
-  msg.onend = function(event){
+  msg.onend = function(event) {
     speaking = false;
   }
 }
-
-(function(){
-  produce('test', undefined)
-  setInterval(function(){consume()}, 1000);
-})();
