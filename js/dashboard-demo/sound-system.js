@@ -135,3 +135,38 @@ function textToSpeech(text){
     speaking = false;
   }
 }
+
+window.onload = function () {
+
+  detectIfAutoplaySettingsEnabled();
+  retieveSoundSystemConf()
+};
+
+
+
+setTimeout(function () {
+  disableSoundSystemMessage = false;
+}, 1000);
+
+setTimeout(function () {
+  disableSoundSystemMessage = true;
+}, 20000);
+
+function retieveSoundSystemConf() {
+  var browserSoundSystemRequestedFromStorage = localStorage.getItem('dashboardBrowserSoundSystemEnabled');
+  if (browserSoundSystemRequestedFromStorage !== null) {
+    browserSoundSystemRequested = browserSoundSystemRequestedFromStorage;
+  }
+}
+
+function storeSoundSystemConf(value) {
+  localStorage.setItem('dashboardBrowserSoundSystemEnabled', value);
+  browserSoundSystemRequested = value;
+  // TODO: enable/disable sound system
+}
+
+function detectIfAutoplaySettingsEnabled() {
+  canAutoplay.audio().then(({result, error}) => {
+    browserSettingsAllowAutoplay = result;
+  });
+}

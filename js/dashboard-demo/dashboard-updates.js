@@ -16,6 +16,11 @@ var timeToKeepTheLastSuggestion = 20000;
 var daqViewUrl;
 var daqSetup;
 
+
+var disableSoundSystemMessage = true;
+var browserSoundSystemRequested = false;
+var browserSettingsAllowAutoplay = false;
+
 $(document).ready(function () {
     daqViewUrl = $('#daq-view-url').data('url');
     daqSetup = $('#daq-view-url').data('setup');
@@ -382,12 +387,52 @@ function Dashboard(props) {
     }
 
 
+
+
+    var soundSystemMessage = null;
+    if(!disableSoundSystemMessage) {
+      const info = React.createElement('span', {className: 'glyphicon glyphicon-exclamation-sign'});
+
+      var text = null;
+      var action = null;
+      if (browserSoundSystemRequested && !browserSettingsAllowAutoplay) {
+        text = "You need to enable auto play mode in the browser. Enable for this session or change the browser settings permanently";
+        //TODO: add button to session
+
+      } else if (browserSoundSystemRequested && browserSettingsAllowAutoplay) {
+        text = "Sound notifications will be played by the browser";
+        action = React.createElement('small', {}, React.createElement('a', {
+          className: "btn",
+          onClick: function () {
+            storeSoundSystemConf(false);
+          }
+        }, " Disable"));
+        // Nothing to do
+
+      } else if (!browserSoundSystemRequested) {
+        //Turn off sound system
+        text = "You can use the browser sound system";
+        action = React.createElement('small', {}, React.createElement('a', {
+          className: "btn",
+          onClick: function () {
+            storeSoundSystemConf(true);
+          }
+        }, " Enable"));
+      }
+
+      const soundText = React.createElement('span', {}, text);
+
+      const soundMessage = React.createElement('p', {}, info, " ", soundText);
+      soundSystemMessage = React.createElement('div', {className: 'alert alert-info'}, soundMessage, action);
+    }
+
+
     const currentPanel = React.createElement('div', {className: ""}, React.createElement(CurrentPanel, props));
     const leftPanel = React.createElement('div', {className: "col-md-8"}, currentPanel, React.createElement(ConditionPanel, props));
     const rightPanel = React.createElement('div', {className: "col-md-4"}, React.createElement(EventPanel, props));
 
 
-    const pageHead = React.createElement('div', {className: 'row'}, versionMessageElement);
+    const pageHead = React.createElement('div', {className: 'row'}, soundSystemMessage, versionMessageElement);
     const pageContent = React.createElement('div', {className: 'row'}, leftPanel, rightPanel);
 
     return React.createElement('div', {}, pageHead, pageContent);
@@ -429,7 +474,7 @@ function newEventsDataArrived(event) {
   let tts = event[0].tts;
   let sound = event[0].sound;
   if(sound !== undefined || tts !== undefined){
-    
+
   playOrDelay(sound, tts);
 
   }
