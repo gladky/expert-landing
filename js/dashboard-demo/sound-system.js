@@ -45,7 +45,6 @@ function connect() {
   stompClient.connect({}, function (frame) {
     stompClient.subscribe('/topic/notification', function (content) {
       var body = JSON.parse(content.body);
-      playOrDelay(body.filename, body.text);
     });
   });
 }
@@ -54,8 +53,8 @@ canAutoplay.audio().then(({result, error}) => {
   if(result === false) {
     Swal.fire({
       title: 'Autoplay disabled !',
-      text: 'Need to enabled it in your settings if not sounds notifications will not play',
-      type: 'error',
+      text: 'Please allow autoplay in browser settings or press "Ok"',
+      type: 'warning',
       confirmButtonText: 'Ok'
     })
   }
