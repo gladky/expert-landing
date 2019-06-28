@@ -66,17 +66,23 @@ canAutoplay.audio().then(({result, error}) => {
  * @param {string} filename The sound to play
  * @param {string} text The text to pronnounce
  */
-function produce(filename,text) {
+
+function produce(filename, text) {
   var job;
-  job = {filename: filename, text : text};
-  queue.push(job);
-  consume();
+    if(empty === false){
+      job = {filename: filename, text : text};
+      queue.push(job);
+      consume();
+    }
 }
 
 async function consume() {
   let job = queue.shift();
-  if(job !== undefined) {
+
+  if(job !== undefined && speaking === false && playing === false) {
+    console.log('test');
     await playSoundAndSpeak(job.filename, job.text);
+    console.log(job);
   }
 }
 
@@ -155,3 +161,10 @@ function textToSpeech(text) {
     speaking = false;
   }
 }
+
+(function(){
+  produce('test1', 'test1')
+  produce('test2', 'test2')
+  produce('test3', 'test3')
+  produce('test4', 'test4')
+})
