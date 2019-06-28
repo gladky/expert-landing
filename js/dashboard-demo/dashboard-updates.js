@@ -474,16 +474,9 @@ function renderApp() {
 function newEventsDataArrived(event) {
   let tts = event[0].tts;
   let sound = event[0].sound;
-  //if(sound !== undefined || tts !== undefined){
-//<<<<<<< HEAD
-  produce(sound, tts);
-  
-//=======
-
-  //playOrDelay(sound, tts);
-
-//>>>>>>> banner
-  //}
+  if(sound !== undefined || tts !== undefined){
+    produce(sound, tts);
+  }
 
     eventsData.push.apply(eventsData, event);
     eventsData = eventsData.splice(-eventsToKeep, eventsToKeep);

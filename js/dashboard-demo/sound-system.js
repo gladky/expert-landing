@@ -34,19 +34,16 @@ var audio = new Audio();
 */
 var queue = [];
 
-//<<<<<<< HEAD
+audio.addEventListener('ended', function() {
+  playing = false;
+  onFinishJob()
+});
+
 /**
  * Connects the user html page to the server,
  * connects the client to WebSocket and
  * subscribes client to notifications
  */
-//=======
- /**
-  * Connects the user html page to the server,
-  * connects the client to WebSocket and
-  * subscribes client to notifications
-  */
-//>>>>>>> banner
 function connect() {
   socket = new SockJS('http://mgladki.cern.ch:8080/fake-notifications');
   stompClient = Stomp.over(socket);
@@ -57,43 +54,29 @@ function connect() {
   });
 }
 
-/*
-//<<<<<<< HEAD
-canAutoplay.audio().then(({result, error}) => {
-  if(result === false) {
-  Swal.fire({
-      title: 'Autoplay disabled !',
-      text: 'Please allow autoplay in browser settings or press "Ok"',
-      type: 'warning',
-      confirmButtonText: 'Ok'
-    })
-  }
-});
-*/
-//=======
-//>>>>>>> banner
 /**
  * Plays or not a notification if there
  * is already a notification playing
  * @param {string} filename The sound to play
  * @param {string} text The text to pronnounce
  */
-
 function produce(filename, text) {
-  var job;
-    //if(text === undefined ){
-      job = {filename: filename, text : text};
-      queue.push(job);
-      consume();
-    //}
+  if(browserSettingsAllowAutoplay && browserSoundSystemRequested) {
+    var job;
+    job = {filename: filename, text : text};
+    queue.push(job);
+    consume();
+  }
 }
 
-async function consume() {
-  let job = queue.shift();
-  if(job !== undefined && speaking === false && playing === false){// && speaking === false && playing === false) {
-
-    await playSoundAndSpeak(job.filename, job.text);
-    console.log(job);
+function consume() {
+  let job;
+  if(queue.length >= 1){
+    job = queue[0];
+    if(speaking === false && playing === false) {
+      job = queue.shift()
+      playSoundAndSpeak(job.filename, job.text);
+    }
   }
 }
 
@@ -104,18 +87,20 @@ async function consume() {
  * @param {string} text The text to pronnounce
  */
 function playSoundAndSpeak(filename, text) {
-  if(filename === undefined) {
-    textToSpeech(text);
-  }
-  else if (text === undefined) {
-    playSound(filename);
-  }
-  else if(filename !== undefined && text !== undefined) {
+  if(filename !== undefined && text !== undefined) {
+    speaking = true;
     playSound(filename);
     audio.onended = function() {
       textToSpeech(text);
       audio.onended = undefined;
     }
+  }
+  else if(text !== undefined ) {
+    speaking = true;
+    textToSpeech(text);
+  }
+  else if (filename !== undefined) {
+    playSound(filename);
   }
 }
 
@@ -128,21 +113,13 @@ function playSound (filename) {
   audio.volume = 0.5;
   playing = true;
   var playPromise = audio.play();
-
   if (playPromise !== undefined) {
     playPromise.then(function() {
-      audio.addEventListener('ended', function() {
-        playing = false;
-      });
     }).catch(function(error) {
-//<<<<<<< HEAD
       var keys = Object.keys(error)
       if(error.code === 9) {
         playSound('u2bell.wav');
       }
-//=======
-
-//>>>>>>> banner
     });
   }
 }
@@ -155,43 +132,35 @@ function textToSpeech(text) {
   var msg;
   var voices;
   var synth;
-
   if (text.length > textToSpeechLimit) {
     text = text.substring(0, textToSpeechLimit);
   }
   if(text === undefined) {
     text = "empty";
   }
-
   msg = new SpeechSynthesisUtterance(text);
   synth = window.speechSynthesis;
   voices = synth.getVoices();
   msg.voices = voices[0];
-
   msg.lang = 'en-EN';
   msg.volume = 0.9;
   synth.speak(msg);
-  speaking = true;
   msg.onend = function(event) {
     speaking = false;
+    onFinishJob()
   }
 }
 
-//<<<<<<< HEAD
-(function(){
-  //storeSoundSystemConf('something')
-  playSoundAndSpeak('u2bell.wav', 'test1')
-  //produce('slowdownmybeatingheart.wav', 'test2')
+function onFinishJob(){
+  if(playing === false && speaking === false) {
+    consume()
+  }
+}
 
-})
-//=======
 window.onload = function () {
-
   detectIfAutoplaySettingsEnabled();
-  retieveSoundSystemConf()
-};
-
-
+  retieveSoundSystemConf();
+}
 
 setTimeout(function () {
   disableSoundSystemMessage = false;
@@ -209,15 +178,8 @@ function retieveSoundSystemConf() {
 }
 
 function storeSoundSystemConf(value) {
-
   localStorage.setItem('dashboardBrowserSoundSystemEnabled', value);
   browserSoundSystemRequested = value;
-  // TODO: enable/disable sound system
-  var allow = value;
-  //console.log(value + 'ici1')
-  if(allow === true){
-    //console.log(value + 'ici2');
-  }
 }
 
 function detectIfAutoplaySettingsEnabled() {
@@ -225,4 +187,3 @@ function detectIfAutoplaySettingsEnabled() {
     browserSettingsAllowAutoplay = result;
   });
 }
-//>>>>>>> banner
