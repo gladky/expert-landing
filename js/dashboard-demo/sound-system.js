@@ -34,19 +34,19 @@ var audio = new Audio();
 */
 var queue = [];
 
-<<<<<<< HEAD
+//<<<<<<< HEAD
 /**
  * Connects the user html page to the server,
  * connects the client to WebSocket and
  * subscribes client to notifications
  */
-=======
+//=======
  /**
   * Connects the user html page to the server,
   * connects the client to WebSocket and
   * subscribes client to notifications
   */
->>>>>>> banner
+//>>>>>>> banner
 function connect() {
   socket = new SockJS('http://mgladki.cern.ch:8080/fake-notifications');
   stompClient = Stomp.over(socket);
@@ -57,10 +57,11 @@ function connect() {
   });
 }
 
-<<<<<<< HEAD
+/*
+//<<<<<<< HEAD
 canAutoplay.audio().then(({result, error}) => {
   if(result === false) {
-    Swal.fire({
+  Swal.fire({
       title: 'Autoplay disabled !',
       text: 'Please allow autoplay in browser settings or press "Ok"',
       type: 'warning',
@@ -68,9 +69,9 @@ canAutoplay.audio().then(({result, error}) => {
     })
   }
 });
-
-=======
->>>>>>> banner
+*/
+//=======
+//>>>>>>> banner
 /**
  * Plays or not a notification if there
  * is already a notification playing
@@ -80,18 +81,17 @@ canAutoplay.audio().then(({result, error}) => {
 
 function produce(filename, text) {
   var job;
-    if(empty === false){
+    //if(text === undefined ){
       job = {filename: filename, text : text};
       queue.push(job);
       consume();
-    }
+    //}
 }
 
 async function consume() {
   let job = queue.shift();
+  if(job !== undefined && speaking === false && playing === false){// && speaking === false && playing === false) {
 
-  if(job !== undefined && speaking === false && playing === false) {
-    console.log('test');
     await playSoundAndSpeak(job.filename, job.text);
     console.log(job);
   }
@@ -135,15 +135,14 @@ function playSound (filename) {
         playing = false;
       });
     }).catch(function(error) {
-<<<<<<< HEAD
+//<<<<<<< HEAD
       var keys = Object.keys(error)
       if(error.code === 9) {
         playSound('u2bell.wav');
       }
-=======
-      console.log(error);
-      //playSound('u2bell.wav');
->>>>>>> banner
+//=======
+
+//>>>>>>> banner
     });
   }
 }
@@ -178,14 +177,14 @@ function textToSpeech(text) {
   }
 }
 
-<<<<<<< HEAD
+//<<<<<<< HEAD
 (function(){
-  produce('test1', 'test1')
-  produce('test2', 'test2')
-  produce('test3', 'test3')
-  produce('test4', 'test4')
+  //storeSoundSystemConf('something')
+  playSoundAndSpeak('u2bell.wav', 'test1')
+  //produce('slowdownmybeatingheart.wav', 'test2')
+
 })
-=======
+//=======
 window.onload = function () {
 
   detectIfAutoplaySettingsEnabled();
@@ -210,9 +209,15 @@ function retieveSoundSystemConf() {
 }
 
 function storeSoundSystemConf(value) {
+
   localStorage.setItem('dashboardBrowserSoundSystemEnabled', value);
   browserSoundSystemRequested = value;
   // TODO: enable/disable sound system
+  var allow = value;
+  //console.log(value + 'ici1')
+  if(allow === true){
+    //console.log(value + 'ici2');
+  }
 }
 
 function detectIfAutoplaySettingsEnabled() {
@@ -220,4 +225,4 @@ function detectIfAutoplaySettingsEnabled() {
     browserSettingsAllowAutoplay = result;
   });
 }
->>>>>>> banner
+//>>>>>>> banner

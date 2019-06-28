@@ -399,6 +399,7 @@ function Dashboard(props) {
         text = "You need to enable auto play mode in the browser. Enable for this session or change the browser settings permanently";
         //TODO: add button to session
 
+
       } else if (browserSoundSystemRequested && browserSettingsAllowAutoplay) {
         text = "Sound notifications will be played by the browser";
         action = React.createElement('small', {}, React.createElement('a', {
@@ -473,15 +474,16 @@ function renderApp() {
 function newEventsDataArrived(event) {
   let tts = event[0].tts;
   let sound = event[0].sound;
-  if(sound !== undefined || tts !== undefined){
-<<<<<<< HEAD
-  //  produce(sound, tts);
-=======
+  //if(sound !== undefined || tts !== undefined){
+//<<<<<<< HEAD
+  produce(sound, tts);
+  
+//=======
 
-  playOrDelay(sound, tts);
+  //playOrDelay(sound, tts);
 
->>>>>>> banner
-  }
+//>>>>>>> banner
+  //}
 
     eventsData.push.apply(eventsData, event);
     eventsData = eventsData.splice(-eventsToKeep, eventsToKeep);
