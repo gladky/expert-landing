@@ -34,11 +34,19 @@ var audio = new Audio();
 */
 var queue = [];
 
+<<<<<<< HEAD
 /**
  * Connects the user html page to the server,
  * connects the client to WebSocket and
  * subscribes client to notifications
  */
+=======
+ /**
+  * Connects the user html page to the server,
+  * connects the client to WebSocket and
+  * subscribes client to notifications
+  */
+>>>>>>> banner
 function connect() {
   socket = new SockJS('http://mgladki.cern.ch:8080/fake-notifications');
   stompClient = Stomp.over(socket);
@@ -49,6 +57,7 @@ function connect() {
   });
 }
 
+<<<<<<< HEAD
 canAutoplay.audio().then(({result, error}) => {
   if(result === false) {
     Swal.fire({
@@ -60,6 +69,8 @@ canAutoplay.audio().then(({result, error}) => {
   }
 });
 
+=======
+>>>>>>> banner
 /**
  * Plays or not a notification if there
  * is already a notification playing
@@ -124,10 +135,15 @@ function playSound (filename) {
         playing = false;
       });
     }).catch(function(error) {
+<<<<<<< HEAD
       var keys = Object.keys(error)
       if(error.code === 9) {
         playSound('u2bell.wav');
       }
+=======
+      console.log(error);
+      //playSound('u2bell.wav');
+>>>>>>> banner
     });
   }
 }
@@ -162,9 +178,46 @@ function textToSpeech(text) {
   }
 }
 
+<<<<<<< HEAD
 (function(){
   produce('test1', 'test1')
   produce('test2', 'test2')
   produce('test3', 'test3')
   produce('test4', 'test4')
 })
+=======
+window.onload = function () {
+
+  detectIfAutoplaySettingsEnabled();
+  retieveSoundSystemConf()
+};
+
+
+
+setTimeout(function () {
+  disableSoundSystemMessage = false;
+}, 1000);
+
+setTimeout(function () {
+  disableSoundSystemMessage = true;
+}, 20000);
+
+function retieveSoundSystemConf() {
+  var browserSoundSystemRequestedFromStorage = localStorage.getItem('dashboardBrowserSoundSystemEnabled');
+  if (browserSoundSystemRequestedFromStorage !== null) {
+    browserSoundSystemRequested = browserSoundSystemRequestedFromStorage;
+  }
+}
+
+function storeSoundSystemConf(value) {
+  localStorage.setItem('dashboardBrowserSoundSystemEnabled', value);
+  browserSoundSystemRequested = value;
+  // TODO: enable/disable sound system
+}
+
+function detectIfAutoplaySettingsEnabled() {
+  canAutoplay.audio().then(({result, error}) => {
+    browserSettingsAllowAutoplay = result;
+  });
+}
+>>>>>>> banner
